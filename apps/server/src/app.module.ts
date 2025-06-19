@@ -1,0 +1,35 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UsersModule } from './users/users.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    // TypeORM temporarily disabled due to Node.js version compatibility
+    // TypeOrmModule.forRootAsync({
+    //   imports: [ConfigModule],
+    //   useFactory: (configService: ConfigService) => ({
+    //     type: 'postgres',
+    //     host: configService.get('DATABASE_HOST'),
+    //     port: configService.get('DATABASE_PORT'),
+    //     username: configService.get('DATABASE_USERNAME'),
+    //     password: configService.get('DATABASE_PASSWORD'),
+    //     database: configService.get('DATABASE_NAME'),
+    //     entities: [__dirname + '/**/*.entity{.ts,.js}'],
+    //     synchronize: configService.get('NODE_ENV') === 'development',
+    //     logging: configService.get('NODE_ENV') === 'development',
+    //   }),
+    //   inject: [ConfigService],
+    // }),
+    // UsersModule, // Disabled until database is connected
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
