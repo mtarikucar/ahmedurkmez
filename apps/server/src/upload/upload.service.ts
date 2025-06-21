@@ -56,6 +56,14 @@ export class UploadService {
     return this.mediaRepository.save(media);
   }
 
+  async findAll(): Promise<ArticleMedia[]> {
+    return this.mediaRepository.find({
+      where: { isActive: true },
+      order: { createdAt: 'DESC' },
+      relations: ['article'],
+    });
+  }
+
   async findByArticle(articleId: number): Promise<ArticleMedia[]> {
     return this.mediaRepository.find({
       where: { articleId, isActive: true },

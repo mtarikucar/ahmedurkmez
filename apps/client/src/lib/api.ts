@@ -49,40 +49,67 @@ export const authAPI = {
     api.post('/auth/register', userData),
   getProfile: () =>
     api.get('/auth/me'),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.patch('/auth/change-password', { currentPassword, newPassword }),
 };
 
 export const articlesAPI = {
-  getAll: (params?: any) =>
-    api.get('/articles', { params }),
-  getBySlug: (slug: string) =>
-    api.get(`/articles/slug/${slug}`),
-  getFeatured: (limit?: number) =>
-    api.get('/articles/featured', { params: { limit } }),
-  getRelated: (id: number, limit?: number) =>
-    api.get(`/articles/${id}/related`, { params: { limit } }),
-  like: (id: number) =>
-    api.post(`/articles/${id}/like`),
+  getAll: (params?: any) => api.get('/articles', { params }),
+  getById: (id: number) => api.get(`/articles/${id}`),
+  getBySlug: (slug: string) => api.get(`/articles/slug/${slug}`),
+  getFeatured: (limit?: number) => api.get('/articles/featured', { params: { limit } }),
+  getRelated: (id: number, limit?: number) => api.get(`/articles/${id}/related`, { params: { limit } }),
+  create: (data: any) => api.post('/articles', data),
+  update: (id: number, data: any) => api.patch(`/articles/${id}`, data),
+  delete: (id: number) => api.delete(`/articles/${id}`),
+  like: (id: number) => api.post(`/articles/${id}/like`),
+};
+
+export const usersAPI = {
+  getAll: (params?: any) => api.get('/users', { params }),
+  getById: (id: number) => api.get(`/users/${id}`),
+  create: (data: any) => api.post('/users', data),
+  update: (id: number, data: any) => api.patch(`/users/${id}`, data),
+  delete: (id: number) => api.delete(`/users/${id}`),
+};
+
+export const adminAPI = {
+  getDashboardStats: () => api.get('/admin/dashboard/stats'),
+  getRecentActivity: () => api.get('/admin/dashboard/activity'),
+  getPopularArticles: (limit?: number) =>
+    api.get('/admin/analytics/popular-articles', { params: { limit } }),
+  getArticlesByMonth: () => api.get('/admin/analytics/articles-by-month'),
+  getCommentsByMonth: () => api.get('/admin/analytics/comments-by-month'),
+};
+
+export const mediaAPI = {
+  getAll: (params?: any) => api.get('/upload', { params }),
+  uploadFile: (formData: FormData) => api.post('/upload/file', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  createExternal: (data: any) => api.post('/upload/external', data),
+  createYouTube: (videoId: string, data: any) => api.post(`/upload/youtube/${videoId}`, data),
+  getByArticle: (articleId: number) => api.get(`/upload/article/${articleId}`),
+  getStats: () => api.get('/upload/stats'),
+  delete: (id: number) => api.delete(`/upload/${id}`),
 };
 
 export const categoriesAPI = {
-  getAll: () =>
-    api.get('/categories'),
-  getById: (id: number) =>
-    api.get(`/categories/${id}`),
+  getAll: (params?: any) => api.get('/categories', { params }),
+  getById: (id: number) => api.get(`/categories/${id}`),
+  create: (data: any) => api.post('/categories', data),
+  update: (id: number, data: any) => api.patch(`/categories/${id}`, data),
+  delete: (id: number) => api.delete(`/categories/${id}`),
 };
 
 export const commentsAPI = {
-  getByArticle: (articleId: number) =>
-    api.get(`/comments/article/${articleId}`),
-  create: (commentData: any) =>
-    api.post('/comments', commentData),
-  like: (id: number) =>
-    api.post(`/comments/${id}/like`),
+  getByArticle: (articleId: number) => api.get(`/comments/article/${articleId}`),
+  create: (commentData: any) => api.post('/comments', commentData),
+  like: (id: number) => api.post(`/comments/${id}/like`),
 };
 
 export const contactAPI = {
-  create: (contactData: any) =>
-    api.post('/contacts', contactData),
+  create: (data: any) => api.post('/contacts', data),
 };
 
 export default api;

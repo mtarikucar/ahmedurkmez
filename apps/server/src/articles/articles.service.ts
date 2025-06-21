@@ -20,19 +20,19 @@ export class ArticlesService {
     const category = await this.categoryRepository.findOne({
       where: { id: createArticleDto.categoryId },
     });
-    
+
     if (!category) {
       throw new BadRequestException('Category not found');
     }
 
     // Generate slug from title
     const slug = this.generateSlug(createArticleDto.title);
-    
+
     // Check if slug already exists
     const existingArticle = await this.articleRepository.findOne({
       where: { slug },
     });
-    
+
     if (existingArticle) {
       throw new BadRequestException('Article with this title already exists');
     }

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, UserIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navigation = [
   { name: 'Ana Sayfa', href: '/' },
@@ -16,7 +17,9 @@ const navigation = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
 
   return (
     <header className="bg-white shadow-sm">
@@ -42,6 +45,69 @@ export default function Header() {
                 {link.name}
               </Link>
             ))}
+          </div>
+
+          {/* User Menu */}
+          <div className="ml-10 hidden lg:block">
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  className="flex items-center space-x-2 text-gray-500 hover:text-indigo-600"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                >
+                  <UserIcon className="h-6 w-6" />
+                  <span className="text-sm font-medium">
+                    {user?.firstName} {user?.lastName}
+                  </span>
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Profil
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Çıkış Yap
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-x-4">
+                <Link
+                  href="/login"
+                  className="text-gray-500 hover:text-indigo-600 text-sm font-medium"
+                >
+                  Giriş Yap
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
+                  Kayıt Ol
+                </Link>
+              </div>
+            )}
           </div>
           <div className="ml-10 space-x-4 lg:hidden">
             <button
@@ -103,6 +169,59 @@ export default function Header() {
                       {item.name}
                     </Link>
                   ))}
+                </div>
+
+                {/* Mobile Auth Section */}
+                <div className="space-y-2 py-6">
+                  {isAuthenticated ? (
+                    <>
+                      <div className="px-3 py-2 text-sm text-gray-500">
+                        Hoş geldin, {user?.firstName}
+                      </div>
+                      <Link
+                        href="/profile"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Profil
+                      </Link>
+                      {isAdmin && (
+                        <Link
+                          href="/admin"
+                          className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Admin Panel
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => {
+                          logout();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="-mx-3 block w-full text-left rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      >
+                        Çıkış Yap
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Giriş Yap
+                      </Link>
+                      <Link
+                        href="/register"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-white bg-indigo-600 hover:bg-indigo-700"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Kayıt Ol
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

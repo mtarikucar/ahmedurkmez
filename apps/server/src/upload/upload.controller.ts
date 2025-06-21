@@ -25,6 +25,13 @@ export class UploadController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Get()
+  findAll() {
+    return this.uploadService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Post('file')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
