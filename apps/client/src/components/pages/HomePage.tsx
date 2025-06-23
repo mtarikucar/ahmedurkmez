@@ -372,26 +372,26 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Sayfa yükleniyor...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="text-center font-bookmania">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 mx-auto mb-4" style={{ borderColor: 'var(--center-secondary)' }}></div>
+          <p style={{ color: 'var(--text-secondary)' }}>Sayfa yükleniyor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50">
+    <div className="min-h-screen font-bookmania" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* 15 Column Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-15 gap-4 p-4 max-w-[1920px] mx-auto min-h-screen">
+      <div className="grid grid-cols-1 lg:grid-cols-15 gap-6 p-6 max-w-[1920px] mx-auto min-h-screen">
 
         {/* Left Section - Resume (5 columns) */}
-        <div className="lg:col-span-5 bg-white rounded-lg shadow-lg p-6 h-fit">
+        <div className="lg:col-span-5 rounded-lg shadow-xl p-6 h-fit bg-gradient-resume">
           <div className="sticky top-4">
             <div className="flex items-center mb-6">
-              <AcademicCapIcon className="h-8 w-8 text-indigo-600 mr-3" />
-              <h2 className="text-2xl font-bold text-gray-900">Özgeçmiş</h2>
+              <AcademicCapIcon className="h-8 w-8 text-white mr-3" />
+              <h2 className="text-2xl font-bold text-white">Özgeçmiş</h2>
             </div>
             <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
               {resumeCategories.map((category) => (
@@ -409,24 +409,24 @@ export default function HomePage() {
         {/* Center Section - Slider and Title (5 columns) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Title Section */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg p-8 text-center text-white">
-            <h1 className="text-4xl font-bold mb-2">Prof. Dr. Ahmed Ürkmez</h1>
-            <p className="text-lg opacity-90">Edebiyat ve Kültür Araştırmaları Uzmanı</p>
-            <div className="mt-4 flex justify-center space-x-4">
-              <div className="bg-white/20 rounded-full px-4 py-2">
-                <span className="text-sm font-medium">Akademisyen</span>
+          <div className="bg-gradient-center rounded-lg shadow-xl p-8 text-center text-white">
+            <h1 className="text-4xl font-bold mb-2 font-bookmania">Prof. Dr. Ahmed Ürkmez</h1>
+            <p className="text-lg opacity-90 font-bookmania">Edebiyat ve Kültür Araştırmaları Uzmanı</p>
+            <div className="mt-6 flex justify-center space-x-4">
+              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm">
+                <span className="text-sm font-medium font-bookmania">Akademisyen</span>
               </div>
-              <div className="bg-white/20 rounded-full px-4 py-2">
-                <span className="text-sm font-medium">Yazar</span>
+              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm">
+                <span className="text-sm font-medium font-bookmania">Yazar</span>
               </div>
-              <div className="bg-white/20 rounded-full px-4 py-2">
-                <span className="text-sm font-medium">Araştırmacı</span>
+              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm">
+                <span className="text-sm font-medium font-bookmania">Araştırmacı</span>
               </div>
             </div>
           </div>
 
           {/* Image Slider */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="rounded-lg shadow-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <ImageSlider
               images={sliderImages}
               autoPlay={true}
@@ -439,30 +439,30 @@ export default function HomePage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg shadow-lg p-4 text-center">
-              <BookOpenIcon className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-gray-900">25+</div>
-              <div className="text-sm text-gray-600">Yayın</div>
+            <div className="rounded-lg shadow-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <BookOpenIcon className="h-8 w-8 mx-auto mb-2" style={{ color: 'var(--center-secondary)' }} />
+              <div className="text-2xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>25+</div>
+              <div className="text-sm font-bookmania" style={{ color: 'var(--text-secondary)' }}>Yayın</div>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-4 text-center">
-              <AcademicCapIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-gray-900">15+</div>
-              <div className="text-sm text-gray-600">Yıl Deneyim</div>
+            <div className="rounded-lg shadow-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <AcademicCapIcon className="h-8 w-8 mx-auto mb-2" style={{ color: 'var(--center-secondary)' }} />
+              <div className="text-2xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>15+</div>
+              <div className="text-sm font-bookmania" style={{ color: 'var(--text-secondary)' }}>Yıl Deneyim</div>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-4 text-center">
-              <VideoCameraIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-gray-900">50+</div>
-              <div className="text-sm text-gray-600">Video İçerik</div>
+            <div className="rounded-lg shadow-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <VideoCameraIcon className="h-8 w-8 mx-auto mb-2" style={{ color: 'var(--center-secondary)' }} />
+              <div className="text-2xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>50+</div>
+              <div className="text-sm font-bookmania" style={{ color: 'var(--text-secondary)' }}>Video İçerik</div>
             </div>
           </div>
         </div>
 
         {/* Right Section - Works (5 columns) */}
-        <div className="lg:col-span-5 bg-white rounded-lg shadow-lg p-6 h-fit">
+        <div className="lg:col-span-5 rounded-lg shadow-xl p-6 h-fit bg-gradient-works">
           <div className="sticky top-4">
             <div className="flex items-center mb-6">
-              <BookOpenIcon className="h-8 w-8 text-purple-600 mr-3" />
-              <h2 className="text-2xl font-bold text-gray-900">Eserler</h2>
+              <BookOpenIcon className="h-8 w-8 text-white mr-3" />
+              <h2 className="text-2xl font-bold text-white font-bookmania">Eserler</h2>
             </div>
             <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
               {worksCategories.map((category) => (

@@ -79,12 +79,12 @@ export default function ImageSlider({
             {(image.title || image.description) && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
                 {image.title && (
-                  <h3 className="text-white text-lg font-semibold mb-2">
+                  <h3 className="text-white text-lg font-semibold mb-2 font-bookmania">
                     {image.title}
                   </h3>
                 )}
                 {image.description && (
-                  <p className="text-white/90 text-sm">
+                  <p className="text-white/90 text-sm font-bookmania">
                     {image.description}
                   </p>
                 )}
@@ -99,13 +99,15 @@ export default function ImageSlider({
         <>
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 hover:scale-110"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 transition-all duration-200 hover:scale-110"
+            style={{ backgroundColor: 'var(--center-secondary)', color: 'white' }}
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 hover:scale-110"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 transition-all duration-200 hover:scale-110"
+            style={{ backgroundColor: 'var(--center-secondary)', color: 'white' }}
           >
             <ChevronRightIcon className="h-5 w-5" />
           </button>
@@ -121,9 +123,14 @@ export default function ImageSlider({
               onClick={() => goToSlide(index)}
               className={`w-3 h-3 rounded-full transition-all duration-200 ${
                 index === currentIndex
-                  ? 'bg-white scale-110'
-                  : 'bg-white/50 hover:bg-white/75'
+                  ? 'scale-110'
+                  : 'hover:scale-105'
               }`}
+              style={{
+                backgroundColor: index === currentIndex
+                  ? 'var(--center-secondary)'
+                  : 'rgba(255, 255, 255, 0.5)'
+              }}
             />
           ))}
         </div>

@@ -1,28 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background Colors */
+  --bg-primary: #f4f3e1;
+  --bg-secondary: #efedd3;
+  --bg-tertiary: #EDEACC;
+
+  /* Resume Section Colors */
+  --resume-primary: #a68e81;
+  --resume-secondary: #7f5d4b;
+  --resume-tertiary: #69412C;
+
+  /* Center Section Colors */
+  --center-primary: #b4987a;
+  --center-secondary: #932641;
+  --center-tertiary: #800020;
+
+  /* Works Section Colors */
+  --works-primary: #6824b4;
+  --works-secondary: #269393;
+  --works-tertiary: #008080;
+
+  /* Text Colors */
+  --text-primary: #2d1810;
+  --text-secondary: #4a3429;
+  --text-light: #6b5b4f;
+  --text-white: #ffffff;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Tailwind theme configuration removed for compatibility */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-crimson-text), 'Times New Roman', serif;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 /* Custom 15 column grid */
@@ -34,12 +47,55 @@ body {
   grid-column: span 5 / span 5;
 }
 
+/* Custom Color Classes */
+.bg-resume-primary { background-color: var(--resume-primary); }
+.bg-resume-secondary { background-color: var(--resume-secondary); }
+.bg-resume-tertiary { background-color: var(--resume-tertiary); }
+
+.bg-center-primary { background-color: var(--center-primary); }
+.bg-center-secondary { background-color: var(--center-secondary); }
+.bg-center-tertiary { background-color: var(--center-tertiary); }
+
+.bg-works-primary { background-color: var(--works-primary); }
+.bg-works-secondary { background-color: var(--works-secondary); }
+.bg-works-tertiary { background-color: var(--works-tertiary); }
+
+.text-resume-primary { color: var(--resume-primary); }
+.text-resume-secondary { color: var(--resume-secondary); }
+.text-resume-tertiary { color: var(--resume-tertiary); }
+
+.text-center-primary { color: var(--center-primary); }
+.text-center-secondary { color: var(--center-secondary); }
+.text-center-tertiary { color: var(--center-tertiary); }
+
+.text-works-primary { color: var(--works-primary); }
+.text-works-secondary { color: var(--works-secondary); }
+.text-works-tertiary { color: var(--works-tertiary); }
+
+.border-resume-primary { border-color: var(--resume-primary); }
+.border-center-primary { border-color: var(--center-primary); }
+.border-works-primary { border-color: var(--works-primary); }
+
+/* Gradient Classes */
+.bg-gradient-resume {
+  background: linear-gradient(135deg, var(--resume-primary), var(--resume-secondary));
+}
+
+.bg-gradient-center {
+  background: linear-gradient(135deg, var(--center-primary), var(--center-secondary));
+}
+
+.bg-gradient-works {
+  background: linear-gradient(135deg, var(--works-primary), var(--works-secondary));
+}
+
 /* Line clamp utilities */
 .line-clamp-2 {
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .line-clamp-3 {
@@ -47,4 +103,10 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* Font Classes */
+.font-bookmania {
+  font-family: var(--font-crimson-text), 'Times New Roman', serif;
 }

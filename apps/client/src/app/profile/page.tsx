@@ -143,13 +143,13 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen py-8 font-bookmania" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white shadow rounded-lg">
+          <div className="shadow-xl rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 py-4 border-b" style={{ borderColor: 'var(--resume-primary)' }}>
               <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-900">Profil</h1>
+                <h1 className="text-2xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>Profil</h1>
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
