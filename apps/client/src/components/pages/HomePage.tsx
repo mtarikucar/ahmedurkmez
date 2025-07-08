@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
 import { Article, Category } from '@/types';
 import CategorySection from '@/components/ui/CategorySection';
+import ResumeSection from '@/components/ui/ResumeSection';
 import ImageSlider from '@/components/ui/ImageSlider';
 import { AcademicCapIcon, BookOpenIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 
@@ -33,124 +34,67 @@ export default function HomePage() {
     }
   ]);
 
-  // Mock category data with recursive structure
-  const [resumeCategories] = useState([
+  // Ana özgeçmiş kategorileri - sadeleştirilmiş
+  const [resumeSections] = useState([
     {
       id: 1,
-      name: 'Eğitim Hayatı',
-      description: 'Akademik eğitim sürecim',
-      color: '#3B82F6',
-      articles: [
-        {
-          id: 1,
-          title: 'Lisans Eğitimim',
-          excerpt: 'Türk Dili ve Edebiyatı lisans eğitimim hakkında...',
-          slug: 'lisans-egitimim',
-          createdAt: '2023-01-15',
-          category: { name: 'Eğitim', color: '#3B82F6' },
-          viewCount: 150,
-          likeCount: 25
-        },
-        {
-          id: 2,
-          title: 'Yüksek Lisans Sürecim',
-          excerpt: 'Yüksek lisans tez çalışmam ve araştırma sürecim...',
-          slug: 'yuksek-lisans-surecim',
-          createdAt: '2023-02-20',
-          category: { name: 'Eğitim', color: '#3B82F6' },
-          viewCount: 120,
-          likeCount: 18
-        },
-        {
-          id: 3,
-          title: 'Doktora Çalışmalarım',
-          excerpt: 'Doktora tez konusu ve araştırma metodolojim...',
-          slug: 'doktora-calismalarim',
-          createdAt: '2023-03-10',
-          category: { name: 'Eğitim', color: '#3B82F6' },
-          viewCount: 200,
-          likeCount: 35
-        }
-      ],
-      children: []
+      title: 'Eğitim Hayatım',
+      summary: 'Türk Dili ve Edebiyatı alanında aldığım lisans, yüksek lisans ve doktora eğitimi sürecim.',
+      description: 'Akademik eğitim sürecimde attığım adımlar, aldığım dersler, tez çalışmalarım ve bu süreçte edindiğim deneyimler.',
+      icon: AcademicCapIcon,
+      color: 'var(--resume-primary)',
+      gradient: 'from-resume-primary to-resume-secondary',
+      slug: 'egitim-hayatim',
+      details: `
+        <h3>Lisans Eğitimi</h3>
+        <p>Üniversite yıllarımda Türk Dili ve Edebiyatı bölümünde aldığım temel eğitim, edebiyat sevgimi akademik bir disiplin haline getirdi.</p>
+        
+        <h3>Yüksek Lisans</h3>
+        <p>Modern Türk edebiyatı üzerine yaptığım yüksek lisans tez çalışmam, araştırma metodolojimi şekillendirdi.</p>
+        
+        <h3>Doktora Süreci</h3>
+        <p>Doktora çalışmalarımda kimlik sorunu ve modern edebiyat ilişkisini derinlemesine inceledim.</p>
+      `
     },
     {
       id: 2,
-      name: 'Öğretmenlik Günleri',
-      description: 'Eğitim deneyimlerim',
-      color: '#10B981',
-      articles: [
-        {
-          id: 4,
-          title: 'İlk Öğretmenlik Deneyimim',
-          excerpt: 'Mesleğe başladığım ilk yıllar ve deneyimlerim...',
-          slug: 'ilk-ogretmenlik-deneyimim',
-          createdAt: '2023-04-05',
-          category: { name: 'Öğretmenlik', color: '#10B981' },
-          viewCount: 180,
-          likeCount: 30
-        },
-        {
-          id: 5,
-          title: 'Öğrenci İlişkileri',
-          excerpt: 'Öğrencilerle kurduğum bağ ve eğitim felsefem...',
-          slug: 'ogrenci-iliskileri',
-          createdAt: '2023-04-15',
-          category: { name: 'Öğretmenlik', color: '#10B981' },
-          viewCount: 160,
-          likeCount: 28
-        },
-        {
-          id: 6,
-          title: 'Eğitim Metodlarım',
-          excerpt: 'Sınıfta uyguladığım öğretim teknikleri...',
-          slug: 'egitim-metodlarim',
-          createdAt: '2023-04-25',
-          category: { name: 'Öğretmenlik', color: '#10B981' },
-          viewCount: 140,
-          likeCount: 22
-        }
-      ],
-      children: []
+      title: 'Akademik Kariyerim',
+      summary: 'Üniversitedeki öğretim görevliliğinden profesörlük sürecine kadar geçen akademik yolculuğum.',
+      description: 'Akademik hayatta attığım adımlar, verdiğim dersler, yürüttüğüm projeler ve araştırma çalışmalarım.',
+      icon: BookOpenIcon,
+      color: 'var(--center-primary)',
+      gradient: 'from-center-primary to-center-secondary',
+      slug: 'akademik-kariyerim',
+      details: `
+        <h3>Öğretim Görevliliği</h3>
+        <p>Akademik kariyerimin başlangıcında öğretim görevlisi olarak verdiğim dersler ve öğrencilerle kurduğum bağ.</p>
+        
+        <h3>Araştırma Projeleri</h3>
+        <p>Yürüttüğüm akademik projeler ve bu projelerden elde ettiğim bulgular.</p>
+        
+        <h3>Profesörlük Süreci</h3>
+        <p>Doçentlik ve profesörlük sürecinde geçirdiğim aşamalar ve akademik katkılarım.</p>
+      `
     },
     {
       id: 3,
-      name: 'Akademik Görevlerim',
-      description: 'Üniversitedeki görevlerim',
-      color: '#8B5CF6',
-      articles: [
-        {
-          id: 7,
-          title: 'Araştırma Görevliliği',
-          excerpt: 'Üniversitede araştırma görevlisi olarak çalışmalarım...',
-          slug: 'arastirma-gorevliligi',
-          createdAt: '2023-05-01',
-          category: { name: 'Akademik', color: '#8B5CF6' },
-          viewCount: 190,
-          likeCount: 32
-        },
-        {
-          id: 8,
-          title: 'Ders Verme Deneyimim',
-          excerpt: 'Üniversitede verdiğim dersler ve öğretim deneyimim...',
-          slug: 'ders-verme-deneyimim',
-          createdAt: '2023-05-10',
-          category: { name: 'Akademik', color: '#8B5CF6' },
-          viewCount: 170,
-          likeCount: 26
-        },
-        {
-          id: 9,
-          title: 'Akademik Projelerim',
-          excerpt: 'Yürüttüğüm araştırma projeleri ve çalışmalar...',
-          slug: 'akademik-projelerim',
-          createdAt: '2023-05-20',
-          category: { name: 'Akademik', color: '#8B5CF6' },
-          viewCount: 210,
-          likeCount: 38
-        }
-      ],
-      children: []
+      title: 'Yayın ve Eserlerim',
+      summary: 'Kitaplar, makaleler, bildiriler ve diğer akademik yayınlarım ile kültürel katkılarım.',
+      description: 'Akademik ve popüler yayınlarım, editörlük çalışmalarım ve edebiyat dünyasına katkılarım.',
+      icon: VideoCameraIcon,
+      color: 'var(--works-primary)',
+      gradient: 'from-works-primary to-works-secondary',
+      slug: 'yayin-ve-eserlerim',
+      details: `
+        <h3>Akademik Yayınlar</h3>
+        <p>Hakemli dergilerde yayınlanan makalelerim ve bilimsel araştırmalarım.</p>
+        
+        <h3>Kitap Çalışmaları</h3>
+        <p>Yazdığım kitaplar, editörlüğünü yaptığım eserler ve çeviri çalışmalarım.</p>
+        
+        <h3>Popüler Yayınlar</h3>
+        <p>Geniş kitleye hitap eden yazılarım, röportajlarım ve medya katkılarım.</p>
+      `
     }
   ]);
 
@@ -401,20 +345,15 @@ export default function HomePage() {
       <div className="relative grid grid-cols-1 lg:grid-cols-15 gap-6 p-6 max-w-[1920px] mx-auto min-h-screen">
 
         {/* Left Section - Resume (5 columns) */}
-        <div className="lg:col-span-5 rounded-xl shadow-2xl p-6 h-fit bg-gradient-brown border-2 border-brown-light/30">
-          <div className="sticky top-4">
+        <div className="lg:col-span-5 rounded-xl shadow-elegant shadow-elegant-hover p-6 h-fit bg-gradient-resume">
+          <div className="sticky top-24">
             <div className="flex items-center mb-6">
-              <AcademicCapIcon className="h-8 w-8 text-white mr-3" />
-              <h2 className="heading-seljuk text-2xl text-white">Özgeçmiş</h2>
+              <AcademicCapIcon className="h-10 w-10 text-white mr-3 drop-shadow-md" />
+              <h2 className="text-3xl font-bold text-white drop-shadow-md">Özgeçmiş</h2>
             </div>
-            <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {resumeCategories.map((category) => (
-                <CategorySection
-                  key={category.id}
-                  category={category}
-                  level={0}
-                  isSticky={false}
-                />
+            <div className="space-y-6">
+              {resumeSections.map((section) => (
+                <ResumeSection key={section.id} section={section} />
               ))}
             </div>
           </div>
@@ -423,37 +362,24 @@ export default function HomePage() {
         {/* Center Section - Slider and Title (5 columns) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Title Section */}
-          <div className="bg-gradient-burgundy rounded-xl shadow-2xl p-8 text-center text-white border-2 border-burgundy-light/30">
-            <h1 className="heading-seljuk-large text-4xl lg:text-5xl mb-4 text-white">Prof. Dr. Ahmed Ürkmez</h1>
-            <p className="text-lg opacity-90 font-bookmania mb-2">Edebiyat ve Kültür Araştırmaları Uzmanı</p>
-            <p className="text-sm opacity-75 font-bookmania italic">Modern Selçuklu Sanatı Esinlenmesi</p>
-
-            {/* Decorative Seljuk Pattern */}
-            <div className="flex justify-center my-6">
-              <div className="flex space-x-2">
-                <div className="w-3 h-3 bg-white/30 rounded-full"></div>
-                <div className="w-2 h-2 bg-white/50 rounded-full mt-0.5"></div>
-                <div className="w-4 h-4 bg-white/40 rounded-full -mt-0.5"></div>
-                <div className="w-2 h-2 bg-white/50 rounded-full mt-0.5"></div>
-                <div className="w-3 h-3 bg-white/30 rounded-full"></div>
+          <div className="bg-gradient-center rounded-xl shadow-elegant shadow-elegant-hover p-8 text-center text-white">
+            <h1 className="text-4xl lg:text-6xl font-bold mb-4 font-bookmania drop-shadow-lg">Prof. Dr. Ahmed Ürkmez</h1>
+            <p className="text-xl lg:text-2xl opacity-90 font-bookmania drop-shadow-md mb-8">Edebiyat ve Kültür Araştırmaları Uzmanı</p>
+            <div className="mt-6 flex justify-center space-x-4 flex-wrap gap-y-2">
+              <div className="bg-white/20 rounded-full px-6 py-3 backdrop-blur-sm border border-white/30">
+                <span className="text-base font-medium font-bookmania">Akademisyen</span>
               </div>
-            </div>
-
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/30">
-                <span className="text-sm font-bookmania-medium">Akademisyen</span>
+              <div className="bg-white/20 rounded-full px-6 py-3 backdrop-blur-sm border border-white/30">
+                <span className="text-base font-medium font-bookmania">Yazar</span>
               </div>
-              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/30">
-                <span className="text-sm font-bookmania-medium">Yazar</span>
-              </div>
-              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/30">
-                <span className="text-sm font-bookmania-medium">Araştırmacı</span>
+              <div className="bg-white/20 rounded-full px-6 py-3 backdrop-blur-sm border border-white/30">
+                <span className="text-base font-medium font-bookmania">Araştırmacı</span>
               </div>
             </div>
           </div>
 
           {/* Image Slider */}
-          <div className="rounded-xl shadow-2xl overflow-hidden bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] border-2 border-teal-light/30">
+          <div className="rounded-xl shadow-elegant shadow-elegant-hover overflow-hidden border border-center-primary/20" style={{ backgroundColor: 'var(--bg-secondary)' }}>
             <ImageSlider
               images={sliderImages}
               autoPlay={true}
@@ -466,32 +392,32 @@ export default function HomePage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="card-seljuk text-center group hover:bg-teal-light/20 transition-all duration-300">
-              <BookOpenIcon className="h-8 w-8 mx-auto mb-2 text-teal-dark group-hover:scale-110 transition-transform duration-300" />
-              <div className="text-2xl font-bookmania-bold text-brown-dark">25+</div>
-              <div className="text-sm font-bookmania text-brown-light">Yayın</div>
+            <div className="rounded-xl shadow-elegant shadow-elegant-hover p-6 text-center border border-center-primary/20" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <BookOpenIcon className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--center-secondary)' }} />
+              <div className="text-3xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>25+</div>
+              <div className="text-base font-bookmania" style={{ color: 'var(--text-secondary)' }}>Yayın</div>
             </div>
-            <div className="card-seljuk text-center group hover:bg-burgundy-light/20 transition-all duration-300">
-              <AcademicCapIcon className="h-8 w-8 mx-auto mb-2 text-burgundy-medium group-hover:scale-110 transition-transform duration-300" />
-              <div className="text-2xl font-bookmania-bold text-brown-dark">15+</div>
-              <div className="text-sm font-bookmania text-brown-light">Yıl Deneyim</div>
+            <div className="rounded-xl shadow-elegant shadow-elegant-hover p-6 text-center border border-center-primary/20" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <AcademicCapIcon className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--center-secondary)' }} />
+              <div className="text-3xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>15+</div>
+              <div className="text-base font-bookmania" style={{ color: 'var(--text-secondary)' }}>Yıl Deneyim</div>
             </div>
-            <div className="card-seljuk text-center group hover:bg-brown-light/20 transition-all duration-300">
-              <VideoCameraIcon className="h-8 w-8 mx-auto mb-2 text-brown-dark group-hover:scale-110 transition-transform duration-300" />
-              <div className="text-2xl font-bookmania-bold text-brown-dark">50+</div>
-              <div className="text-sm font-bookmania text-brown-light">Video İçerik</div>
+            <div className="rounded-xl shadow-elegant shadow-elegant-hover p-6 text-center border border-center-primary/20" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <VideoCameraIcon className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--center-secondary)' }} />
+              <div className="text-3xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>50+</div>
+              <div className="text-base font-bookmania" style={{ color: 'var(--text-secondary)' }}>Video İçerik</div>
             </div>
           </div>
         </div>
 
         {/* Right Section - Works (5 columns) */}
-        <div className="lg:col-span-5 rounded-xl shadow-2xl p-6 h-fit bg-gradient-teal border-2 border-teal-light/30">
-          <div className="sticky top-4">
+        <div className="lg:col-span-5 rounded-xl shadow-elegant shadow-elegant-hover p-6 h-fit bg-gradient-works">
+          <div className="sticky top-24">
             <div className="flex items-center mb-6">
-              <BookOpenIcon className="h-8 w-8 text-white mr-3" />
-              <h2 className="heading-seljuk text-2xl text-white">Eserler</h2>
+              <BookOpenIcon className="h-10 w-10 text-white mr-3 drop-shadow-md" />
+              <h2 className="text-3xl font-bold text-white font-bookmania drop-shadow-md">Eserler</h2>
             </div>
-            <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-thin">
               {worksCategories.map((category) => (
                 <CategorySection
                   key={category.id}

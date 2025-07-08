@@ -30,7 +30,7 @@ export default function PostCard({
   imageUrl
 }: PostCardProps) {
   return (
-    <Card className="card-seljuk hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 h-full font-bookmania group border-2 border-white/20 hover:border-teal-light">
+    <Card className="shadow-elegant shadow-elegant-hover transition-all duration-300 hover:-translate-y-1 h-full font-bookmania rounded-xl border-2" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'rgba(255, 255, 255, 0.4)' }}>
       {imageUrl && (
         <div className="aspect-video w-full overflow-hidden rounded-t-lg">
           <img
@@ -57,24 +57,25 @@ export default function PostCard({
             })}
           </time>
         </div>
-        <CardTitle className="text-sm font-bookmania-bold leading-tight line-clamp-2 text-brown-dark group-hover:text-teal-dark transition-colors duration-300">
-          <Link href={`/articles/${slug}`} className="transition-colors">
+        <CardTitle className="text-base font-semibold leading-tight line-clamp-2 font-bookmania" style={{ color: 'var(--text-primary)' }}>
+          <Link href={`/articles/${slug}`} className="transition-colors hover:text-center-secondary" style={{ color: 'var(--text-primary)' }}>
             {title}
           </Link>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         {excerpt && (
-          <p className="text-xs line-clamp-3 mb-3 font-bookmania text-brown-light">{excerpt}</p>
+          <p className="text-sm line-clamp-3 mb-4 font-bookmania leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{excerpt}</p>
         )}
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-3 font-bookmania text-brown-light">
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center space-x-3 font-bookmania" style={{ color: 'var(--text-light)' }}>
             <span>{viewCount} görüntüleme</span>
             <span>{likeCount} beğeni</span>
           </div>
           <Link
             href={`/articles/${slug}`}
-            className="font-bookmania-medium transition-all duration-300 text-burgundy-medium hover:text-teal-dark hover:scale-105 transform"
+            className="font-medium transition-colors font-bookmania hover:underline"
+            style={{ color: 'var(--center-secondary)' }}
           >
             Devamı →
           </Link>
