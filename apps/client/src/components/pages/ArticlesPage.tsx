@@ -82,58 +82,71 @@ export default function ArticlesPage() {
   };
 
   return (
-    <div className="bg-white py-24 sm:py-32">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
-        <div className="mx-auto max-w-2xl lg:mx-0">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+        <div className="text-center mb-12">
+          <h1 className="heading-seljuk-large text-4xl sm:text-5xl lg:text-6xl mb-6">
             Makaleler
           </h1>
-          <p className="mt-2 text-lg leading-8 text-gray-600">
+          <p className="text-lg font-bookmania text-brown-light max-w-2xl mx-auto">
             Edebiyat, akademik araştırma ve kültürel çalışmalar üzerine yazılarım
           </p>
+
+          {/* Decorative Seljuk Pattern */}
+          <div className="flex justify-center mt-8">
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 bg-teal-light rounded-full"></div>
+              <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5"></div>
+              <div className="w-4 h-4 bg-brown-light rounded-full -mt-0.5"></div>
+              <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5"></div>
+              <div className="w-3 h-3 bg-teal-light rounded-full"></div>
+            </div>
+          </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="mt-10 space-y-6">
-          {/* Search */}
-          <form onSubmit={handleSearch} className="relative max-w-md">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </div>
-            <Input
-              type="text"
-              placeholder="Makalelerde ara..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </form>
+        <div className="card-seljuk p-6 mb-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            {/* Search */}
+            <form onSubmit={handleSearch} className="relative max-w-md flex-1">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <MagnifyingGlassIcon className="h-5 w-5 text-brown-light" aria-hidden="true" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Makalelerde ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12"
+              />
+            </form>
 
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedCategory === null ? 'primary' : 'outline'}
-              size="sm"
-              onClick={() => handleCategoryFilter(null)}
-            >
-              Tümü
-            </Button>
-            {categories.map((category) => (
+            {/* Category Filters */}
+            <div className="flex flex-wrap gap-2">
               <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'primary' : 'outline'}
+                variant={selectedCategory === null ? 'primary' : 'outline'}
                 size="sm"
-                onClick={() => handleCategoryFilter(category.id)}
+                onClick={() => handleCategoryFilter(null)}
               >
-                {category.name}
+                Tümü
               </Button>
-            ))}
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? 'primary' : 'outline'}
+                  size="sm"
+                  onClick={() => handleCategoryFilter(category.id)}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Results Info */}
-        <div className="mt-8 text-sm text-gray-600">
+        <div className="mb-8 text-sm font-bookmania text-brown-light bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
           {totalArticles} makale bulundu
           {searchTerm && ` "${searchTerm}" için`}
           {selectedCategory && ` ${categories.find(c => c.id === selectedCategory)?.name} kategorisinde`}

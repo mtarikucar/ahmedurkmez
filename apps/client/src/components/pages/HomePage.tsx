@@ -372,26 +372,40 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
         <div className="text-center font-bookmania">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 mx-auto mb-4" style={{ borderColor: 'var(--center-secondary)' }}></div>
-          <p style={{ color: 'var(--text-secondary)' }}>Sayfa yükleniyor...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-teal-medium mx-auto mb-4"></div>
+          <p className="text-brown-dark text-lg">Sayfa yükleniyor...</p>
+          <div className="mt-4 flex justify-center space-x-1">
+            <div className="w-2 h-2 bg-teal-light rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-burgundy-light rounded-full animate-pulse delay-75"></div>
+            <div className="w-2 h-2 bg-brown-light rounded-full animate-pulse delay-150"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen font-bookmania" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="min-h-screen font-bookmania bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
+      {/* Decorative Seljuk Pattern Background */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="grid grid-cols-8 gap-4 h-full">
+          {Array.from({ length: 64 }).map((_, i) => (
+            <div key={i} className="bg-teal-medium rounded-full w-2 h-2 animate-pulse" style={{ animationDelay: `${i * 0.1}s` }}></div>
+          ))}
+        </div>
+      </div>
+
       {/* 15 Column Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-15 gap-6 p-6 max-w-[1920px] mx-auto min-h-screen">
+      <div className="relative grid grid-cols-1 lg:grid-cols-15 gap-6 p-6 max-w-[1920px] mx-auto min-h-screen">
 
         {/* Left Section - Resume (5 columns) */}
-        <div className="lg:col-span-5 rounded-lg shadow-xl p-6 h-fit bg-gradient-resume">
+        <div className="lg:col-span-5 rounded-xl shadow-2xl p-6 h-fit bg-gradient-brown border-2 border-brown-light/30">
           <div className="sticky top-4">
             <div className="flex items-center mb-6">
               <AcademicCapIcon className="h-8 w-8 text-white mr-3" />
-              <h2 className="text-2xl font-bold text-white">Özgeçmiş</h2>
+              <h2 className="heading-seljuk text-2xl text-white">Özgeçmiş</h2>
             </div>
             <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
               {resumeCategories.map((category) => (
@@ -409,24 +423,37 @@ export default function HomePage() {
         {/* Center Section - Slider and Title (5 columns) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Title Section */}
-          <div className="bg-gradient-center rounded-lg shadow-xl p-8 text-center text-white">
-            <h1 className="text-4xl font-bold mb-2 font-bookmania">Prof. Dr. Ahmed Ürkmez</h1>
-            <p className="text-lg opacity-90 font-bookmania">Edebiyat ve Kültür Araştırmaları Uzmanı</p>
-            <div className="mt-6 flex justify-center space-x-4">
-              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm">
-                <span className="text-sm font-medium font-bookmania">Akademisyen</span>
+          <div className="bg-gradient-burgundy rounded-xl shadow-2xl p-8 text-center text-white border-2 border-burgundy-light/30">
+            <h1 className="heading-seljuk-large text-4xl lg:text-5xl mb-4 text-white">Prof. Dr. Ahmed Ürkmez</h1>
+            <p className="text-lg opacity-90 font-bookmania mb-2">Edebiyat ve Kültür Araştırmaları Uzmanı</p>
+            <p className="text-sm opacity-75 font-bookmania italic">Modern Selçuklu Sanatı Esinlenmesi</p>
+
+            {/* Decorative Seljuk Pattern */}
+            <div className="flex justify-center my-6">
+              <div className="flex space-x-2">
+                <div className="w-3 h-3 bg-white/30 rounded-full"></div>
+                <div className="w-2 h-2 bg-white/50 rounded-full mt-0.5"></div>
+                <div className="w-4 h-4 bg-white/40 rounded-full -mt-0.5"></div>
+                <div className="w-2 h-2 bg-white/50 rounded-full mt-0.5"></div>
+                <div className="w-3 h-3 bg-white/30 rounded-full"></div>
               </div>
-              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm">
-                <span className="text-sm font-medium font-bookmania">Yazar</span>
+            </div>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/30">
+                <span className="text-sm font-bookmania-medium">Akademisyen</span>
               </div>
-              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm">
-                <span className="text-sm font-medium font-bookmania">Araştırmacı</span>
+              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/30">
+                <span className="text-sm font-bookmania-medium">Yazar</span>
+              </div>
+              <div className="bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/30">
+                <span className="text-sm font-bookmania-medium">Araştırmacı</span>
               </div>
             </div>
           </div>
 
           {/* Image Slider */}
-          <div className="rounded-lg shadow-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+          <div className="rounded-xl shadow-2xl overflow-hidden bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] border-2 border-teal-light/30">
             <ImageSlider
               images={sliderImages}
               autoPlay={true}
@@ -439,30 +466,30 @@ export default function HomePage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="rounded-lg shadow-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <BookOpenIcon className="h-8 w-8 mx-auto mb-2" style={{ color: 'var(--center-secondary)' }} />
-              <div className="text-2xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>25+</div>
-              <div className="text-sm font-bookmania" style={{ color: 'var(--text-secondary)' }}>Yayın</div>
+            <div className="card-seljuk text-center group hover:bg-teal-light/20 transition-all duration-300">
+              <BookOpenIcon className="h-8 w-8 mx-auto mb-2 text-teal-dark group-hover:scale-110 transition-transform duration-300" />
+              <div className="text-2xl font-bookmania-bold text-brown-dark">25+</div>
+              <div className="text-sm font-bookmania text-brown-light">Yayın</div>
             </div>
-            <div className="rounded-lg shadow-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <AcademicCapIcon className="h-8 w-8 mx-auto mb-2" style={{ color: 'var(--center-secondary)' }} />
-              <div className="text-2xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>15+</div>
-              <div className="text-sm font-bookmania" style={{ color: 'var(--text-secondary)' }}>Yıl Deneyim</div>
+            <div className="card-seljuk text-center group hover:bg-burgundy-light/20 transition-all duration-300">
+              <AcademicCapIcon className="h-8 w-8 mx-auto mb-2 text-burgundy-medium group-hover:scale-110 transition-transform duration-300" />
+              <div className="text-2xl font-bookmania-bold text-brown-dark">15+</div>
+              <div className="text-sm font-bookmania text-brown-light">Yıl Deneyim</div>
             </div>
-            <div className="rounded-lg shadow-xl p-4 text-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <VideoCameraIcon className="h-8 w-8 mx-auto mb-2" style={{ color: 'var(--center-secondary)' }} />
-              <div className="text-2xl font-bold font-bookmania" style={{ color: 'var(--text-primary)' }}>50+</div>
-              <div className="text-sm font-bookmania" style={{ color: 'var(--text-secondary)' }}>Video İçerik</div>
+            <div className="card-seljuk text-center group hover:bg-brown-light/20 transition-all duration-300">
+              <VideoCameraIcon className="h-8 w-8 mx-auto mb-2 text-brown-dark group-hover:scale-110 transition-transform duration-300" />
+              <div className="text-2xl font-bookmania-bold text-brown-dark">50+</div>
+              <div className="text-sm font-bookmania text-brown-light">Video İçerik</div>
             </div>
           </div>
         </div>
 
         {/* Right Section - Works (5 columns) */}
-        <div className="lg:col-span-5 rounded-lg shadow-xl p-6 h-fit bg-gradient-works">
+        <div className="lg:col-span-5 rounded-xl shadow-2xl p-6 h-fit bg-gradient-teal border-2 border-teal-light/30">
           <div className="sticky top-4">
             <div className="flex items-center mb-6">
               <BookOpenIcon className="h-8 w-8 text-white mr-3" />
-              <h2 className="text-2xl font-bold text-white font-bookmania">Eserler</h2>
+              <h2 className="heading-seljuk text-2xl text-white">Eserler</h2>
             </div>
             <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
               {worksCategories.map((category) => (

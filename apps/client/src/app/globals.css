@@ -1,41 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  /* Background Colors */
-  --bg-primary: #f4f3e1;
-  --bg-secondary: #efedd3;
-  --bg-tertiary: #EDEACC;
+  /* Seljuk Art Inspired Color Palette */
 
-  /* Resume Section Colors */
-  --resume-primary: #a68e81;
-  --resume-secondary: #7f5d4b;
-  --resume-tertiary: #69412C;
+  /* Background Colors - Warm Neutrals */
+  --bg-primary: #f4f3e1;        /* Light cream - main background */
+  --bg-secondary: #efedd3;      /* Cream - secondary background */
+  --bg-tertiary: #EDEACC;       /* Darker cream - tertiary background */
 
-  /* Center Section Colors */
-  --center-primary: #b4987a;
-  --center-secondary: #932641;
-  --center-tertiary: #800020;
+  /* Teal/Turquoise Section - For highlights and accents */
+  --teal-light: #68b4b4;        /* Light teal */
+  --teal-medium: #269393;       /* Medium teal */
+  --teal-dark: #008080;         /* Dark teal */
 
-  /* Works Section Colors */
-  --works-primary: #6824b4;
-  --works-secondary: #269393;
-  --works-tertiary: #008080;
+  /* Burgundy/Wine Section - For important elements */
+  --burgundy-light: #b4687a;    /* Light burgundy/rose */
+  --burgundy-medium: #932641;   /* Medium burgundy */
+  --burgundy-dark: #800020;     /* Dark burgundy */
+
+  /* Brown/Earth Section - For grounding elements */
+  --brown-light: #7f5d4b;       /* Medium brown */
+  --brown-dark: #69412C;        /* Dark brown */
 
   /* Text Colors */
-  --text-primary: #2d1810;
-  --text-secondary: #4a3429;
-  --text-light: #6b5b4f;
-  --text-white: #ffffff;
+  --text-primary: #69412C;      /* Dark brown for main text */
+  --text-secondary: #7f5d4b;    /* Medium brown for secondary text */
+  --text-light: #932641;        /* Burgundy for accents */
+  --text-white: #ffffff;        /* White text */
+  --text-cream: #f4f3e1;        /* Cream text for dark backgrounds */
+
+  /* Interactive Colors */
+  --primary: #269393;           /* Primary action color - medium teal */
+  --primary-hover: #008080;     /* Primary hover - dark teal */
+  --secondary: #932641;         /* Secondary action - medium burgundy */
+  --secondary-hover: #800020;   /* Secondary hover - dark burgundy */
+  --accent: #68b4b4;            /* Accent color - light teal */
 }
 
-/* Tailwind theme configuration removed for compatibility */
+/* Global Styles */
 
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-crimson-text), 'Times New Roman', serif;
+  font-family: var(--font-bookmania), 'Bookmania', 'Times New Roman', serif;
   font-weight: 400;
   line-height: 1.6;
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom 15 column grid */
@@ -47,46 +60,83 @@ body {
   grid-column: span 5 / span 5;
 }
 
-/* Custom Color Classes */
-.bg-resume-primary { background-color: var(--resume-primary); }
-.bg-resume-secondary { background-color: var(--resume-secondary); }
-.bg-resume-tertiary { background-color: var(--resume-tertiary); }
+/* Seljuk Color Utility Classes */
 
-.bg-center-primary { background-color: var(--center-primary); }
-.bg-center-secondary { background-color: var(--center-secondary); }
-.bg-center-tertiary { background-color: var(--center-tertiary); }
+/* Background Colors */
+.bg-teal-light { background-color: var(--teal-light); }
+.bg-teal-medium { background-color: var(--teal-medium); }
+.bg-teal-dark { background-color: var(--teal-dark); }
 
-.bg-works-primary { background-color: var(--works-primary); }
-.bg-works-secondary { background-color: var(--works-secondary); }
-.bg-works-tertiary { background-color: var(--works-tertiary); }
+.bg-burgundy-light { background-color: var(--burgundy-light); }
+.bg-burgundy-medium { background-color: var(--burgundy-medium); }
+.bg-burgundy-dark { background-color: var(--burgundy-dark); }
 
-.text-resume-primary { color: var(--resume-primary); }
-.text-resume-secondary { color: var(--resume-secondary); }
-.text-resume-tertiary { color: var(--resume-tertiary); }
+.bg-brown-light { background-color: var(--brown-light); }
+.bg-brown-dark { background-color: var(--brown-dark); }
 
-.text-center-primary { color: var(--center-primary); }
-.text-center-secondary { color: var(--center-secondary); }
-.text-center-tertiary { color: var(--center-tertiary); }
+.bg-primary { background-color: var(--primary); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-accent { background-color: var(--accent); }
 
-.text-works-primary { color: var(--works-primary); }
-.text-works-secondary { color: var(--works-secondary); }
-.text-works-tertiary { color: var(--works-tertiary); }
+/* Text Colors */
+.text-teal-light { color: var(--teal-light); }
+.text-teal-medium { color: var(--teal-medium); }
+.text-teal-dark { color: var(--teal-dark); }
 
-.border-resume-primary { border-color: var(--resume-primary); }
-.border-center-primary { border-color: var(--center-primary); }
-.border-works-primary { border-color: var(--works-primary); }
+.text-burgundy-light { color: var(--burgundy-light); }
+.text-burgundy-medium { color: var(--burgundy-medium); }
+.text-burgundy-dark { color: var(--burgundy-dark); }
 
-/* Gradient Classes */
-.bg-gradient-resume {
-  background: linear-gradient(135deg, var(--resume-primary), var(--resume-secondary));
+.text-brown-light { color: var(--brown-light); }
+.text-brown-dark { color: var(--brown-dark); }
+
+.text-primary-color { color: var(--primary); }
+.text-secondary-color { color: var(--secondary); }
+.text-accent { color: var(--accent); }
+
+/* Border Colors */
+.border-teal-light { border-color: var(--teal-light); }
+.border-teal-medium { border-color: var(--teal-medium); }
+.border-teal-dark { border-color: var(--teal-dark); }
+
+.border-burgundy-light { border-color: var(--burgundy-light); }
+.border-burgundy-medium { border-color: var(--burgundy-medium); }
+.border-burgundy-dark { border-color: var(--burgundy-dark); }
+
+.border-brown-light { border-color: var(--brown-light); }
+.border-brown-dark { border-color: var(--brown-dark); }
+
+.border-primary { border-color: var(--primary); }
+.border-secondary { border-color: var(--secondary); }
+.border-accent { border-color: var(--accent); }
+
+/* Seljuk Gradient Classes */
+.bg-gradient-teal {
+  background: linear-gradient(135deg, var(--teal-light), var(--teal-medium));
 }
 
-.bg-gradient-center {
-  background: linear-gradient(135deg, var(--center-primary), var(--center-secondary));
+.bg-gradient-teal-dark {
+  background: linear-gradient(135deg, var(--teal-medium), var(--teal-dark));
 }
 
-.bg-gradient-works {
-  background: linear-gradient(135deg, var(--works-primary), var(--works-secondary));
+.bg-gradient-burgundy {
+  background: linear-gradient(135deg, var(--burgundy-light), var(--burgundy-medium));
+}
+
+.bg-gradient-burgundy-dark {
+  background: linear-gradient(135deg, var(--burgundy-medium), var(--burgundy-dark));
+}
+
+.bg-gradient-brown {
+  background: linear-gradient(135deg, var(--brown-light), var(--brown-dark));
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--accent), var(--primary));
+}
+
+.bg-gradient-secondary {
+  background: linear-gradient(135deg, var(--burgundy-light), var(--secondary));
 }
 
 /* Line clamp utilities */
@@ -106,7 +156,176 @@ body {
   line-clamp: 3;
 }
 
-/* Font Classes */
+/* Typography Classes - Seljuk Art Inspired */
 .font-bookmania {
-  font-family: var(--font-crimson-text), 'Times New Roman', serif;
+  font-family: var(--font-bookmania), 'Crimson Text', 'Times New Roman', serif;
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
+}
+
+.font-bookmania-bold {
+  font-family: var(--font-bookmania), 'Crimson Text', 'Times New Roman', serif;
+  font-weight: 700;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+.font-bookmania-medium {
+  font-family: var(--font-bookmania), 'Crimson Text', 'Times New Roman', serif;
+  font-weight: 600;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+.font-baskerville {
+  font-family: var(--font-baskerville), 'Libre Baskerville', serif;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+.font-playfair {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+/* Heading Styles */
+.heading-seljuk {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-weight: 600;
+  color: var(--burgundy-dark);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.heading-seljuk-large {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--burgundy-dark);
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  text-shadow: 0 2px 4px rgba(128, 0, 32, 0.1);
+}
+
+/* Interactive Elements */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--text-white);
+  border: 2px solid var(--primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-bookmania), 'Bookmania', 'Times New Roman', serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(38, 147, 147, 0.3);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--secondary);
+  border: 2px solid var(--secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-bookmania), 'Bookmania', 'Times New Roman', serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary);
+  color: var(--text-white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(147, 38, 65, 0.3);
+}
+
+/* Card Styles */
+.card-seljuk {
+  background: var(--bg-secondary);
+  border: 1px solid var(--teal-light);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(104, 180, 180, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-seljuk:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(104, 180, 180, 0.15);
+  border-color: var(--teal-medium);
+}
+
+/* Responsive Design Utilities */
+@media (max-width: 768px) {
+  .heading-seljuk-large {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .card-seljuk {
+    padding: 1rem;
+  }
+
+  .btn-primary, .btn-secondary {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Accessibility Improvements */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--teal-medium);
+  outline-offset: 2px;
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Seljuk Pattern Decorations */
+.seljuk-pattern {
+  position: relative;
+}
+
+.seljuk-pattern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 25% 25%, var(--teal-light) 2px, transparent 2px),
+    radial-gradient(circle at 75% 75%, var(--burgundy-light) 2px, transparent 2px);
+  background-size: 50px 50px;
+  opacity: 0.1;
+  pointer-events: none;
 }

@@ -55,14 +55,14 @@ export default function ImageSlider({
 
   if (!images || images.length === 0) {
     return (
-      <div className={`bg-gray-200 rounded-lg flex items-center justify-center ${className}`}>
-        <p className="text-gray-500">Görsel bulunamadı</p>
+      <div className={`bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-xl flex items-center justify-center border-2 border-teal-light/30 ${className}`}>
+        <p className="text-brown-light font-bookmania">Görsel bulunamadı</p>
       </div>
     );
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-lg shadow-lg ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl shadow-2xl border-2 border-teal-light/30 ${className}`}>
       {/* Images */}
       <div 
         className="flex transition-transform duration-500 ease-in-out"
@@ -77,14 +77,14 @@ export default function ImageSlider({
             />
             {/* Overlay with text */}
             {(image.title || image.description) && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-brown-dark/80 via-burgundy-dark/60 to-transparent p-6 backdrop-blur-sm">
                 {image.title && (
-                  <h3 className="text-white text-lg font-semibold mb-2 font-bookmania">
+                  <h3 className="text-white text-lg font-bookmania-bold mb-2 drop-shadow-lg">
                     {image.title}
                   </h3>
                 )}
                 {image.description && (
-                  <p className="text-white/90 text-sm font-bookmania">
+                  <p className="text-white/90 text-sm font-bookmania drop-shadow-md">
                     {image.description}
                   </p>
                 )}
@@ -99,15 +99,13 @@ export default function ImageSlider({
         <>
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-2 transition-all duration-200 hover:scale-110"
-            style={{ backgroundColor: 'var(--center-secondary)', color: 'white' }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full p-3 bg-burgundy-medium hover:bg-burgundy-dark text-white transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border-2 border-white/20"
           >
             <ChevronLeftIcon className="h-5 w-5" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 transition-all duration-200 hover:scale-110"
-            style={{ backgroundColor: 'var(--center-secondary)', color: 'white' }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-3 bg-burgundy-medium hover:bg-burgundy-dark text-white transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border-2 border-white/20"
           >
             <ChevronRightIcon className="h-5 w-5" />
           </button>
@@ -116,21 +114,16 @@ export default function ImageSlider({
 
       {/* Dots Indicator */}
       {showDots && images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`w-3 h-3 rounded-full transition-all duration-300 border border-white/30 ${
                 index === currentIndex
-                  ? 'scale-110'
-                  : 'hover:scale-105'
+                  ? 'scale-125 bg-teal-light shadow-lg'
+                  : 'bg-white/50 hover:scale-110 hover:bg-white/70'
               }`}
-              style={{
-                backgroundColor: index === currentIndex
-                  ? 'var(--center-secondary)'
-                  : 'rgba(255, 255, 255, 0.5)'
-              }}
             />
           ))}
         </div>

@@ -47,49 +47,50 @@ export default function CategorySection({
       {/* Category Header */}
       <div
         className={`
-          flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all font-bookmania
+          flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-300 font-bookmania group
           ${isSticky && level === 0 ? 'sticky top-4 z-10' : ''}
-          hover:shadow-md
+          hover:shadow-xl hover:scale-105 transform
+          ${level === 0
+            ? 'bg-white/25 backdrop-blur-sm border-2 border-white/40'
+            : level === 1
+            ? 'bg-white/20 backdrop-blur-sm border border-white/30'
+            : 'bg-white/15 backdrop-blur-sm border border-white/20'
+          }
         `}
         style={{
           marginLeft: `${level * 16}px`,
-          backgroundColor: level === 0
-            ? 'rgba(255, 255, 255, 0.2)'
-            : level === 1
-            ? 'rgba(255, 255, 255, 0.15)'
-            : 'rgba(255, 255, 255, 0.1)',
-          color: 'white',
-          border: level > 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none'
         }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center space-x-3">
           {hasChildren && (
             isExpanded ? (
-              <ChevronDownIcon className="h-4 w-4 text-white" />
+              <ChevronDownIcon className="h-5 w-5 text-white group-hover:scale-110 transition-transform duration-300" />
             ) : (
-              <ChevronRightIcon className="h-4 w-4 text-white" />
+              <ChevronRightIcon className="h-5 w-5 text-white group-hover:scale-110 transition-transform duration-300" />
             )
           )}
           <div>
-            <h3 className={`font-semibold font-bookmania text-white ${level === 0 ? 'text-lg' : 'text-sm'}`}>
+            <h3 className={`font-bookmania-bold text-white ${level === 0 ? 'text-lg' : 'text-sm'} group-hover:text-cream transition-colors duration-300`}>
               {category.name}
             </h3>
             {category.description && level === 0 && (
-              <p className="text-xs opacity-90 mt-1 text-white font-bookmania">{category.description}</p>
+              <p className="text-xs opacity-90 mt-1 text-white font-bookmania italic">{category.description}</p>
             )}
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
           {category.color && level > 0 && (
             <div
-              className="w-3 h-3 rounded-full border-2 border-white"
+              className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
               style={{ backgroundColor: category.color }}
             />
           )}
-          <span className="text-xs opacity-75 text-white font-bookmania">
-            {category.articles?.length || 0} yazı
-          </span>
+          <div className="bg-white/20 rounded-full px-3 py-1 backdrop-blur-sm">
+            <span className="text-xs font-bookmania-medium text-white">
+              {category.articles?.length || 0} yazı
+            </span>
+          </div>
         </div>
       </div>
 

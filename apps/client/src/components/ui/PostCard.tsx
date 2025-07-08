@@ -30,13 +30,13 @@ export default function PostCard({
   imageUrl
 }: PostCardProps) {
   return (
-    <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full font-bookmania" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.3)' }}>
+    <Card className="card-seljuk hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 h-full font-bookmania group border-2 border-white/20 hover:border-teal-light">
       {imageUrl && (
         <div className="aspect-video w-full overflow-hidden rounded-t-lg">
           <img
             src={imageUrl}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
       )}
@@ -44,38 +44,37 @@ export default function PostCard({
         <div className="flex items-center justify-between text-xs mb-2">
           {category && (
             <span
-              className="px-2 py-1 rounded-full text-white text-xs font-medium font-bookmania"
-              style={{ backgroundColor: category.color || 'var(--center-secondary)' }}
+              className="px-3 py-1 rounded-full text-white text-xs font-bookmania-medium shadow-sm"
+              style={{ backgroundColor: category.color || 'var(--burgundy-medium)' }}
             >
               {category.name}
             </span>
           )}
-          <time style={{ color: 'var(--text-secondary)' }} className="font-bookmania">
+          <time className="font-bookmania text-brown-light">
             {formatDistanceToNow(new Date(createdAt), {
               addSuffix: true,
               locale: tr
             })}
           </time>
         </div>
-        <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 font-bookmania" style={{ color: 'var(--text-primary)' }}>
-          <Link href={`/articles/${slug}`} className="transition-colors" style={{ color: 'var(--text-primary)' }}>
+        <CardTitle className="text-sm font-bookmania-bold leading-tight line-clamp-2 text-brown-dark group-hover:text-teal-dark transition-colors duration-300">
+          <Link href={`/articles/${slug}`} className="transition-colors">
             {title}
           </Link>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         {excerpt && (
-          <p className="text-xs line-clamp-3 mb-3 font-bookmania" style={{ color: 'var(--text-secondary)' }}>{excerpt}</p>
+          <p className="text-xs line-clamp-3 mb-3 font-bookmania text-brown-light">{excerpt}</p>
         )}
         <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-3 font-bookmania" style={{ color: 'var(--text-light)' }}>
+          <div className="flex items-center space-x-3 font-bookmania text-brown-light">
             <span>{viewCount} görüntüleme</span>
             <span>{likeCount} beğeni</span>
           </div>
           <Link
             href={`/articles/${slug}`}
-            className="font-medium transition-colors font-bookmania"
-            style={{ color: 'var(--center-secondary)' }}
+            className="font-bookmania-medium transition-all duration-300 text-burgundy-medium hover:text-teal-dark hover:scale-105 transform"
           >
             Devamı →
           </Link>

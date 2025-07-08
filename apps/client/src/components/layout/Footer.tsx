@@ -41,30 +41,55 @@ const navigation = {
 
 export default function Footer() {
   return (
-    <footer className="bg-white">
+    <footer className="bg-gradient-to-t from-[var(--bg-tertiary)] to-[var(--bg-secondary)] border-t-2 border-teal-light">
       <div className="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
+        {/* Decorative Seljuk-inspired pattern */}
+        <div className="flex justify-center mb-12">
+          <div className="w-32 h-1 bg-gradient-teal rounded-full"></div>
+        </div>
+
         <nav className="-mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12" aria-label="Footer">
           {navigation.main.map((item) => (
             <div key={item.name} className="pb-6">
-              <Link href={item.href} className="text-sm leading-6 text-gray-600 hover:text-gray-900">
+              <Link
+                href={item.href}
+                className="text-sm leading-6 font-bookmania text-brown-dark hover:text-teal-dark transition-all duration-300 hover:scale-105"
+              >
                 {item.name}
               </Link>
             </div>
           ))}
         </nav>
+
         <div className="mt-10 flex justify-center space-x-10">
           {navigation.social.map((item) => (
-            <a key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">
+            <a
+              key={item.name}
+              href={item.href}
+              className="text-brown-light hover:text-teal-dark transition-all duration-300 hover:scale-110 transform"
+            >
               <span className="sr-only">{item.name}</span>
               <item.icon className="h-6 w-6" aria-hidden="true" />
             </a>
           ))}
         </div>
-        <p className="mt-10 text-center text-xs leading-5 text-gray-500">
+
+        {/* Decorative element */}
+        <div className="flex justify-center mt-12 mb-8">
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 bg-teal-light rounded-full"></div>
+            <div className="w-2 h-2 bg-burgundy-light rounded-full"></div>
+            <div className="w-2 h-2 bg-brown-light rounded-full"></div>
+            <div className="w-2 h-2 bg-burgundy-light rounded-full"></div>
+            <div className="w-2 h-2 bg-teal-light rounded-full"></div>
+          </div>
+        </div>
+
+        <p className="mt-6 text-center text-sm leading-5 font-bookmania text-brown-dark">
           &copy; {new Date().getFullYear()} Ahmed Ürkmez. Tüm hakları saklıdır.
         </p>
-        <p className="mt-2 text-center text-xs leading-5 text-gray-400">
-          Edebiyat, akademik araştırma ve kültürel çalışmalar
+        <p className="mt-2 text-center text-sm leading-5 font-bookmania text-brown-light">
+          Modern Selçuklu Sanatı Esinlenmesi ile • Edebiyat, Akademik Araştırma ve Kültürel Çalışmalar
         </p>
       </div>
     </footer>
