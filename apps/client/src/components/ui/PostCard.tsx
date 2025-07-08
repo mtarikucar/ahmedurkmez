@@ -30,7 +30,7 @@ export default function PostCard({
   imageUrl
 }: PostCardProps) {
   return (
-    <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full font-bookmania" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.3)' }}>
+    <Card className="shadow-elegant shadow-elegant-hover transition-all duration-300 hover:-translate-y-1 h-full font-bookmania rounded-xl border-2" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'rgba(255, 255, 255, 0.4)' }}>
       {imageUrl && (
         <div className="aspect-video w-full overflow-hidden rounded-t-lg">
           <img
@@ -57,24 +57,24 @@ export default function PostCard({
             })}
           </time>
         </div>
-        <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 font-bookmania" style={{ color: 'var(--text-primary)' }}>
-          <Link href={`/articles/${slug}`} className="transition-colors" style={{ color: 'var(--text-primary)' }}>
+        <CardTitle className="text-base font-semibold leading-tight line-clamp-2 font-bookmania" style={{ color: 'var(--text-primary)' }}>
+          <Link href={`/articles/${slug}`} className="transition-colors hover:text-center-secondary" style={{ color: 'var(--text-primary)' }}>
             {title}
           </Link>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         {excerpt && (
-          <p className="text-xs line-clamp-3 mb-3 font-bookmania" style={{ color: 'var(--text-secondary)' }}>{excerpt}</p>
+          <p className="text-sm line-clamp-3 mb-4 font-bookmania leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{excerpt}</p>
         )}
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-sm">
           <div className="flex items-center space-x-3 font-bookmania" style={{ color: 'var(--text-light)' }}>
             <span>{viewCount} görüntüleme</span>
             <span>{likeCount} beğeni</span>
           </div>
           <Link
             href={`/articles/${slug}`}
-            className="font-medium transition-colors font-bookmania"
+            className="font-medium transition-colors font-bookmania hover:underline"
             style={{ color: 'var(--center-secondary)' }}
           >
             Devamı →

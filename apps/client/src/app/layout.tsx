@@ -43,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${crimsonText.variable} antialiased min-h-screen font-bookmania`}
+        className={`${geistSans.variable} ${geistMono.variable} ${crimsonText.variable} antialiased min-h-screen font-bookmania flex flex-col`}
         style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
       >
         <AuthProvider>

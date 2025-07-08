@@ -47,19 +47,19 @@ export default function CategorySection({
       {/* Category Header */}
       <div
         className={`
-          flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all font-bookmania
+          flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all font-bookmania shadow-md hover:shadow-lg
           ${isSticky && level === 0 ? 'sticky top-4 z-10' : ''}
-          hover:shadow-md
         `}
         style={{
           marginLeft: `${level * 16}px`,
           backgroundColor: level === 0
-            ? 'rgba(255, 255, 255, 0.2)'
+            ? 'rgba(255, 255, 255, 0.25)'
             : level === 1
-            ? 'rgba(255, 255, 255, 0.15)'
-            : 'rgba(255, 255, 255, 0.1)',
+            ? 'rgba(255, 255, 255, 0.2)'
+            : 'rgba(255, 255, 255, 0.15)',
           color: 'white',
-          border: level > 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none'
+          border: level > 0 ? '2px solid rgba(255, 255, 255, 0.4)' : '2px solid rgba(255, 255, 255, 0.3)',
+          backdropFilter: 'blur(10px)'
         }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -72,11 +72,11 @@ export default function CategorySection({
             )
           )}
           <div>
-            <h3 className={`font-semibold font-bookmania text-white ${level === 0 ? 'text-lg' : 'text-sm'}`}>
+            <h3 className={`font-semibold font-bookmania text-white ${level === 0 ? 'text-xl' : 'text-base'}`}>
               {category.name}
             </h3>
             {category.description && level === 0 && (
-              <p className="text-xs opacity-90 mt-1 text-white font-bookmania">{category.description}</p>
+              <p className="text-sm opacity-90 mt-1 text-white font-bookmania leading-relaxed">{category.description}</p>
             )}
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function CategorySection({
               style={{ backgroundColor: category.color }}
             />
           )}
-          <span className="text-xs opacity-75 text-white font-bookmania">
+          <span className="text-sm opacity-75 text-white font-bookmania">
             {category.articles?.length || 0} yazı
           </span>
         </div>
@@ -117,7 +117,7 @@ export default function CategorySection({
           )}
 
           {/* Child Categories */}
-          {hasChildren && (
+          {hasChildren && category.children && (
             <div className="space-y-4">
               {category.children.map((childCategory) => (
                 <CategorySection
