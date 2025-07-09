@@ -275,6 +275,27 @@ body {
   }
 }
 
+/* Gradient Classes */
+.bg-gradient-teal {
+  background: linear-gradient(135deg, var(--teal-light), var(--teal-dark));
+}
+
+.bg-gradient-burgundy {
+  background: linear-gradient(135deg, var(--burgundy-light), var(--burgundy-dark));
+}
+
+.bg-gradient-brown {
+  background: linear-gradient(135deg, var(--brown-light), var(--brown-dark));
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+}
+
+.bg-gradient-seljuk {
+  background: linear-gradient(135deg, var(--teal-light), var(--burgundy-light), var(--brown-light));
+}
+
 /* Accessibility Improvements */
 .focus-visible:focus-visible {
   outline: 2px solid var(--teal-medium);
@@ -290,12 +311,49 @@ body {
   animation: slideUp 0.6s ease-out;
 }
 
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s ease-out;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

@@ -57,117 +57,130 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        {/* Decorative Seljuk Pattern */}
+        <div className="flex justify-center mb-8">
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 bg-teal-light rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5 animate-pulse delay-75"></div>
+            <div className="w-4 h-4 bg-brown-light rounded-full -mt-0.5 animate-pulse delay-150"></div>
+            <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5 animate-pulse delay-75"></div>
+            <div className="w-3 h-3 bg-teal-light rounded-full animate-pulse"></div>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <h2 className="heading-seljuk text-3xl lg:text-4xl mb-4">
             Hesap oluşturun
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="text-sm font-bookmania text-brown-light">
             Zaten hesabınız var mı?{' '}
-            <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link href="/login" className="font-bookmania-medium text-teal-dark hover:text-burgundy-medium transition-colors duration-300">
               Giriş yapın
             </Link>
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                  Ad
-                </label>
-                <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  required
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        <div className="card-seljuk p-8">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                    Ad
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 rounded-lg border-2 border-teal-light bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] text-brown-dark placeholder:text-brown-light font-bookmania focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium transition-all duration-300"
                   placeholder="Adınız"
                   value={formData.firstName}
                   onChange={handleChange}
                 />
               </div>
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                    Soyad
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 rounded-lg border-2 border-teal-light bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] text-brown-dark placeholder:text-brown-light font-bookmania focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium transition-all duration-300"
+                    placeholder="Soyadınız"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                  Soyad
+                <label htmlFor="email" className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                  E-posta adresi
                 </label>
                 <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   required
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Soyadınız"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                E-posta adresi
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="E-posta adresiniz"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-teal-light bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] text-brown-dark placeholder:text-brown-light font-bookmania focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium transition-all duration-300"
+                  placeholder="E-posta adresiniz"
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Şifre
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Şifreniz"
-                value={formData.password}
-                onChange={handleChange}
-              />
+              <div>
+                <label htmlFor="password" className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                  Şifre
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="w-full px-4 py-3 rounded-lg border-2 border-teal-light bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] text-brown-dark placeholder:text-brown-light font-bookmania focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium transition-all duration-300"
+                  placeholder="Şifreniz"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                  Şifre Tekrarı
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  className="w-full px-4 py-3 rounded-lg border-2 border-teal-light bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] text-brown-dark placeholder:text-brown-light font-bookmania focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium transition-all duration-300"
+                  placeholder="Şifrenizi tekrar girin"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Şifre Tekrarı
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Şifrenizi tekrar girin"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
 
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
-            </div>
-          )}
+            {error && (
+              <div className="rounded-lg bg-gradient-to-r from-burgundy-light/20 to-burgundy-medium/20 border-2 border-burgundy-medium p-4">
+                <div className="text-sm font-bookmania text-burgundy-dark">{error}</div>
+              </div>
+            )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Kayıt olunuyor...' : 'Kayıt Ol'}
-            </button>
-          </div>
-        </form>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Kayıt olunuyor...' : 'Kayıt Ol'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

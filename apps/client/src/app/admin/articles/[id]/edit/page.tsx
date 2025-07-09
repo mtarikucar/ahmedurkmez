@@ -189,8 +189,8 @@ export default function EditArticle() {
   if (loading) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+        <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-teal-medium"></div>
         </div>
       </ProtectedRoute>
     );
@@ -199,10 +199,10 @@ export default function EditArticle() {
   if (!article || !formData) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] flex items-center justify-center">
           <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900">Makale bulunamadı</h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <h3 className="text-lg font-bookmania-bold text-brown-dark">Makale bulunamadı</h3>
+            <p className="mt-2 text-sm font-bookmania text-brown-light">
               Aradığınız makale mevcut değil veya erişim izniniz yok.
             </p>
             <button
@@ -221,20 +221,20 @@ export default function EditArticle() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 animate-fade-in">
             <div className="flex items-center">
               <button
                 onClick={() => router.back()}
-                className="mr-4 p-2 text-gray-400 hover:text-gray-600"
+                className="mr-4 p-2 text-brown-light hover:text-burgundy-medium transition-colors duration-300"
               >
                 <ArrowLeftIcon className="h-6 w-6" />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Makale Düzenle</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="heading-seljuk-large text-3xl lg:text-4xl text-brown-dark">Makale Düzenle</h1>
+                <p className="mt-2 font-bookmania text-brown-light">
                   "{article.title}" makalesini düzenleyin
                 </p>
               </div>
@@ -243,8 +243,8 @@ export default function EditArticle() {
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Temel Bilgiler</h3>
+            <div className="card-seljuk p-6 animate-scale-in">
+              <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">Temel Bilgiler</h3>
               
               <div className="grid grid-cols-1 gap-6">
                 {/* Title */}

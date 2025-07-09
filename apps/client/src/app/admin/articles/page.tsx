@@ -132,20 +132,20 @@ export default function ArticlesManagement() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Makale Yönetimi</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="heading-seljuk-large text-3xl lg:text-4xl text-brown-dark">Makale Yönetimi</h1>
+                <p className="mt-2 font-bookmania text-brown-light">
                   Makalelerinizi oluşturun, düzenleyin ve yönetin
                 </p>
               </div>
               <button
                 onClick={() => router.push('/admin/articles/new')}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="btn-primary inline-flex items-center"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Yeni Makale
@@ -154,13 +154,13 @@ export default function ArticlesManagement() {
           </div>
 
           {/* Filters */}
-          <div className="bg-white shadow rounded-lg mb-6">
-            <div className="px-4 py-3 border-b border-gray-200">
+          <div className="card-seljuk mb-6 animate-scale-in">
+            <div className="px-4 py-3 border-b border-teal-light">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">Filtreler</h3>
+                <h3 className="text-lg font-bookmania-bold text-brown-dark">Filtreler</h3>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+                  className="btn-secondary text-sm"
                 >
                   <FunnelIcon className="h-4 w-4 mr-1" />
                   {showFilters ? 'Gizle' : 'Göster'}
@@ -173,7 +173,7 @@ export default function ArticlesManagement() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Search */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-1">
                       Arama
                     </label>
                     <div className="relative">
@@ -182,21 +182,21 @@ export default function ArticlesManagement() {
                         placeholder="Makale başlığı..."
                         value={filters.search || ''}
                         onChange={(e) => handleFilterChange('search', e.target.value)}
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="block w-full pl-10 pr-3 py-2 border-2 border-teal-light rounded-lg leading-5 bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] placeholder-brown-light focus:outline-none focus:placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium font-bookmania text-brown-dark"
                       />
-                      <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                      <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-brown-light" />
                     </div>
                   </div>
 
                   {/* Status Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-1">
                       Durum
                     </label>
                     <select
                       value={filters.status || ''}
                       onChange={(e) => handleFilterChange('status', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="block w-full px-3 py-2 border-2 border-teal-light rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark"
                     >
                       <option value="">Tümü</option>
                       <option value="published">Yayınlandı</option>

@@ -118,8 +118,8 @@ export default function Analytics() {
   if (loading) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+        <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-teal-medium"></div>
         </div>
       </ProtectedRoute>
     );
@@ -127,14 +127,14 @@ export default function Analytics() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Analitik</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="heading-seljuk-large text-3xl lg:text-4xl text-brown-dark">Analitik</h1>
+                <p className="mt-2 font-bookmania text-brown-light">
                   Makale performansı ve kullanıcı etkileşimi istatistikleri
                 </p>
               </div>

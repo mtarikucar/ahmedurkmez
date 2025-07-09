@@ -173,30 +173,31 @@ export default function AdminDashboard() {
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 text-center">
+          <div className="mb-8 text-center animate-fade-in">
             <h1 className="heading-seljuk-large text-4xl lg:text-5xl mb-4">Admin Dashboard</h1>
             <p className="text-lg font-bookmania text-brown-light">
               Sistem istatistikleri ve son aktiviteler
             </p>
 
             {/* Decorative Seljuk Pattern */}
-            <div className="flex justify-center mt-6">
+            <div className="flex justify-center mt-6 animate-bounce-in">
               <div className="flex space-x-2">
-                <div className="w-3 h-3 bg-teal-light rounded-full"></div>
-                <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5"></div>
-                <div className="w-4 h-4 bg-brown-light rounded-full -mt-0.5"></div>
-                <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5"></div>
-                <div className="w-3 h-3 bg-teal-light rounded-full"></div>
+                <div className="w-3 h-3 bg-teal-light rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5 animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-4 h-4 bg-brown-light rounded-full -mt-0.5 animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5 animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                <div className="w-3 h-3 bg-teal-light rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
               </div>
             </div>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {statCards.map((stat) => (
+            {statCards.map((stat, index) => (
               <div
                 key={stat.name}
-                className="card-seljuk overflow-hidden group hover:scale-105 transition-all duration-300"
+                className="card-seljuk overflow-hidden group hover:scale-105 transition-all duration-300 animate-scale-in"
+                style={{animationDelay: `${index * 0.1}s`}}
               >
                 <div className="p-6">
                   <div className="flex items-center">

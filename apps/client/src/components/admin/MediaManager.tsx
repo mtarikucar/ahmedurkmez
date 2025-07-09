@@ -58,38 +58,13 @@ export default function MediaManager({
   const fetchMediaFiles = async () => {
     setLoading(true);
     try {
-      // TODO: Implement media API call
-      // const response = await mediaAPI.getAll();
-      // setMediaFiles(response.data);
-      
-      // Mock data for now
-      setMediaFiles([
-        {
-          id: 1,
-          type: 'image',
-          url: '/images/sample1.jpg',
-          thumbnailUrl: '/images/sample1-thumb.jpg',
-          title: 'Örnek Görsel 1',
-          alt: 'Örnek görsel açıklaması',
-          mimeType: 'image/jpeg',
-          fileSize: 1024000,
-          width: 1920,
-          height: 1080,
-          createdAt: '2024-01-15T10:00:00Z',
-        },
-        {
-          id: 2,
-          type: 'video',
-          url: '/videos/sample1.mp4',
-          thumbnailUrl: '/videos/sample1-thumb.jpg',
-          title: 'Örnek Video 1',
-          mimeType: 'video/mp4',
-          fileSize: 10240000,
-          createdAt: '2024-01-14T15:30:00Z',
-        },
-      ]);
+      const { mediaAPI } = await import('@/lib/api');
+      const response = await mediaAPI.getAll();
+      setMediaFiles(response.data);
     } catch (error) {
       console.error('Error fetching media files:', error);
+      // Fallback to empty array on error
+      setMediaFiles([]);
     } finally {
       setLoading(false);
     }
@@ -98,19 +73,23 @@ export default function MediaManager({
   const handleFileUpload = async (files: FileList) => {
     setUploading(true);
     try {
+      const { mediaAPI } = await import('@/lib/api');
+
       for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('title', file.name);
-        
-        // TODO: Implement upload API call
-        // await uploadAPI.uploadFile(formData);
+        formData.append('articleId', '0'); // Temporary articleId, will be updated when attached to article
+        formData.append('alt', file.name);
+        formData.append('caption', file.name);
+
+        await mediaAPI.uploadFile(formData);
       }
-      
+
       await fetchMediaFiles();
       setShowUpload(false);
     } catch (error) {
       console.error('Error uploading files:', error);
+      alert('Dosya yükleme sırasında hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setUploading(false);
     }
@@ -169,18 +148,18 @@ export default function MediaManager({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
+        <div className="fixed inset-0 bg-brown-dark bg-opacity-75 transition-opacity" onClick={onClose} />
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full">
+        <div className="inline-block align-bottom bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full border-2 border-teal-light">
           {/* Header */}
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
+              <h3 className="text-lg leading-6 font-bookmania-bold text-brown-dark">
                 Medya Yöneticisi
               </h3>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-brown-light hover:text-burgundy-medium transition-colors duration-300"
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -196,9 +175,9 @@ export default function MediaManager({
                     placeholder="Medya dosyalarında ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="block w-full pl-10 pr-3 py-2 border-2 border-teal-light rounded-lg leading-5 bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] placeholder-brown-light focus:outline-none focus:placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium font-bookmania text-brown-dark"
                   />
-                  <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                  <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-brown-light" />
                 </div>
               </div>
 
@@ -207,7 +186,7 @@ export default function MediaManager({
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="block px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="block px-3 py-2 border-2 border-teal-light rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark"
                 >
                   <option value="all">Tüm Dosyalar</option>
                   <option value="image">Görseller</option>
@@ -220,7 +199,7 @@ export default function MediaManager({
               {/* Upload Button */}
               <button
                 onClick={() => setShowUpload(!showUpload)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="btn-primary inline-flex items-center"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Yükle
@@ -229,12 +208,12 @@ export default function MediaManager({
 
             {/* Upload Area */}
             {showUpload && (
-              <div className="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+              <div className="mb-6 p-4 border-2 border-dashed border-teal-light rounded-lg bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] hover:border-teal-medium transition-colors duration-300">
                 <div className="text-center">
-                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <PhotoIcon className="mx-auto h-12 w-12 text-teal-medium" />
                   <div className="mt-4">
                     <label className="cursor-pointer">
-                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                      <span className="mt-2 block text-sm font-bookmania-medium text-brown-dark">
                         Dosyaları seçin veya sürükle bırakın
                       </span>
                       <input
@@ -245,7 +224,7 @@ export default function MediaManager({
                         className="sr-only"
                       />
                     </label>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs font-bookmania text-brown-light">
                       PNG, JPG, GIF, MP4, PDF, DOC - Maksimum 10MB
                     </p>
                   </div>
@@ -257,13 +236,13 @@ export default function MediaManager({
             <div className="max-h-96 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-medium"></div>
                 </div>
               ) : filteredFiles.length === 0 ? (
                 <div className="text-center py-12">
-                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Medya dosyası bulunamadı</h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <PhotoIcon className="mx-auto h-12 w-12 text-teal-light" />
+                  <h3 className="mt-2 text-sm font-bookmania-medium text-brown-dark">Medya dosyası bulunamadı</h3>
+                  <p className="mt-1 text-sm font-bookmania text-brown-light">
                     Yeni dosya yükleyerek başlayın.
                   </p>
                 </div>

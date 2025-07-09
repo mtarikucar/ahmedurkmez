@@ -169,20 +169,20 @@ export default function NewArticle() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center">
               <button
                 onClick={() => router.back()}
-                className="mr-4 p-2 text-gray-400 hover:text-gray-600"
+                className="mr-4 p-2 text-brown-light hover:text-burgundy-medium transition-colors duration-300"
               >
                 <ArrowLeftIcon className="h-6 w-6" />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Yeni Makale</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="heading-seljuk-large text-3xl lg:text-4xl text-brown-dark">Yeni Makale</h1>
+                <p className="mt-2 font-bookmania text-brown-light">
                   Yeni bir makale oluşturun
                 </p>
               </div>
@@ -191,13 +191,13 @@ export default function NewArticle() {
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Temel Bilgiler</h3>
+            <div className="card-seljuk p-6">
+              <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">Temel Bilgiler</h3>
               
               <div className="grid grid-cols-1 gap-6">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
                     Başlık *
                   </label>
                   <input
@@ -205,21 +205,21 @@ export default function NewArticle() {
                     required
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="block w-full px-4 py-3 border-2 border-teal-light rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light"
                     placeholder="Makale başlığını girin..."
                   />
                 </div>
 
                 {/* Subtitle */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
                     Alt Başlık
                   </label>
                   <input
                     type="text"
                     value={formData.subtitle}
                     onChange={(e) => handleInputChange('subtitle', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="block w-full px-4 py-3 border-2 border-teal-light rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light"
                     placeholder="Alt başlık (opsiyonel)..."
                   />
                 </div>
@@ -227,14 +227,14 @@ export default function NewArticle() {
                 {/* Type and Category */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
                       Makale Türü *
                     </label>
                     <select
                       required
                       value={formData.type}
                       onChange={(e) => handleInputChange('type', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="block w-full px-4 py-3 border-2 border-teal-light rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark"
                     >
                       <option value="blog_post">Blog Yazısı (Medium Tarzı)</option>
                       <option value="academic_paper">Akademik Makale (IEEE Tarzı)</option>
@@ -418,20 +418,31 @@ export default function NewArticle() {
 
                   {/* PDF Upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
                       PDF Dosyası
                     </label>
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-teal-light rounded-lg bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] hover:border-teal-medium transition-colors duration-300">
                       <div className="space-y-1 text-center">
-                        <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <div className="flex text-sm text-gray-600">
-                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                        <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-teal-medium" />
+                        <div className="flex text-sm font-bookmania text-brown-dark">
+                          <label className="relative cursor-pointer bg-gradient-to-r from-teal-medium to-teal-dark rounded-md font-bookmania-medium text-white px-3 py-1 hover:from-teal-dark hover:to-teal-dark focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-teal-medium transition-all duration-300">
                             <span>PDF dosyası yükle</span>
-                            <input type="file" accept=".pdf" className="sr-only" />
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              className="sr-only"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  // Handle PDF upload
+                                  console.log('PDF file selected:', file);
+                                }
+                              }}
+                            />
                           </label>
                           <p className="pl-1">veya sürükle bırak</p>
                         </div>
-                        <p className="text-xs text-gray-500">PDF dosyaları, maksimum 10MB</p>
+                        <p className="text-xs font-bookmania text-brown-light">PDF dosyaları, maksimum 10MB</p>
                       </div>
                     </div>
                   </div>
