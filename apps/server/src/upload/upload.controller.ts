@@ -60,7 +60,7 @@ export class UploadController {
     @Body() createMediaDto: CreateMediaDto,
   ) {
     const videoInfo = await this.uploadService.getYouTubeVideoInfo(videoId);
-    
+
     const mediaData: any = {
       ...createMediaDto,
       type: 'youtube' as any,

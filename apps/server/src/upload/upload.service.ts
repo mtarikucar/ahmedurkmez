@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -27,13 +31,19 @@ export class UploadService {
     private configService: ConfigService,
   ) {}
 
-  async uploadFile(file: Express.Multer.File, createMediaDto: CreateMediaDto): Promise<ArticleMedia> {
-    const uploadPath = this.configService.get<string>('UPLOAD_PATH', './uploads');
+  async uploadFile(
+    file: Express.Multer.File,
+    createMediaDto: CreateMediaDto,
+  ): Promise<ArticleMedia> {
+    const uploadPath = this.configService.get<string>(
+      'UPLOAD_PATH',
+      './uploads',
+    );
     const fileUrl = `/uploads/${file.filename}`;
-    
+
     // Determine media type based on file extension
     const mediaType = this.getMediaTypeFromFile(file);
-    
+
     const media = this.mediaRepository.create({
       ...createMediaDto,
       filename: file.filename,
@@ -47,9 +57,13 @@ export class UploadService {
     return this.mediaRepository.save(media);
   }
 
-  async createExternalMedia(createMediaDto: CreateMediaDto): Promise<ArticleMedia> {
+  async createExternalMedia(
+    createMediaDto: CreateMediaDto,
+  ): Promise<ArticleMedia> {
     if (!createMediaDto.url && !createMediaDto.externalId) {
-      throw new BadRequestException('Either URL or external ID must be provided');
+      throw new BadRequestException(
+        'Either URL or external ID must be provided',
+      );
     }
 
     const media = this.mediaRepository.create(createMediaDto);
@@ -84,7 +98,10 @@ export class UploadService {
     return media;
   }
 
-  async update(id: number, updateData: Partial<CreateMediaDto>): Promise<ArticleMedia> {
+  async update(
+    id: number,
+    updateData: Partial<CreateMediaDto>,
+  ): Promise<ArticleMedia> {
     const media = await this.findOne(id);
     Object.assign(media, updateData);
     return this.mediaRepository.save(media);
@@ -92,12 +109,15 @@ export class UploadService {
 
   async remove(id: number): Promise<void> {
     const media = await this.findOne(id);
-    
+
     // If it's a file upload, delete the physical file
     if (media.filename && !media.url.startsWith('http')) {
-      const uploadPath = this.configService.get<string>('UPLOAD_PATH', './uploads');
+      const uploadPath = this.configService.get<string>(
+        'UPLOAD_PATH',
+        './uploads',
+      );
       const filePath = path.join(uploadPath, media.filename);
-      
+
       try {
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
@@ -123,7 +143,7 @@ export class UploadService {
 
   private getMediaTypeFromFile(file: Express.Multer.File): MediaType {
     const mimeType = file.mimetype.toLowerCase();
-    
+
     if (mimeType.startsWith('image/')) {
       return MediaType.IMAGE;
     } else if (mimeType.startsWith('video/')) {
@@ -147,10 +167,13 @@ export class UploadService {
     byType: Record<MediaType, number>;
   }> {
     const allMedia = await this.mediaRepository.find();
-    
+
     const stats = {
       totalFiles: allMedia.length,
-      totalSize: allMedia.reduce((sum, media) => sum + (media.fileSize || 0), 0),
+      totalSize: allMedia.reduce(
+        (sum, media) => sum + (media.fileSize || 0),
+        0,
+      ),
       byType: {
         [MediaType.IMAGE]: 0,
         [MediaType.VIDEO]: 0,
@@ -161,7 +184,7 @@ export class UploadService {
       },
     };
 
-    allMedia.forEach(media => {
+    allMedia.forEach((media) => {
       stats.byType[media.type]++;
     });
 

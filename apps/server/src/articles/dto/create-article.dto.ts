@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsNumber, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsNumber,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 import { ArticleType, ArticleStatus } from '../../entities/article.entity';
 
 export class CreateArticleDto {

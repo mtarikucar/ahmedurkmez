@@ -1,10 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum ContactStatus {
   NEW = 'new',
   READ = 'read',
   REPLIED = 'replied',
-  ARCHIVED = 'archived'
+  ARCHIVED = 'archived',
 }
 
 export enum ContactType {
@@ -12,7 +18,7 @@ export enum ContactType {
   COLLABORATION = 'collaboration',
   INTERVIEW = 'interview',
   FEEDBACK = 'feedback',
-  TECHNICAL = 'technical'
+  TECHNICAL = 'technical',
 }
 
 @Entity('contacts')
@@ -41,14 +47,14 @@ export class Contact {
   @Column({
     type: 'enum',
     enum: ContactType,
-    default: ContactType.GENERAL
+    default: ContactType.GENERAL,
   })
   type: ContactType;
 
   @Column({
     type: 'enum',
     enum: ContactStatus,
-    default: ContactStatus.NEW
+    default: ContactStatus.NEW,
   })
   status: ContactStatus;
 

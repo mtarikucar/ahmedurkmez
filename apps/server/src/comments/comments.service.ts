@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { Comment, CommentStatus } from '../entities/comment.entity';
@@ -32,18 +36,24 @@ export class CommentsService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(createCommentDto: CreateCommentDto, ipAddress?: string, userAgent?: string): Promise<Comment> {
+  async create(
+    createCommentDto: CreateCommentDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<Comment> {
     // Verify article exists and allows comments
     const article = await this.articleRepository.findOne({
       where: { id: createCommentDto.articleId },
     });
-    
+
     if (!article) {
       throw new BadRequestException('Article not found');
     }
 
     if (!article.allowComments) {
-      throw new BadRequestException('Comments are not allowed for this article');
+      throw new BadRequestException(
+        'Comments are not allowed for this article',
+      );
     }
 
     // If parentId is provided, verify parent comment exists
@@ -51,7 +61,7 @@ export class CommentsService {
       const parentComment = await this.commentRepository.findOne({
         where: { id: createCommentDto.parentId },
       });
-      
+
       if (!parentComment) {
         throw new BadRequestException('Parent comment not found');
       }
@@ -62,7 +72,7 @@ export class CommentsService {
       const user = await this.userRepository.findOne({
         where: { id: createCommentDto.userId },
       });
-      
+
       if (!user) {
         throw new BadRequestException('User not found');
       }
@@ -83,7 +93,12 @@ export class CommentsService {
     limit?: number;
     status?: CommentStatus;
     articleId?: number;
-  }): Promise<{ comments: Comment[]; total: number; page: number; limit: number }> {
+  }): Promise<{
+    comments: Comment[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const page = options?.page || 1;
     const limit = options?.limit || 10;
     const skip = (page - 1) * limit;
@@ -96,11 +111,15 @@ export class CommentsService {
       .leftJoinAndSelect('comment.replies', 'replies');
 
     if (options?.status) {
-      queryBuilder.andWhere('comment.status = :status', { status: options.status });
+      queryBuilder.andWhere('comment.status = :status', {
+        status: options.status,
+      });
     }
 
     if (options?.articleId) {
-      queryBuilder.andWhere('comment.articleId = :articleId', { articleId: options.articleId });
+      queryBuilder.andWhere('comment.articleId = :articleId', {
+        articleId: options.articleId,
+      });
     }
 
     queryBuilder.orderBy('comment.createdAt', 'DESC');
@@ -123,7 +142,7 @@ export class CommentsService {
       where: {
         articleId,
         status: CommentStatus.APPROVED,
-        parentId: IsNull() // Only get top-level comments
+        parentId: IsNull(), // Only get top-level comments
       },
       relations: ['user', 'replies', 'replies.user'],
       order: { createdAt: 'ASC' },
@@ -143,7 +162,10 @@ export class CommentsService {
     return comment;
   }
 
-  async update(id: number, updateCommentDto: UpdateCommentDto): Promise<Comment> {
+  async update(
+    id: number,
+    updateCommentDto: UpdateCommentDto,
+  ): Promise<Comment> {
     const comment = await this.findOne(id);
     Object.assign(comment, updateCommentDto);
     return this.commentRepository.save(comment);

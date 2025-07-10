@@ -15,6 +15,7 @@ import {
   ShareIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline';
+import ArticlePDFSection from '@/components/article/ArticlePDFSection';
 
 interface ArticleDetailPageProps {
   slug: string;
@@ -164,6 +165,13 @@ export default function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
               style={{ color: 'var(--text-primary)' }}
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
+
+            {/* PDF Section for Academic Papers */}
+            {article.pdfFile && (
+              <div className="my-12">
+                <ArticlePDFSection article={article} />
+              </div>
+            )}
 
             {/* Actions */}
             <div className="mt-12 pt-8 border-t-2 flex items-center justify-between" style={{ borderColor: 'var(--center-primary)' }}>

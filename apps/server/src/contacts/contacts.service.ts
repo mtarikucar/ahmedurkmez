@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Contact, ContactStatus, ContactType } from '../entities/contact.entity';
+import {
+  Contact,
+  ContactStatus,
+  ContactType,
+} from '../entities/contact.entity';
 import { MailService } from '../mail/mail.service';
 
 export interface CreateContactDto {
@@ -27,7 +31,11 @@ export class ContactsService {
     private mailService: MailService,
   ) {}
 
-  async create(createContactDto: CreateContactDto, ipAddress?: string, userAgent?: string): Promise<Contact> {
+  async create(
+    createContactDto: CreateContactDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<Contact> {
     const contact = this.contactRepository.create({
       ...createContactDto,
       ipAddress,
@@ -54,7 +62,12 @@ export class ContactsService {
     limit?: number;
     status?: ContactStatus;
     type?: ContactType;
-  }): Promise<{ contacts: Contact[]; total: number; page: number; limit: number }> {
+  }): Promise<{
+    contacts: Contact[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const page = options?.page || 1;
     const limit = options?.limit || 10;
     const skip = (page - 1) * limit;
@@ -62,7 +75,9 @@ export class ContactsService {
     const queryBuilder = this.contactRepository.createQueryBuilder('contact');
 
     if (options?.status) {
-      queryBuilder.andWhere('contact.status = :status', { status: options.status });
+      queryBuilder.andWhere('contact.status = :status', {
+        status: options.status,
+      });
     }
 
     if (options?.type) {
@@ -96,11 +111,14 @@ export class ContactsService {
     return contact;
   }
 
-  async update(id: number, updateContactDto: UpdateContactDto): Promise<Contact> {
+  async update(
+    id: number,
+    updateContactDto: UpdateContactDto,
+  ): Promise<Contact> {
     const contact = await this.findOne(id);
-    
+
     Object.assign(contact, updateContactDto);
-    
+
     if (updateContactDto.status === ContactStatus.REPLIED) {
       contact.repliedAt = new Date();
     }
@@ -113,9 +131,9 @@ export class ContactsService {
   }
 
   async markAsReplied(id: number, adminNotes?: string): Promise<Contact> {
-    return this.update(id, { 
+    return this.update(id, {
       status: ContactStatus.REPLIED,
-      adminNotes 
+      adminNotes,
     });
   }
 
@@ -141,13 +159,18 @@ export class ContactsService {
     replied: number;
     archived: number;
   }> {
-    const [total, newCount, readCount, repliedCount, archivedCount] = await Promise.all([
-      this.contactRepository.count(),
-      this.contactRepository.count({ where: { status: ContactStatus.NEW } }),
-      this.contactRepository.count({ where: { status: ContactStatus.READ } }),
-      this.contactRepository.count({ where: { status: ContactStatus.REPLIED } }),
-      this.contactRepository.count({ where: { status: ContactStatus.ARCHIVED } }),
-    ]);
+    const [total, newCount, readCount, repliedCount, archivedCount] =
+      await Promise.all([
+        this.contactRepository.count(),
+        this.contactRepository.count({ where: { status: ContactStatus.NEW } }),
+        this.contactRepository.count({ where: { status: ContactStatus.READ } }),
+        this.contactRepository.count({
+          where: { status: ContactStatus.REPLIED },
+        }),
+        this.contactRepository.count({
+          where: { status: ContactStatus.ARCHIVED },
+        }),
+      ]);
 
     return {
       total,

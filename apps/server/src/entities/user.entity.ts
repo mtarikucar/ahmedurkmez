@@ -1,9 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { Comment } from './comment.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
-  USER = 'user'
+  USER = 'user',
 }
 
 @Entity('users')
@@ -26,7 +33,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.USER
+    default: UserRole.USER,
   })
   role: UserRole;
 
@@ -39,7 +46,7 @@ export class User {
   @Column({ nullable: true })
   bio: string;
 
-  @OneToMany(() => Comment, comment => comment.user)
+  @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
 
   @CreateDateColumn()

@@ -12,6 +12,8 @@ import {
   PlusIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import ArticleEditor from '@/components/editor/ArticleEditor';
+import PDFViewer from '@/components/ui/PDFViewer';
 
 interface ArticleFormData {
   title: string;
@@ -418,6 +420,108 @@ export default function EditArticle() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Academic Paper PDF Section */}
+            {isAcademicPaper && (
+              <div className="card-seljuk p-6">
+                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">PDF Dosyası</h3>
+                
+                {formData.pdfFile ? (
+                  <div className="space-y-4">
+                    <PDFViewer
+                      pdfUrl={formData.pdfFile}
+                      title={formData.title || 'PDF Dosyası'}
+                      showPreview={false}
+                    />
+                    <div className="flex space-x-3">
+                      <label className="cursor-pointer btn-primary text-sm">
+                        <span>Yeni PDF Yükle</span>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          className="sr-only"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file && articleId) {
+                              const formData = new FormData();
+                              formData.append('pdf', file);
+                              try {
+                                const response = await articlesAPI.uploadPDF(parseInt(articleId), formData);
+                                handleInputChange('pdfFile', response.data.pdfFile);
+                                alert('PDF başarıyla güncellendi!');
+                              } catch (error) {
+                                console.error('PDF upload error:', error);
+                                alert('PDF yüklenirken hata oluştu.');
+                              }
+                            }
+                          }}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('pdfFile', '')}
+                        className="btn-secondary text-sm"
+                      >
+                        PDF'i Kaldır
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-teal-light rounded-lg bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] hover:border-teal-medium transition-colors duration-300">
+                    <div className="space-y-1 text-center">
+                      <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-teal-medium" />
+                      <div className="flex text-sm font-bookmania text-brown-dark">
+                        <label className="relative cursor-pointer bg-gradient-to-r from-teal-medium to-teal-dark rounded-md font-bookmania-medium text-white px-3 py-1 hover:from-teal-dark hover:to-teal-dark focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-teal-medium transition-all duration-300">
+                          <span>PDF dosyası yükle</span>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            className="sr-only"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file && articleId) {
+                                const formData = new FormData();
+                                formData.append('pdf', file);
+                                try {
+                                  const response = await articlesAPI.uploadPDF(parseInt(articleId), formData);
+                                  handleInputChange('pdfFile', response.data.pdfFile);
+                                  alert('PDF başarıyla yüklendi!');
+                                } catch (error) {
+                                  console.error('PDF upload error:', error);
+                                  alert('PDF yüklenirken hata oluştu.');
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+                        <p className="pl-1">veya sürükle bırak</p>
+                      </div>
+                      <p className="text-xs font-bookmania text-brown-light">PDF dosyaları, maksimum 10MB</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Content Editor */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="p-6 border-b">
+                <h3 className="text-lg font-medium text-gray-900">İçerik Editörü</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Medium tarzı zengin metin editörü ile makalenizi düzenleyin
+                </p>
+              </div>
+              
+              <ArticleEditor
+                articleId={parseInt(articleId)}
+                initialContent={formData.content}
+                onChange={(content) => handleInputChange('content', content)}
+                placeholder={isAcademicPaper
+                  ? "Akademik makalenizi düzenleyin..."
+                  : "Hikayenizi düzenleyin..."
+                }
+              />
             </div>
 
             {/* Submit Buttons */}

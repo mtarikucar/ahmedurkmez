@@ -9,14 +9,17 @@ async function createAdmin() {
   const configService = app.get(ConfigService);
 
   try {
-    const adminEmail = configService.get('ADMIN_EMAIL', 'admin@ahmedurkmez.com');
+    const adminEmail = configService.get(
+      'ADMIN_EMAIL',
+      'admin@ahmedurkmez.com',
+    );
     const adminPassword = configService.get('ADMIN_PASSWORD', 'admin123456');
 
     const admin = await authService.createAdmin(
       adminEmail,
       adminPassword,
       'Ahmed',
-      'Ürkmez'
+      'Ürkmez',
     );
 
     console.log('Admin user created successfully:', {

@@ -10,7 +10,16 @@ import { Category } from '../entities/category.entity';
 import { ArticleMedia } from '../entities/article-media.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Article, Comment, Contact, Category, ArticleMedia])],
+  imports: [
+    TypeOrmModule.forFeature([
+      User,
+      Article,
+      Comment,
+      Contact,
+      Category,
+      ArticleMedia,
+    ]),
+  ],
   controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],

@@ -1,11 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Article } from './article.entity';
 
 export enum CommentStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
-  REJECTED = 'rejected'
+  REJECTED = 'rejected',
 }
 
 @Entity('comments')
@@ -19,7 +28,7 @@ export class Comment {
   @Column({
     type: 'enum',
     enum: CommentStatus,
-    default: CommentStatus.PENDING
+    default: CommentStatus.PENDING,
   })
   status: CommentStatus;
 
@@ -45,24 +54,24 @@ export class Comment {
   userAgent: string;
 
   // Self-referencing for reply functionality
-  @ManyToOne(() => Comment, comment => comment.replies, { nullable: true })
+  @ManyToOne(() => Comment, (comment) => comment.replies, { nullable: true })
   @JoinColumn({ name: 'parentId' })
   parent: Comment;
 
   @Column({ nullable: true })
   parentId: number;
 
-  @OneToMany(() => Comment, comment => comment.parent)
+  @OneToMany(() => Comment, (comment) => comment.parent)
   replies: Comment[];
 
-  @ManyToOne(() => User, user => user.comments, { nullable: true })
+  @ManyToOne(() => User, (user) => user.comments, { nullable: true })
   @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column({ nullable: true })
   userId: number;
 
-  @ManyToOne(() => Article, article => article.comments)
+  @ManyToOne(() => Article, (article) => article.comments)
   @JoinColumn({ name: 'articleId' })
   article: Article;
 

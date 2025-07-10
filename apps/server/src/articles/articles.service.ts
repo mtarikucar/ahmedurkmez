@@ -1,10 +1,20 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
-import { Article, ArticleStatus, ArticleType } from '../entities/article.entity';
+import {
+  Article,
+  ArticleStatus,
+  ArticleType,
+} from '../entities/article.entity';
 import { Category } from '../entities/category.entity';
+import { ArticleMedia, MediaType } from '../entities/article-media.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class ArticlesService {
@@ -13,6 +23,9 @@ export class ArticlesService {
     private articleRepository: Repository<Article>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(ArticleMedia)
+    private articleMediaRepository: Repository<ArticleMedia>,
+    private uploadService: UploadService,
   ) {}
 
   async create(createArticleDto: CreateArticleDto): Promise<Article> {
@@ -70,7 +83,12 @@ export class ArticlesService {
     categoryId?: number;
     search?: string;
     featured?: boolean;
-  }): Promise<{ articles: Article[]; total: number; page: number; limit: number }> {
+  }): Promise<{
+    articles: Article[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const page = options?.page || 1;
     const limit = options?.limit || 10;
     const skip = (page - 1) * limit;
@@ -82,7 +100,9 @@ export class ArticlesService {
 
     // Apply filters
     if (options?.status) {
-      queryBuilder.andWhere('article.status = :status', { status: options.status });
+      queryBuilder.andWhere('article.status = :status', {
+        status: options.status,
+      });
     }
 
     if (options?.type) {
@@ -90,24 +110,29 @@ export class ArticlesService {
     }
 
     if (options?.categoryId) {
-      queryBuilder.andWhere('article.categoryId = :categoryId', { categoryId: options.categoryId });
+      queryBuilder.andWhere('article.categoryId = :categoryId', {
+        categoryId: options.categoryId,
+      });
     }
 
     if (options?.featured !== undefined) {
-      queryBuilder.andWhere('article.isFeatured = :featured', { featured: options.featured });
+      queryBuilder.andWhere('article.isFeatured = :featured', {
+        featured: options.featured,
+      });
     }
 
     if (options?.search) {
       queryBuilder.andWhere(
         '(article.title ILIKE :search OR article.content ILIKE :search OR article.excerpt ILIKE :search)',
-        { search: `%${options.search}%` }
+        { search: `%${options.search}%` },
       );
     }
 
     // Order by featured first, then by creation date
-    queryBuilder.orderBy('article.isFeatured', 'DESC')
-                .addOrderBy('article.sortOrder', 'ASC')
-                .addOrderBy('article.createdAt', 'DESC');
+    queryBuilder
+      .orderBy('article.isFeatured', 'DESC')
+      .addOrderBy('article.sortOrder', 'ASC')
+      .addOrderBy('article.createdAt', 'DESC');
 
     const [articles, total] = await queryBuilder
       .skip(skip)
@@ -151,11 +176,18 @@ export class ArticlesService {
     return article;
   }
 
-  async update(id: number, updateArticleDto: UpdateArticleDto): Promise<Article> {
+  async update(
+    id: number,
+    updateArticleDto: UpdateArticleDto,
+  ): Promise<Article> {
     const article = await this.findOne(id);
 
     // If title is being updated, regenerate slug
-    if ('title' in updateArticleDto && updateArticleDto.title && updateArticleDto.title !== article.title) {
+    if (
+      'title' in updateArticleDto &&
+      updateArticleDto.title &&
+      updateArticleDto.title !== article.title
+    ) {
       const newSlug = this.generateSlug(updateArticleDto.title);
       const existingArticle = await this.articleRepository.findOne({
         where: { slug: newSlug },
@@ -200,9 +232,9 @@ export class ArticlesService {
 
   async getFeaturedArticles(limit: number = 5): Promise<Article[]> {
     return this.articleRepository.find({
-      where: { 
-        isFeatured: true, 
-        status: ArticleStatus.PUBLISHED 
+      where: {
+        isFeatured: true,
+        status: ArticleStatus.PUBLISHED,
       },
       relations: ['category'],
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
@@ -210,9 +242,12 @@ export class ArticlesService {
     });
   }
 
-  async getRelatedArticles(articleId: number, limit: number = 5): Promise<Article[]> {
+  async getRelatedArticles(
+    articleId: number,
+    limit: number = 5,
+  ): Promise<Article[]> {
     const article = await this.findOne(articleId);
-    
+
     return this.articleRepository.find({
       where: {
         categoryId: article.categoryId,
@@ -232,5 +267,43 @@ export class ArticlesService {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
+  }
+
+  async uploadPDF(
+    articleId: number,
+    file: Express.Multer.File,
+  ): Promise<Article> {
+    const article = await this.findOne(articleId);
+
+    // Upload the PDF file
+    const mediaDto = {
+      articleId,
+      type: MediaType.DOCUMENT,
+    };
+
+    const uploadedMedia = await this.uploadService.uploadFile(file, mediaDto);
+
+    // Update article with PDF file URL
+    article.pdfFile = uploadedMedia.url;
+    await this.articleRepository.save(article);
+
+    return this.findOne(articleId);
+  }
+
+  async uploadImage(
+    articleId: number,
+    file: Express.Multer.File,
+  ): Promise<ArticleMedia> {
+    const article = await this.findOne(articleId);
+
+    // Upload the image file
+    const mediaDto = {
+      articleId,
+      type: MediaType.IMAGE,
+    };
+
+    const uploadedMedia = await this.uploadService.uploadFile(file, mediaDto);
+
+    return uploadedMedia;
   }
 }

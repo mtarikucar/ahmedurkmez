@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Category } from './category.entity';
 import { Comment } from './comment.entity';
 import { ArticleMedia } from './article-media.entity';
@@ -8,13 +17,13 @@ export enum ArticleType {
   BLOG_POST = 'blog_post', // Medium style article
   RESEARCH = 'research',
   ESSAY = 'essay',
-  REVIEW = 'review'
+  REVIEW = 'review',
 }
 
 export enum ArticleStatus {
   DRAFT = 'draft',
   PUBLISHED = 'published',
-  ARCHIVED = 'archived'
+  ARCHIVED = 'archived',
 }
 
 @Entity('articles')
@@ -40,14 +49,14 @@ export class Article {
   @Column({
     type: 'enum',
     enum: ArticleType,
-    default: ArticleType.BLOG_POST
+    default: ArticleType.BLOG_POST,
   })
   type: ArticleType;
 
   @Column({
     type: 'enum',
     enum: ArticleStatus,
-    default: ArticleStatus.DRAFT
+    default: ArticleStatus.DRAFT,
   })
   status: ArticleStatus;
 
@@ -97,17 +106,17 @@ export class Article {
   @Column({ type: 'text', nullable: true })
   metaDescription: string;
 
-  @ManyToOne(() => Category, category => category.articles)
+  @ManyToOne(() => Category, (category) => category.articles)
   @JoinColumn({ name: 'categoryId' })
   category: Category;
 
   @Column()
   categoryId: number;
 
-  @OneToMany(() => Comment, comment => comment.article)
+  @OneToMany(() => Comment, (comment) => comment.article)
   comments: Comment[];
 
-  @OneToMany(() => ArticleMedia, media => media.article)
+  @OneToMany(() => ArticleMedia, (media) => media.article)
   media: ArticleMedia[];
 
   @CreateDateColumn()

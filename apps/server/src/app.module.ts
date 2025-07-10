@@ -28,7 +28,7 @@ import {
   Comment,
   ArticleMedia,
   Contact,
-  Settings
+  Settings,
 } from './entities';
 
 @Module({
@@ -37,10 +37,12 @@ import {
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 1 minute
-      limit: 100, // 100 requests per minute
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute
+      },
+    ]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
@@ -54,8 +56,17 @@ import {
         username: configService.get('DATABASE_USERNAME', 'postgres'),
         password: configService.get('DATABASE_PASSWORD', 'password'),
         database: configService.get('DATABASE_NAME', 'ahmedurkmez_db'),
-        entities: [User, Category, Article, Comment, ArticleMedia, Contact, Settings],
-        synchronize: configService.get('NODE_ENV', 'development') === 'development',
+        entities: [
+          User,
+          Category,
+          Article,
+          Comment,
+          ArticleMedia,
+          Contact,
+          Settings,
+        ],
+        synchronize:
+          configService.get('NODE_ENV', 'development') === 'development',
         logging: configService.get('NODE_ENV', 'development') === 'development',
       }),
       inject: [ConfigService],

@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Article } from './article.entity';
 
 export enum MediaType {
@@ -7,7 +15,7 @@ export enum MediaType {
   AUDIO = 'audio',
   DOCUMENT = 'document',
   YOUTUBE = 'youtube',
-  VIMEO = 'vimeo'
+  VIMEO = 'vimeo',
 }
 
 @Entity('article_media')
@@ -23,7 +31,7 @@ export class ArticleMedia {
 
   @Column({
     type: 'enum',
-    enum: MediaType
+    enum: MediaType,
   })
   type: MediaType;
 
@@ -70,7 +78,7 @@ export class ArticleMedia {
   @Column({ nullable: true })
   embedCode: string; // Custom embed code
 
-  @ManyToOne(() => Article, article => article.media)
+  @ManyToOne(() => Article, (article) => article.media)
   @JoinColumn({ name: 'articleId' })
   article: Article;
 

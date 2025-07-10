@@ -83,24 +83,39 @@ export class AdminService {
       this.userRepository.count({ where: { isActive: true } }),
       this.userRepository.count({ where: { role: UserRole.ADMIN } }),
       this.articleRepository.count(),
-      this.articleRepository.count({ where: { status: ArticleStatus.PUBLISHED } }),
+      this.articleRepository.count({
+        where: { status: ArticleStatus.PUBLISHED },
+      }),
       this.articleRepository.count({ where: { status: ArticleStatus.DRAFT } }),
-      this.articleRepository.count({ where: { status: ArticleStatus.ARCHIVED } }),
+      this.articleRepository.count({
+        where: { status: ArticleStatus.ARCHIVED },
+      }),
       this.commentRepository.count(),
-      this.commentRepository.count({ where: { status: CommentStatus.PENDING } }),
-      this.commentRepository.count({ where: { status: CommentStatus.APPROVED } }),
-      this.commentRepository.count({ where: { status: CommentStatus.REJECTED } }),
+      this.commentRepository.count({
+        where: { status: CommentStatus.PENDING },
+      }),
+      this.commentRepository.count({
+        where: { status: CommentStatus.APPROVED },
+      }),
+      this.commentRepository.count({
+        where: { status: CommentStatus.REJECTED },
+      }),
       this.contactRepository.count(),
       this.contactRepository.count({ where: { status: ContactStatus.NEW } }),
       this.contactRepository.count({ where: { status: ContactStatus.READ } }),
-      this.contactRepository.count({ where: { status: ContactStatus.REPLIED } }),
+      this.contactRepository.count({
+        where: { status: ContactStatus.REPLIED },
+      }),
       this.categoryRepository.count(),
       this.categoryRepository.count({ where: { isActive: true } }),
       this.mediaRepository.count(),
       this.mediaRepository.find({ select: ['fileSize'] }),
     ]);
 
-    const totalMediaSize = mediaFiles.reduce((sum, file) => sum + (file.fileSize || 0), 0);
+    const totalMediaSize = mediaFiles.reduce(
+      (sum, file) => sum + (file.fileSize || 0),
+      0,
+    );
 
     return {
       users: {
@@ -185,7 +200,7 @@ export class AdminService {
       GROUP BY DATE_TRUNC('month', "createdAt")
       ORDER BY month ASC
     `;
-    
+
     return this.articleRepository.query(query);
   }
 
@@ -199,7 +214,7 @@ export class AdminService {
       GROUP BY DATE_TRUNC('month', "createdAt")
       ORDER BY month ASC
     `;
-    
+
     return this.commentRepository.query(query);
   }
 
@@ -216,7 +231,7 @@ export class AdminService {
       ORDER BY article_count DESC
       LIMIT 10
     `;
-    
+
     return this.categoryRepository.query(query);
   }
 }

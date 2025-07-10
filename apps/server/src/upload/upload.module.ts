@@ -17,16 +17,22 @@ import { ArticleMedia } from '../entities/article-media.entity';
         storage: diskStorage({
           destination: configService.get<string>('UPLOAD_PATH', './uploads'),
           filename: (req, file, callback) => {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const uniqueSuffix =
+              Date.now() + '-' + Math.round(Math.random() * 1e9);
             const ext = extname(file.originalname);
             const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
             callback(null, filename);
           },
         }),
         fileFilter: (req, file, callback) => {
-          const allowedTypes = configService.get<string>('ALLOWED_FILE_TYPES', 'jpg,jpeg,png,gif,pdf,doc,docx,mp4,avi,mov').split(',');
+          const allowedTypes = configService
+            .get<string>(
+              'ALLOWED_FILE_TYPES',
+              'jpg,jpeg,png,gif,pdf,doc,docx,mp4,avi,mov',
+            )
+            .split(',');
           const fileExt = extname(file.originalname).toLowerCase().substring(1);
-          
+
           if (allowedTypes.includes(fileExt)) {
             callback(null, true);
           } else {

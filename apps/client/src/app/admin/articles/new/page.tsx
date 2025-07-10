@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
-import { Article } from '@/types';
 import MediaManager from '@/components/admin/MediaManager';
+import ArticleEditor from '@/components/editor/ArticleEditor';
+import PDFViewer from '@/components/ui/PDFViewer';
 import {
   ArrowLeftIcon,
   PhotoIcon,
@@ -67,6 +68,9 @@ export default function NewArticle() {
   const [newKeyword, setNewKeyword] = useState('');
   const [newAuthor, setNewAuthor] = useState('');
   const [showMediaManager, setShowMediaManager] = useState(false);
+  const [uploadedPDF, setUploadedPDF] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [articleId, setArticleId] = useState<number | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [creatingCategory, setCreatingCategory] = useState(false);
@@ -155,8 +159,13 @@ export default function NewArticle() {
       };
 
       const response = await articlesAPI.create(submitData);
+      setArticleId(response.data.id);
       alert('Makale başarıyla oluşturuldu!');
-      router.push('/admin/articles');
+      
+      // If not saving as draft, redirect to articles list
+      if (formData.status !== 'draft') {
+        router.push('/admin/articles');
+      }
     } catch (error) {
       console.error('Error creating article:', error);
       alert('Makale oluşturulurken hata oluştu. Lütfen tekrar deneyin.');
@@ -164,6 +173,39 @@ export default function NewArticle() {
       setLoading(false);
     }
   };
+
+  // Auto-save as draft
+  const handleAutoSave = useCallback(async () => {
+    if (!articleId && formData.title && formData.content && formData.categoryId) {
+      setIsSaving(true);
+      try {
+        const submitData = {
+          ...formData,
+          status: 'draft',
+          categoryId: parseInt(formData.categoryId),
+          publishedDate: formData.publishedDate || undefined,
+        };
+
+        const response = await articlesAPI.create(submitData);
+        setArticleId(response.data.id);
+      } catch (error) {
+        console.error('Auto-save error:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  }, [articleId, formData.title, formData.content, formData.categoryId, formData.status, formData.publishedDate]);
+
+  // Auto-save when necessary fields are filled
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!articleId && formData.title && formData.content && formData.categoryId) {
+        handleAutoSave();
+      }
+    }, 3000); // Auto-save after 3 seconds of no typing
+
+    return () => clearTimeout(timer);
+  }, [formData.title, formData.content, formData.categoryId, articleId, handleAutoSave]);
 
   const isAcademicPaper = formData.type === 'academic_paper';
 
@@ -184,6 +226,16 @@ export default function NewArticle() {
                 <h1 className="heading-seljuk-large text-3xl lg:text-4xl text-brown-dark">Yeni Makale</h1>
                 <p className="mt-2 font-bookmania text-brown-light">
                   Yeni bir makale oluşturun
+                  {articleId && (
+                    <span className="ml-2 text-xs font-bookmania-medium text-teal-medium">
+                      (Otomatik kaydedildi)
+                    </span>
+                  )}
+                  {isSaving && (
+                    <span className="ml-2 text-xs font-bookmania-medium text-burgundy-medium">
+                      Kaydediliyor...
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -431,11 +483,22 @@ export default function NewArticle() {
                               type="file"
                               accept=".pdf"
                               className="sr-only"
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                 const file = e.target.files?.[0];
-                                if (file) {
-                                  // Handle PDF upload
-                                  console.log('PDF file selected:', file);
+                                if (file && articleId) {
+                                  const formData = new FormData();
+                                  formData.append('pdf', file);
+                                  try {
+                                    const response = await articlesAPI.uploadPDF(articleId, formData);
+                                    setUploadedPDF(response.data.pdfFile);
+                                    handleInputChange('pdfFile', response.data.pdfFile);
+                                    alert('PDF başarıyla yüklendi!');
+                                  } catch (error) {
+                                    console.error('PDF upload error:', error);
+                                    alert('PDF yüklenirken hata oluştu.');
+                                  }
+                                } else if (!articleId) {
+                                  alert('Lütfen önce makaleyi kaydedin.');
                                 }
                               }}
                             />
@@ -445,6 +508,15 @@ export default function NewArticle() {
                         <p className="text-xs font-bookmania text-brown-light">PDF dosyaları, maksimum 10MB</p>
                       </div>
                     </div>
+                    {uploadedPDF && (
+                      <div className="mt-4">
+                        <PDFViewer
+                          pdfUrl={uploadedPDF}
+                          title={formData.title || 'PDF Dosyası'}
+                          showPreview={false}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Keywords */}
@@ -551,28 +623,23 @@ export default function NewArticle() {
             )}
 
             {/* Content Editor */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">İçerik</h3>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Makale İçeriği *
-                </label>
-                <textarea
-                  required
-                  rows={15}
-                  value={formData.content}
-                  onChange={(e) => handleInputChange('content', e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm"
-                  placeholder={isAcademicPaper
-                    ? "Akademik makale içeriğini Markdown formatında yazın...\n\n# Giriş\n\nBu çalışmada...\n\n## Metodoloji\n\n### Veri Toplama\n\n## Sonuçlar\n\n## Tartışma\n\n## Sonuç\n\n## Kaynaklar"
-                    : "Makale içeriğini Markdown formatında yazın...\n\n# Ana Başlık\n\nBuraya giriş paragrafınızı yazın.\n\n## Alt Başlık\n\nDetayları burada açıklayın.\n\n### Daha Küçük Başlık\n\n- Liste öğesi 1\n- Liste öğesi 2\n\n**Kalın metin** ve *italik metin* kullanabilirsiniz."
-                  }
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  Markdown formatını kullanabilirsiniz. Başlıklar için #, kalın metin için **metin**, italik için *metin* kullanın.
+            <div className="bg-white shadow rounded-lg">
+              <div className="p-6 border-b">
+                <h3 className="text-lg font-medium text-gray-900">İçerik Editörü</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Medium tarzı zengin metin editörü ile makalenizi yazın
                 </p>
               </div>
+              
+              <ArticleEditor
+                articleId={articleId}
+                initialContent={formData.content}
+                onChange={(content) => handleInputChange('content', content)}
+                placeholder={isAcademicPaper
+                  ? "Akademik makalenizi yazmaya başlayın..."
+                  : "Hikayenizi anlatmaya başlayın..."
+                }
+              />
             </div>
 
             {/* Media Management */}

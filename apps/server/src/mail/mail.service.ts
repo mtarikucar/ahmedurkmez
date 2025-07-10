@@ -14,7 +14,7 @@ export class MailService {
 
   async sendContactNotification(contact: Contact): Promise<void> {
     const adminEmail = this.configService.get('ADMIN_EMAIL');
-    
+
     await this.mailerService.sendMail({
       to: adminEmail,
       subject: `Yeni İletişim Mesajı: ${contact.subject}`,
@@ -33,14 +33,20 @@ export class MailService {
       template: 'contact-confirmation',
       context: {
         contact,
-        websiteUrl: this.configService.get('FRONTEND_URL', 'http://localhost:3000'),
+        websiteUrl: this.configService.get(
+          'FRONTEND_URL',
+          'http://localhost:3000',
+        ),
       },
     });
   }
 
-  async sendCommentNotification(comment: Comment, article: Article): Promise<void> {
+  async sendCommentNotification(
+    comment: Comment,
+    article: Article,
+  ): Promise<void> {
     const adminEmail = this.configService.get('ADMIN_EMAIL');
-    
+
     await this.mailerService.sendMail({
       to: adminEmail,
       subject: `Yeni Yorum: ${article.title}`,
@@ -54,7 +60,10 @@ export class MailService {
     });
   }
 
-  async sendCommentApprovalNotification(comment: Comment, article: Article): Promise<void> {
+  async sendCommentApprovalNotification(
+    comment: Comment,
+    article: Article,
+  ): Promise<void> {
     if (comment.authorEmail && !comment.isGuest) {
       await this.mailerService.sendMail({
         to: comment.authorEmail,
@@ -72,7 +81,7 @@ export class MailService {
   async sendNewArticleNotification(article: Article): Promise<void> {
     // This could be extended to send to subscribers
     const adminEmail = this.configService.get('ADMIN_EMAIL');
-    
+
     await this.mailerService.sendMail({
       to: adminEmail,
       subject: `Yeni Makale Yayınlandı: ${article.title}`,
@@ -84,9 +93,12 @@ export class MailService {
     });
   }
 
-  async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
+  async sendPasswordResetEmail(
+    email: string,
+    resetToken: string,
+  ): Promise<void> {
     const resetUrl = `${this.configService.get('FRONTEND_URL', 'http://localhost:3000')}/reset-password?token=${resetToken}`;
-    
+
     await this.mailerService.sendMail({
       to: email,
       subject: 'Şifre Sıfırlama - Ahmed Ürkmez',
@@ -105,7 +117,10 @@ export class MailService {
       template: 'welcome',
       context: {
         firstName,
-        websiteUrl: this.configService.get('FRONTEND_URL', 'http://localhost:3000'),
+        websiteUrl: this.configService.get(
+          'FRONTEND_URL',
+          'http://localhost:3000',
+        ),
       },
     });
   }

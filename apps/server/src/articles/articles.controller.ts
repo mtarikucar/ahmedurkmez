@@ -9,7 +9,11 @@ import {
   Query,
   UseGuards,
   ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -99,5 +103,49 @@ export class ArticlesController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.articlesService.remove(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post(':id/upload-pdf')
+  @UseInterceptors(FileInterceptor('pdf'))
+  async uploadPDF(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No PDF file uploaded');
+    }
+
+    const fileExt = file.originalname.split('.').pop()?.toLowerCase();
+    if (fileExt !== 'pdf') {
+      throw new BadRequestException('Only PDF files are allowed');
+    }
+
+    return this.articlesService.uploadPDF(id, file);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post(':id/upload-image')
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadImage(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No image file uploaded');
+    }
+
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    const fileExt = file.originalname.split('.').pop()?.toLowerCase();
+
+    if (!fileExt || !allowedExtensions.includes(fileExt)) {
+      throw new BadRequestException(
+        'Only image files (jpg, jpeg, png, gif, webp) are allowed',
+      );
+    }
+
+    return this.articlesService.uploadImage(id, file);
   }
 }

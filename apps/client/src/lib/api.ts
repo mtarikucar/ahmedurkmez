@@ -63,6 +63,12 @@ export const articlesAPI = {
   update: (id: number, data: any) => api.patch(`/articles/${id}`, data),
   delete: (id: number) => api.delete(`/articles/${id}`),
   like: (id: number) => api.post(`/articles/${id}/like`),
+  uploadPDF: (id: number, formData: FormData) => api.post(`/articles/${id}/upload-pdf`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  uploadImage: (id: number, formData: FormData) => api.post(`/articles/${id}/upload-image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 };
 
 export const usersAPI = {

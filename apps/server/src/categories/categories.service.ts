@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
@@ -27,11 +31,11 @@ export class CategoriesService {
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const slug = this.generateSlug(createCategoryDto.name);
-    
+
     const existingCategory = await this.categoryRepository.findOne({
       where: { slug },
     });
-    
+
     if (existingCategory) {
       throw new BadRequestException('Category with this name already exists');
     }
@@ -64,7 +68,10 @@ export class CategoriesService {
     return category;
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(
+    id: number,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
     const category = await this.findOne(id);
 
     if (updateCategoryDto.name && updateCategoryDto.name !== category.name) {
@@ -72,11 +79,11 @@ export class CategoriesService {
       const existingCategory = await this.categoryRepository.findOne({
         where: { slug: newSlug },
       });
-      
+
       if (existingCategory && existingCategory.id !== id) {
         throw new BadRequestException('Category with this name already exists');
       }
-      
+
       category.slug = newSlug;
     }
 

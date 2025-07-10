@@ -1,11 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum SettingType {
   STRING = 'string',
   NUMBER = 'number',
   BOOLEAN = 'boolean',
   JSON = 'json',
-  TEXT = 'text'
+  TEXT = 'text',
 }
 
 @Entity('settings')
@@ -22,7 +28,7 @@ export class Settings {
   @Column({
     type: 'enum',
     enum: SettingType,
-    default: SettingType.STRING
+    default: SettingType.STRING,
   })
   type: SettingType;
 

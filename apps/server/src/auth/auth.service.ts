@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,7 +23,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { email } });
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       const { password, ...result } = user;
       return result;
     }
@@ -30,7 +35,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    
+
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
@@ -55,7 +60,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
-    
+
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -64,7 +69,7 @@ export class AuthService {
 
     const savedUser = await this.userRepository.save(user);
     const { password, ...result } = savedUser;
-    
+
     return result;
   }
 
@@ -72,7 +77,12 @@ export class AuthService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  async createAdmin(email: string, password: string, firstName: string, lastName: string) {
+  async createAdmin(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) {
     const existingAdmin = await this.userRepository.findOne({
       where: { role: UserRole.ADMIN },
     });
@@ -106,13 +116,19 @@ export class AuthService {
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
+    const isCurrentPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
     if (!isCurrentPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
     }
 
     // Hash new password
-    const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, 12);
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      12,
+    );
 
     // Update password
     await this.userRepository.update(userId, { password: hashedNewPassword });
