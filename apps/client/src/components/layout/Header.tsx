@@ -9,8 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const navigation = [
   { name: 'Ana Sayfa', href: '/' },
-  { name: 'Makaleler', href: '/articles' },
-  { name: 'Kategoriler', href: '/categories' },
+  { name: 'Eserler ve Yayınlar', href: '/articles' },
+/*   { name: 'Kategoriler', href: '/categories' }, */
   { name: 'Hakkımda', href: '/about' },
   { name: 'İletişim', href: '/contact' },
 ];

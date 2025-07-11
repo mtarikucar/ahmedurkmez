@@ -1,5 +1,5 @@
-import ArticlesPage from '@/components/pages/ArticlesPage';
+import NewArticlesPage from '@/components/pages/NewArticlesPage';
 
 export default function Articles() {
-  return <ArticlesPage />;
+  return <NewArticlesPage />;
 }

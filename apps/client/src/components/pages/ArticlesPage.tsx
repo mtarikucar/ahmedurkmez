@@ -1,13 +1,7 @@
 'use client';
-
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { articlesAPI, categoriesAPI } from '@/lib/api';
-import { Article, Category } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { ClockIcon, EyeIcon, HeartIcon, UserIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronRightIcon, DocumentTextIcon, FilmIcon, PaintBrushIcon, BookOpenIcon, MicrophoneIcon, CameraIcon } from '@heroicons/react/24/outline';
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
