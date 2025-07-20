@@ -1,8 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeftIcon, MagnifyingGlassIcon, FunnelIcon, BookOpenIcon, FilmIcon, PaintBrushIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, MagnifyingGlassIcon, FunnelIcon, BookOpenIcon, FilmIcon, PaintBrushIcon, HeartIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
+import { extractArticlesArray, extractCategoriesArray, safeMap, safeFilter, safeFind } from '@/lib/arrayUtils';
 
 const AllArticlesPage = () => {
   const router = useRouter();
@@ -13,6 +15,7 @@ const AllArticlesPage = () => {
   const [articles, setArticles] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [likedArticles, setLikedArticles] = useState<number[]>([]);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -22,18 +25,26 @@ const AllArticlesPage = () => {
         
         // Fetch articles and categories in parallel
         const [articlesResponse, categoriesResponse] = await Promise.all([
-          articlesAPI.getAll({ status: 'published' }),
+          articlesAPI.getAll({ status: 'published', simple: 'true' }),
           categoriesAPI.getAll()
         ]);
 
-        const articlesData = articlesResponse.data.data || articlesResponse.data;
-        const categoriesData = categoriesResponse.data.data || categoriesResponse.data;
+        // Use robust array extraction utilities
+        const validArticles = extractArticlesArray(articlesResponse);
+        const validCategories = extractCategoriesArray(categoriesResponse);
         
-        setArticles(articlesData);
-        setCategories(categoriesData);
+        setArticles(validArticles);
+        setCategories(validCategories);
+        
+        // Load liked articles from localStorage
+        const liked = JSON.parse(localStorage.getItem('likedArticles') || '[]');
+        setLikedArticles(liked);
         
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Set empty arrays on error to prevent crashes
+        setArticles([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -42,6 +53,61 @@ const AllArticlesPage = () => {
     fetchData();
   }, []);
 
+  // Like functionality
+  const handleLike = async (article: any, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent navigation to article
+    
+    try {
+      const isLiked = likedArticles.includes(article.id);
+      
+      if (isLiked) {
+        // Unlike
+        setLikedArticles(prev => prev.filter(id => id !== article.id));
+        localStorage.setItem('likedArticles', JSON.stringify(likedArticles.filter(id => id !== article.id)));
+        
+        // Update article in state
+        setArticles(prev => prev.map(a => 
+          a.id === article.id ? { ...a, likeCount: Math.max(0, (a.likeCount || 0) - 1) } : a
+        ));
+      } else {
+        // Like
+        await articlesAPI.like(article.id);
+        setLikedArticles(prev => [...prev, article.id]);
+        localStorage.setItem('likedArticles', JSON.stringify([...likedArticles, article.id]));
+        
+        // Update article in state
+        setArticles(prev => prev.map(a => 
+          a.id === article.id ? { ...a, likeCount: (a.likeCount || 0) + 1 } : a
+        ));
+      }
+    } catch (error) {
+      console.error('Error liking article:', error);
+    }
+  };
+
+  // Share functionality
+  const handleShare = async (article: any, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent navigation to article
+    
+    const articleUrl = `${window.location.origin}/articles/${article.slug}`;
+    const shareData = {
+      title: article.title,
+      text: article.description || `${article.title} - Ahmed Ürkmez`,
+      url: articleUrl,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(articleUrl);
+        // Could show a toast notification here
+      }
+    } catch (error) {
+      console.error('Error sharing article:', error);
+    }
+  };
+
   const categoryFilters = [
     { id: 'all', name: 'Tümü', icon: null },
     { id: 'printed', name: 'Basılı Yayınlar', icon: BookOpenIcon },
@@ -49,9 +115,9 @@ const AllArticlesPage = () => {
     { id: 'social', name: 'Sosyal & Sanatsal', icon: PaintBrushIcon }
   ];
 
-  // Get unique years from articles
+  // Get unique years from articles using safe operations
   const years = Array.from(new Set(
-    articles.map(article => new Date(article.createdAt).getFullYear())
+    safeMap(articles, (article: any) => new Date(article.createdAt).getFullYear())
   )).sort((a, b) => b - a);
 
   // Map category types for filtering
@@ -67,39 +133,37 @@ const AllArticlesPage = () => {
     return typeMapping[article.type] || 'printed';
   };
   
-  const processedArticles = articles.map((article, index) => ({
+  const processedArticles = safeMap(articles, (article: any, index: number) => ({
     ...article,
     categoryType: getCategoryType(article),
-    categoryName: categories.find(cat => cat.id === article.categoryId)?.name || 'Genel',
+    categoryName: safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name || 'Genel',
     year: new Date(article.createdAt).getFullYear().toString(),
     description: article.content ? article.content.substring(0, 150) + '...' : article.title,
     featured: article.featured || false,
     color: index % 4 === 0 ? 'blue' : index % 4 === 1 ? 'purple' : index % 4 === 2 ? 'emerald' : 'brown'
   }));
 
-  const filteredArticles = processedArticles
-    .filter(article => {
-      const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           article.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || article.categoryType === selectedCategory;
-      const matchesYear = selectedYear === 'all' || article.year === selectedYear.toString();
-      
-      return matchesSearch && matchesCategory && matchesYear;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        case 'mostViewed':
-          return (b.viewCount || 0) - (a.viewCount || 0);
-        case 'alphabetical':
-          return a.title.localeCompare(b.title);
-        default:
-          return 0;
-      }
-    });
+  const filteredArticles = safeFilter(processedArticles, (article: any) => {
+    const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || article.categoryType === selectedCategory;
+    const matchesYear = selectedYear === 'all' || article.year === selectedYear.toString();
+    
+    return matchesSearch && matchesCategory && matchesYear;
+  }).sort((a: any, b: any) => {
+    switch (sortBy) {
+      case 'newest':
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case 'oldest':
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case 'mostViewed':
+        return (b.viewCount || 0) - (a.viewCount || 0);
+      case 'alphabetical':
+        return a.title?.localeCompare(b.title) || 0;
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="min-h-screen font-bookmania bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
@@ -278,9 +342,31 @@ const AllArticlesPage = () => {
                     <span>{article.categoryName}</span>
                     <span>👁 {(article.viewCount || 0).toLocaleString()}</span>
                   </div>
-                  <button className="text-teal-400 text-sm font-medium bg-gray-700 px-3 py-1 rounded">
-                    Detaylar →
-                  </button>
+                  
+                  <div className="flex items-center space-x-2">
+                    <button 
+                      onClick={(e) => handleLike(article, e)}
+                      className="flex items-center space-x-1 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      {likedArticles.includes(article.id) ? (
+                        <HeartIconSolid className="h-4 w-4 text-red-500" />
+                      ) : (
+                        <HeartIcon className="h-4 w-4" />
+                      )}
+                      <span className="text-xs">{article.likeCount || 0}</span>
+                    </button>
+                    
+                    <button 
+                      onClick={(e) => handleShare(article, e)}
+                      className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                    >
+                      <ShareIcon className="h-4 w-4" />
+                    </button>
+                    
+                    <button className="text-teal-400 text-sm font-medium bg-gray-700 px-3 py-1 rounded hover:bg-gray-600 transition-colors">
+                      Detaylar →
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

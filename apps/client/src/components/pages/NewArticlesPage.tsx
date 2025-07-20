@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronRightIcon, DocumentTextIcon, FilmIcon, PaintBrushIcon, BookOpenIcon, MicrophoneIcon, CameraIcon } from '@heroicons/react/24/outline';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
+import { extractArticlesArray, extractCategoriesArray, safeArrayStats, safeFilter, safeMap, safeFind } from '@/lib/arrayUtils';
 
 const ArticlesPage = () => {
   const router = useRouter();
@@ -25,27 +26,39 @@ const ArticlesPage = () => {
         
         // Fetch articles and categories in parallel
         const [articlesResponse, categoriesResponse] = await Promise.all([
-          articlesAPI.getAll({ status: 'published', limit: 100 }),
+          articlesAPI.getAll({ status: 'published', limit: 100, simple: 'true' }),
           categoriesAPI.getAll()
         ]);
 
-        const articlesData = articlesResponse.data.data || articlesResponse.data;
-        const categoriesData = categoriesResponse.data.data || categoriesResponse.data;
+        // Use our robust array extraction utilities
+        const validArticles = extractArticlesArray(articlesResponse);
+        const validCategories = extractCategoriesArray(categoriesResponse);
         
-        setArticles(articlesData);
-        setCategories(categoriesData);
+        setArticles(validArticles);
+        setCategories(validCategories);
         
-        // Calculate stats
-        const totalViews = articlesData.reduce((sum: number, article: any) => sum + (article.viewCount || 0), 0);
+        // Calculate stats using safe array operations
+        const viewStats = safeArrayStats(validArticles, 'viewCount');
+        const uniqueTypes = new Set(safeMap(validArticles, (article: any) => article.type || 'unknown'));
+        
         setStats({
-          totalArticles: articlesData.length,
-          totalViews: totalViews,
-          totalPlatforms: new Set(articlesData.map((a: any) => a.type)).size,
+          totalArticles: viewStats.count,
+          totalViews: viewStats.sum,
+          totalPlatforms: uniqueTypes.size,
           experience: 15
         });
         
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Set empty arrays on error to prevent crashes
+        setArticles([]);
+        setCategories([]);
+        setStats({
+          totalArticles: 0,
+          totalViews: 0,
+          totalPlatforms: 0,
+          experience: 15
+        });
       } finally {
         setLoading(false);
       }
@@ -63,9 +76,9 @@ const ArticlesPage = () => {
     };
     
     const relevantTypes = typeMapping[categoryType] || [];
-    return articles.filter(article => 
+    return safeFilter(articles, (article: any) => 
       relevantTypes.includes(article.type) || 
-      (categories.find(cat => cat.id === article.categoryId)?.name?.toLowerCase().includes(categoryType))
+      (safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name?.toLowerCase().includes(categoryType))
     ).length;
   };
 
@@ -109,10 +122,13 @@ const ArticlesPage = () => {
     }
   ];
 
-  // Get latest articles for preview
-  const latestArticles = articles
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
+  // Get latest articles for preview using safe operations
+  const latestArticles = safeMap(
+    safeFilter(articles, () => true)
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3),
+    (article: any) => article
+  );
 
   const handleCategoryClick = (categoryId: string) => {
     router.push(`/articles/${categoryId}`);
@@ -292,7 +308,7 @@ const ArticlesPage = () => {
                     {article.title}
                   </h3>
                   <p className="text-brown-light text-sm font-bookmania bg-gray-100/50 p-2 rounded">
-                    {categories.find(cat => cat.id === article.categoryId)?.name || 'Genel'}
+                    {safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name || 'Genel'}
                   </p>
                 </div>
               ))

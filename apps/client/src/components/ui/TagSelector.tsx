@@ -74,7 +74,7 @@ export default function TagSelector({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="min-h-[48px] px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] focus-within:ring-2 focus-within:ring-teal-medium focus-within:border-teal-medium transition-all duration-300">
+      <div className="min-h-[48px] px-4 py-3 border-2 border-teal-light rounded-lg bg-white focus-within:ring-2 focus-within:ring-teal-medium focus-within:border-teal-medium transition-all duration-300 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           {tags.map((tag, index) => (
             <span
@@ -105,7 +105,7 @@ export default function TagSelector({
                 }
               }}
               placeholder={tags.length === 0 ? placeholder : ''}
-              className="flex-1 min-w-[120px] bg-transparent outline-none font-bookmania text-brown-dark placeholder-brown-light"
+              className="flex-1 min-w-[120px] bg-transparent outline-none font-bookmania text-brown-dark placeholder-brown-light/70"
             />
           )}
         </div>

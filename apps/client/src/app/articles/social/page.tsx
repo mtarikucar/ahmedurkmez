@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, PaintBrushIcon, DocumentTextIcon, ShareIcon, PhotoIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
+import { extractArticlesArray, extractCategoriesArray, safeArrayStats, safeMap, safeFilter, safeFind } from '@/lib/arrayUtils';
 
 const SocialArtisticPublicationsPage = () => {
   const router = useRouter();
@@ -27,28 +28,43 @@ const SocialArtisticPublicationsPage = () => {
         const [articlesResponse, categoriesResponse] = await Promise.all([
           articlesAPI.getAll({ 
             status: 'published',
-            type: ['blog_post', 'social_media'] // Filter for social and artistic publications
+            simple: 'true'
           }),
           categoriesAPI.getAll()
         ]);
 
-        const articlesData = articlesResponse.data.data || articlesResponse.data;
-        const categoriesData = categoriesResponse.data.data || categoriesResponse.data;
+        // Use robust array extraction utilities
+        const validArticles = extractArticlesArray(articlesResponse);
+        const validCategories = extractCategoriesArray(categoriesResponse);
         
-        setArticles(articlesData);
-        setCategories(categoriesData);
+        // Filter for social and artistic publications (blog_post, social_media)
+        const socialArticles = safeFilter(validArticles, (article: any) => 
+          ['blog_post', 'social_media'].includes(article.type)
+        );
         
-        // Calculate stats
-        const totalViews = articlesData.reduce((sum: number, article: any) => sum + (article.viewCount || 0), 0);
+        setArticles(socialArticles);
+        setCategories(validCategories);
+        
+        // Calculate stats using safe operations
+        const viewStats = safeArrayStats(socialArticles, 'viewCount');
         setStats({
-          totalPublications: articlesData.length,
-          totalViews: totalViews,
-          totalShares: Math.floor(totalViews * 0.25), // Estimate shares
-          engagement: Math.floor(totalViews * 0.08) // Estimate engagement
+          totalPublications: viewStats.count,
+          totalViews: viewStats.sum,
+          totalShares: Math.floor(viewStats.sum * 0.25), // Estimate shares
+          engagement: Math.floor(viewStats.sum * 0.08) // Estimate engagement
         });
         
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Set empty arrays on error to prevent crashes
+        setArticles([]);
+        setCategories([]);
+        setStats({
+          totalPublications: 0,
+          totalViews: 0,
+          totalShares: 0,
+          engagement: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -68,7 +84,7 @@ const SocialArtisticPublicationsPage = () => {
     };
     
     const relevantTypes = typeMapping[subcategory] || [];
-    return articles.filter(article => relevantTypes.includes(article.type)).length;
+    return safeFilter(articles, (article: any) => relevantTypes.includes(article.type)).length;
   };
 
   const subcategories = [
@@ -79,9 +95,9 @@ const SocialArtisticPublicationsPage = () => {
     { id: 'photography', name: 'Fotoğrafçılık', count: getSubcategoryCount('photography'), icon: PhotoIcon }
   ];
 
-  const processedPublications = articles.map((article) => ({
+  const processedPublications = safeMap(articles, (article: any) => ({
     ...article,
-    categoryName: categories.find(cat => cat.id === article.categoryId)?.name || 'Genel',
+    categoryName: safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name || 'Genel',
     year: new Date(article.createdAt).getFullYear().toString(),
     description: article.content ? article.content.substring(0, 200) + '...' : article.title,
     type: article.type === 'blog_post' ? 'Blog Yazısı' : article.type === 'social_media' ? 'Sosyal Medya' : 'İçerik',
@@ -91,7 +107,7 @@ const SocialArtisticPublicationsPage = () => {
 
   const filteredPublications = selectedSubcategory === 'all' 
     ? processedPublications 
-    : processedPublications.filter(pub => {
+    : safeFilter(processedPublications, (pub: any) => {
         const typeMapping: any = {
           'blogs': ['blog yazısı'],
           'social': ['sosyal medya'],

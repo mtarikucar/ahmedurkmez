@@ -44,7 +44,20 @@ export class ArticlesController {
     @Query('categoryId') categoryId?: string,
     @Query('search') search?: string,
     @Query('featured') featured?: string,
+    @Query('simple') simple?: string,
   ) {
+    // If simple=true, return array directly without pagination
+    if (simple === 'true') {
+      return this.articlesService.findAllSimple({
+        status,
+        type,
+        categoryId: categoryId ? parseInt(categoryId) : undefined,
+        search,
+        featured: featured ? featured === 'true' : undefined,
+        limit: limit ? parseInt(limit) : undefined,
+      });
+    }
+
     return this.articlesService.findAll({
       page: page ? parseInt(page) : undefined,
       limit: limit ? parseInt(limit) : undefined,

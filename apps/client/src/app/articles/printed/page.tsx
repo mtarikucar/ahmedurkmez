@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, BookOpenIcon, DocumentTextIcon, AcademicCapIcon, NewspaperIcon } from '@heroicons/react/24/outline';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
+import { extractArticlesArray, extractCategoriesArray, safeArrayStats, safeMap, safeFilter, safeFind } from '@/lib/arrayUtils';
 
 const PrintedPublicationsPage = () => {
   const router = useRouter();
@@ -27,28 +28,44 @@ const PrintedPublicationsPage = () => {
         const [articlesResponse, categoriesResponse] = await Promise.all([
           articlesAPI.getAll({ 
             status: 'published',
-            type: ['blog_post', 'research_paper'] // Filter for printed publications
+            simple: 'true'
+            // Note: backend filtering by type array not implemented, we'll filter client-side
           }),
           categoriesAPI.getAll()
         ]);
 
-        const articlesData = articlesResponse.data.data || articlesResponse.data;
-        const categoriesData = categoriesResponse.data.data || categoriesResponse.data;
+        // Use robust array extraction utilities
+        const validArticles = extractArticlesArray(articlesResponse);
+        const validCategories = extractCategoriesArray(categoriesResponse);
         
-        setArticles(articlesData);
-        setCategories(categoriesData);
+        // Filter for printed publications (blog_post, research_paper)
+        const printedArticles = safeFilter(validArticles, (article: any) => 
+          ['blog_post', 'research_paper'].includes(article.type)
+        );
         
-        // Calculate stats
-        const totalViews = articlesData.reduce((sum: number, article: any) => sum + (article.viewCount || 0), 0);
+        setArticles(printedArticles);
+        setCategories(validCategories);
+        
+        // Calculate stats using safe operations
+        const viewStats = safeArrayStats(printedArticles, 'viewCount');
         setStats({
-          totalPublications: articlesData.length,
-          totalViews: totalViews,
-          totalDownloads: Math.floor(totalViews * 0.35), // Estimate downloads as 35% of views
-          totalCitations: Math.floor(articlesData.length * 2.5) // Estimate citations
+          totalPublications: viewStats.count,
+          totalViews: viewStats.sum,
+          totalDownloads: Math.floor(viewStats.sum * 0.35), // Estimate downloads as 35% of views
+          totalCitations: Math.floor(viewStats.count * 2.5) // Estimate citations
         });
         
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Set empty arrays on error to prevent crashes
+        setArticles([]);
+        setCategories([]);
+        setStats({
+          totalPublications: 0,
+          totalViews: 0,
+          totalDownloads: 0,
+          totalCitations: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -68,7 +85,7 @@ const PrintedPublicationsPage = () => {
     };
     
     const relevantTypes = typeMapping[subcategory] || [];
-    return articles.filter(article => relevantTypes.includes(article.type)).length;
+    return safeFilter(articles, (article: any) => relevantTypes.includes(article.type)).length;
   };
 
   const subcategories = [
@@ -79,9 +96,9 @@ const PrintedPublicationsPage = () => {
     { id: 'academic', name: 'Akademik Yayınlar', count: getSubcategoryCount('academic'), icon: NewspaperIcon }
   ];
 
-  const processedPublications = articles.map((article) => ({
+  const processedPublications = safeMap(articles, (article: any) => ({
     ...article,
-    categoryName: categories.find(cat => cat.id === article.categoryId)?.name || 'Genel',
+    categoryName: safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name || 'Genel',
     year: new Date(article.createdAt).getFullYear().toString(),
     description: article.content ? article.content.substring(0, 200) + '...' : article.title,
     downloadCount: Math.floor((article.viewCount || 0) * 0.35),
@@ -91,7 +108,7 @@ const PrintedPublicationsPage = () => {
 
   const filteredPublications = selectedSubcategory === 'all' 
     ? processedPublications 
-    : processedPublications.filter(pub => {
+    : safeFilter(processedPublications, (pub: any) => {
         const typeMapping: any = {
           'books': ['research_paper'],
           'articles': ['blog_post'],

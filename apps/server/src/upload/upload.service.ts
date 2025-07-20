@@ -39,7 +39,10 @@ export class UploadService {
       'UPLOAD_PATH',
       './uploads',
     );
-    const baseUrl = this.configService.get<string>('BASE_URL', 'http://localhost:3001');
+    const baseUrl = this.configService.get<string>(
+      'BASE_URL',
+      'http://localhost:3001',
+    );
     const fileUrl = `${baseUrl}/uploads/${file.filename}`;
 
     // Determine media type based on file extension

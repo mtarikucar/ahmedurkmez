@@ -37,12 +37,30 @@ import {
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const isProduction = configService.get('NODE_ENV') === 'production';
+        return [
+          {
+            name: 'default',
+            ttl: configService.get('RATE_LIMIT_WINDOW_MS', 60000), // 1 minute default
+            limit: configService.get('RATE_LIMIT_MAX_REQUESTS', isProduction ? 60 : 100),
+          },
+          {
+            name: 'auth',
+            ttl: 900000, // 15 minutes
+            limit: 5, // 5 login attempts per 15 minutes
+          },
+          {
+            name: 'upload',
+            ttl: 60000, // 1 minute
+            limit: 10, // 10 uploads per minute
+          },
+        ];
       },
-    ]),
+      inject: [ConfigService],
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',

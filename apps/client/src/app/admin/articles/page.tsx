@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { articlesAPI } from '@/lib/api';
 import { Article } from '@/types';
+import { extractArticlesArray, extractPaginationInfo } from '@/lib/arrayUtils';
 import {
   PlusIcon,
   PencilIcon,
@@ -45,22 +46,15 @@ export default function ArticlesManagement() {
       setLoading(true);
       const response = await articlesAPI.getAll(filters);
 
-      // Handle both paginated and non-paginated responses
-      if (response.data.articles) {
-        // Paginated response
-        setArticles(response.data.articles);
-        setTotalCount(response.data.total);
-      } else if (Array.isArray(response.data)) {
-        // Direct array response
-        setArticles(response.data);
-        setTotalCount(response.data.length);
-      } else {
-        console.error('Unexpected response format:', response.data);
-        setArticles([]);
-        setTotalCount(0);
-      }
+      // Use robust extraction utilities
+      const validArticles = extractArticlesArray(response);
+      const paginationInfo = extractPaginationInfo(response);
+      
+      setArticles(validArticles);
+      setTotalCount(paginationInfo.total);
     } catch (error) {
       console.error('Error fetching articles:', error);
+      // Set empty arrays on error to prevent crashes
       setArticles([]);
       setTotalCount(0);
     } finally {

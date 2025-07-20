@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { extractArticlesArray, extractCategoriesArray } from './arrayUtils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -37,6 +38,16 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+    
+    // Log errors for debugging
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      message: error.message,
+      data: error.response?.data
+    });
+    
     return Promise.reject(error);
   }
 );
@@ -53,12 +64,32 @@ export const authAPI = {
     api.patch('/auth/change-password', { currentPassword, newPassword }),
 };
 
+// Helper function to safely handle API responses
+const safeAPICall = async <T>(apiCall: () => Promise<any>, fallback: T): Promise<T> => {
+  try {
+    const response = await apiCall();
+    return response;
+  } catch (error) {
+    console.error('API call failed, returning fallback:', error);
+    return fallback;
+  }
+};
+
 export const articlesAPI = {
-  getAll: (params?: any) => api.get('/articles', { params }),
+  getAll: (params?: any) => safeAPICall(
+    () => api.get('/articles', { params }),
+    { data: { data: [], meta: { total: 0, page: 1, limit: 10, hasNextPage: false, hasPrevPage: false } } }
+  ),
   getById: (id: number) => api.get(`/articles/${id}`),
   getBySlug: (slug: string) => api.get(`/articles/slug/${slug}`),
-  getFeatured: (limit?: number) => api.get('/articles/featured', { params: { limit } }),
-  getRelated: (id: number, limit?: number) => api.get(`/articles/${id}/related`, { params: { limit } }),
+  getFeatured: (limit?: number) => safeAPICall(
+    () => api.get('/articles/featured', { params: { limit } }),
+    { data: [] }
+  ),
+  getRelated: (id: number, limit?: number) => safeAPICall(
+    () => api.get(`/articles/${id}/related`, { params: { limit } }),
+    { data: [] }
+  ),
   create: (data: any) => api.post('/articles', data),
   update: (id: number, data: any) => api.patch(`/articles/${id}`, data),
   delete: (id: number) => api.delete(`/articles/${id}`),
@@ -103,7 +134,10 @@ export const mediaAPI = {
 };
 
 export const categoriesAPI = {
-  getAll: (params?: any) => api.get('/categories', { params }),
+  getAll: (params?: any) => safeAPICall(
+    () => api.get('/categories', { params }),
+    { data: [] }
+  ),
   getById: (id: number) => api.get(`/categories/${id}`),
   create: (data: any) => api.post('/categories', data),
   update: (id: number, data: any) => api.patch(`/categories/${id}`, data),

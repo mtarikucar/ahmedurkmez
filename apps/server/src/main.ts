@@ -1,53 +1,125 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as compression from 'compression';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
+  
+  const isProduction = configService.get('NODE_ENV') === 'production';
+
+  // Trust proxy in production (for proper IP forwarding)
+  if (isProduction) {
+    app.set('trust proxy', 1);
+  }
 
   // Ensure uploads directory exists
   const uploadsPath = configService.get<string>('UPLOAD_PATH', './uploads');
   if (!fs.existsSync(uploadsPath)) {
     fs.mkdirSync(uploadsPath, { recursive: true });
-    console.log(`Created uploads directory at: ${uploadsPath}`);
+    logger.log(`Created uploads directory at: ${uploadsPath}`);
   }
 
-  // Security middleware
-  app.use(helmet());
+  // Compression middleware
+  app.use(compression());
 
-  // Global validation pipe
+  // Enhanced security middleware
+  app.use(helmet({
+    contentSecurityPolicy: isProduction ? {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    } : false,
+    crossOriginEmbedderPolicy: false,
+    hsts: isProduction ? {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    } : false,
+  }));
+
+  // Enhanced global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      disableErrorMessages: false,
+      disableErrorMessages: isProduction,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
-  // Enable CORS for client communication
+  // CORS configuration based on environment
+  const corsOrigins = isProduction 
+    ? [
+        configService.get('CORS_ORIGIN'),
+        'https://ahmedurkmez.com',
+        'https://www.ahmedurkmez.com',
+      ].filter(Boolean)
+    : [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+      ];
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000', // Next.js client URL (development)
-      'https://ahmedurkmez.com', // Production domain
-      'https://www.ahmedurkmez.com', // Production domain with www
-    ],
+    origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type', 
+      'Authorization', 
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'X-CSRF-Token'
+    ],
+    maxAge: isProduction ? 86400 : 0, // Cache preflight for 24 hours in production
   });
 
   // Global prefix for API routes
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['health', 'uploads/(.*)'],
+  });
+
+  // Graceful shutdown
+  app.enableShutdownHooks();
 
   const port = configService.get('PORT') || 3001;
-  await app.listen(port);
-  console.log(`Server is running on http://localhost:${port}`);
+  const host = isProduction ? '0.0.0.0' : 'localhost';
+  
+  await app.listen(port, host);
+  logger.log(`🚀 Server is running on http://${host}:${port}`);
+  logger.log(`📊 Environment: ${configService.get('NODE_ENV')}`);
+  logger.log(`🔒 Security: Enhanced security headers enabled`);
+  
+  // Log important security settings
+  if (isProduction) {
+    logger.log(`🛡️  Production security enabled`);
+    logger.log(`🔐 CORS origins: ${corsOrigins.join(', ')}`);
+    logger.log(`📁 Upload path: ${uploadsPath}`);
+  }
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  Logger.error('❌ Failed to start server', error);
+  process.exit(1);
+});

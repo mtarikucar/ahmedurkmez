@@ -95,7 +95,7 @@ export default function CategorySelector({
       {/* Main Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] focus:ring-2 focus:ring-teal-medium focus:border-teal-medium transition-all duration-300 text-left"
+        className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-white focus:ring-2 focus:ring-teal-medium focus:border-teal-medium transition-all duration-300 text-left shadow-sm"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export default function CategorySelector({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Kategori ara..."
-              className="w-full px-3 py-2 bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] rounded-lg border border-teal-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none font-bookmania text-brown-dark placeholder-brown-light"
+              className="w-full px-3 py-2 bg-white rounded-lg border border-teal-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none font-bookmania text-brown-dark placeholder-brown-light/70 shadow-sm"
             />
           </div>
 
@@ -178,7 +178,7 @@ export default function CategorySelector({
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="Kategori adı..."
                       required
-                      className="w-full px-3 py-2 bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] rounded-lg border border-teal-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none font-bookmania text-brown-dark placeholder-brown-light"
+                      className="w-full px-3 py-2 bg-white rounded-lg border border-teal-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none font-bookmania text-brown-dark placeholder-brown-light/70 shadow-sm"
                     />
                   </div>
                   
@@ -188,7 +188,7 @@ export default function CategorySelector({
                       onChange={(e) => setNewCategoryDescription(e.target.value)}
                       placeholder="Kategori açıklaması (opsiyonel)..."
                       rows={2}
-                      className="w-full px-3 py-2 bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] rounded-lg border border-teal-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none font-bookmania text-brown-dark placeholder-brown-light resize-none"
+                      className="w-full px-3 py-2 bg-white rounded-lg border border-teal-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none font-bookmania text-brown-dark placeholder-brown-light/70 resize-none shadow-sm"
                     />
                   </div>
                   

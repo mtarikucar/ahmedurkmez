@@ -55,7 +55,6 @@ export class ArticlesService {
       slug,
     };
 
-
     const article = this.articleRepository.create(articleData);
     await this.articleRepository.save(article);
 
@@ -81,10 +80,14 @@ export class ArticlesService {
     search?: string;
     featured?: boolean;
   }): Promise<{
-    articles: Article[];
-    total: number;
-    page: number;
-    limit: number;
+    data: Article[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
   }> {
     const page = options?.page || 1;
     const limit = options?.limit || 10;
@@ -137,10 +140,14 @@ export class ArticlesService {
       .getManyAndCount();
 
     return {
-      articles,
-      total,
-      page,
-      limit,
+      data: articles,
+      meta: {
+        total,
+        page,
+        limit,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1,
+      },
     };
   }
 
@@ -210,7 +217,6 @@ export class ArticlesService {
 
     Object.assign(article, updateArticleDto);
 
-
     return this.articleRepository.save(article);
   }
 
@@ -234,6 +240,62 @@ export class ArticlesService {
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
       take: limit,
     });
+  }
+
+  async findAllSimple(options?: {
+    status?: ArticleStatus;
+    type?: ArticleType;
+    categoryId?: number;
+    search?: string;
+    featured?: boolean;
+    limit?: number;
+  }): Promise<Article[]> {
+    const queryBuilder = this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.category', 'category')
+      .leftJoinAndSelect('article.media', 'media');
+
+    // Apply filters
+    if (options?.status) {
+      queryBuilder.andWhere('article.status = :status', {
+        status: options.status,
+      });
+    }
+
+    if (options?.type) {
+      queryBuilder.andWhere('article.type = :type', { type: options.type });
+    }
+
+    if (options?.categoryId) {
+      queryBuilder.andWhere('article.categoryId = :categoryId', {
+        categoryId: options.categoryId,
+      });
+    }
+
+    if (options?.featured !== undefined) {
+      queryBuilder.andWhere('article.isFeatured = :featured', {
+        featured: options.featured,
+      });
+    }
+
+    if (options?.search) {
+      queryBuilder.andWhere(
+        '(article.title ILIKE :search OR article.content ILIKE :search OR article.excerpt ILIKE :search)',
+        { search: `%${options.search}%` },
+      );
+    }
+
+    // Order by featured first, then by creation date
+    queryBuilder
+      .orderBy('article.isFeatured', 'DESC')
+      .addOrderBy('article.sortOrder', 'ASC')
+      .addOrderBy('article.createdAt', 'DESC');
+
+    if (options?.limit) {
+      queryBuilder.take(options.limit);
+    }
+
+    return queryBuilder.getMany();
   }
 
   async getRelatedArticles(
@@ -310,16 +372,18 @@ export class ArticlesService {
     embedData: { url: string; title?: string },
   ): Promise<ArticleMedia> {
     const article = await this.findOne(articleId);
-    
+
     // Determine video type and extract ID
     let mediaType: MediaType;
     let externalId: string;
     let embedUrl: string;
-    
+
     const { url, title } = embedData;
-    
+
     // YouTube detection
-    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+    const youtubeMatch = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    );
     if (youtubeMatch) {
       mediaType = MediaType.YOUTUBE;
       externalId = youtubeMatch[1];
@@ -338,7 +402,7 @@ export class ArticlesService {
         embedUrl = url;
       }
     }
-    
+
     // Create media entry
     const media = this.articleMediaRepository.create({
       articleId,
@@ -349,7 +413,7 @@ export class ArticlesService {
       externalId,
       embedCode: `<iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`,
     });
-    
+
     return this.articleMediaRepository.save(media);
   }
 }

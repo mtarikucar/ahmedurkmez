@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, FilmIcon, VideoCameraIcon, MicrophoneIcon, TvIcon, RadioIcon } from '@heroicons/react/24/outline';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
+import { extractArticlesArray, extractCategoriesArray, safeArrayStats, safeMap, safeFilter, safeFind } from '@/lib/arrayUtils';
 
 const AudiovisualPublicationsPage = () => {
   const router = useRouter();
@@ -27,28 +28,43 @@ const AudiovisualPublicationsPage = () => {
         const [articlesResponse, categoriesResponse] = await Promise.all([
           articlesAPI.getAll({ 
             status: 'published',
-            type: ['video', 'podcast'] // Filter for audiovisual publications
+            simple: 'true'
           }),
           categoriesAPI.getAll()
         ]);
 
-        const articlesData = articlesResponse.data.data || articlesResponse.data;
-        const categoriesData = categoriesResponse.data.data || categoriesResponse.data;
+        // Use robust array extraction utilities
+        const validArticles = extractArticlesArray(articlesResponse);
+        const validCategories = extractCategoriesArray(categoriesResponse);
         
-        setArticles(articlesData);
-        setCategories(categoriesData);
+        // Filter for audiovisual publications (video, podcast)
+        const audiovisualArticles = safeFilter(validArticles, (article: any) => 
+          ['video', 'podcast'].includes(article.type)
+        );
         
-        // Calculate stats
-        const totalViews = articlesData.reduce((sum: number, article: any) => sum + (article.viewCount || 0), 0);
+        setArticles(audiovisualArticles);
+        setCategories(validCategories);
+        
+        // Calculate stats using safe operations
+        const viewStats = safeArrayStats(audiovisualArticles, 'viewCount');
         setStats({
-          totalPublications: articlesData.length,
-          totalViews: totalViews,
-          totalSubscribers: Math.floor(totalViews * 0.15), // Estimate subscribers
+          totalPublications: viewStats.count,
+          totalViews: viewStats.sum,
+          totalSubscribers: Math.floor(viewStats.sum * 0.15), // Estimate subscribers
           avgRating: 4.5 // Default rating
         });
         
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Set empty arrays on error to prevent crashes
+        setArticles([]);
+        setCategories([]);
+        setStats({
+          totalPublications: 0,
+          totalViews: 0,
+          totalSubscribers: 0,
+          avgRating: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -68,7 +84,7 @@ const AudiovisualPublicationsPage = () => {
     };
     
     const relevantTypes = typeMapping[subcategory] || [];
-    return articles.filter(article => relevantTypes.includes(article.type)).length;
+    return safeFilter(articles, (article: any) => relevantTypes.includes(article.type)).length;
   };
 
   const subcategories = [
@@ -79,9 +95,9 @@ const AudiovisualPublicationsPage = () => {
     { id: 'interviews', name: 'Röportajlar', count: getSubcategoryCount('interviews'), icon: RadioIcon }
   ];
 
-  const processedPublications = articles.map((article) => ({
+  const processedPublications = safeMap(articles, (article: any) => ({
     ...article,
-    categoryName: categories.find(cat => cat.id === article.categoryId)?.name || 'Genel',
+    categoryName: safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name || 'Genel',
     year: new Date(article.createdAt).getFullYear().toString(),
     description: article.content ? article.content.substring(0, 200) + '...' : article.title,
     type: article.type === 'video' ? 'Video' : article.type === 'podcast' ? 'Podcast' : 'Medya',
@@ -91,7 +107,7 @@ const AudiovisualPublicationsPage = () => {
 
   const filteredPublications = selectedSubcategory === 'all' 
     ? processedPublications 
-    : processedPublications.filter(pub => {
+    : safeFilter(processedPublications, (pub: any) => {
         const typeMapping: any = {
           'videos': ['video'],
           'podcasts': ['podcast'],

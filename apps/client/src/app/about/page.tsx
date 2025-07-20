@@ -108,7 +108,7 @@ export default function AboutPage() {
           </motion.div>
           
           <motion.h1 variants={itemVariants} className="text-5xl font-bold text-gray-900 mb-4">
-            Dr. Ahmed Ürkmezer
+            Dr. Ahmed Ürkmez
           </motion.h1>
           
           <motion.p variants={itemVariants} className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">

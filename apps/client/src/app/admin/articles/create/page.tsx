@@ -392,7 +392,7 @@ export default function CreateArticle() {
                       value={formData.metaTitle}
                       onChange={(e) => handleInputChange('metaTitle', e.target.value)}
                       placeholder="SEO başlığı..."
-                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none"
+                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-white font-bookmania text-brown-dark placeholder-brown-light/70 focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none shadow-sm"
                     />
                   </div>
                   
@@ -405,7 +405,7 @@ export default function CreateArticle() {
                       onChange={(e) => handleInputChange('metaDescription', e.target.value)}
                       rows={3}
                       placeholder="SEO açıklaması..."
-                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none"
+                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-white font-bookmania text-brown-dark placeholder-brown-light/70 focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none shadow-sm"
                     />
                   </div>
                   
@@ -418,7 +418,7 @@ export default function CreateArticle() {
                       onChange={(e) => handleInputChange('excerpt', e.target.value)}
                       rows={3}
                       placeholder="Makale özeti..."
-                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none"
+                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-white font-bookmania text-brown-dark placeholder-brown-light/70 focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none shadow-sm"
                     />
                   </div>
                 </div>
