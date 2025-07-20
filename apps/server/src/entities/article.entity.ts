@@ -11,13 +11,10 @@ import {
 import { Category } from './category.entity';
 import { Comment } from './comment.entity';
 import { ArticleMedia } from './article-media.entity';
+import { User } from './user.entity';
 
 export enum ArticleType {
-  ACADEMIC_PAPER = 'academic_paper', // IEEE style with PDF
   BLOG_POST = 'blog_post', // Medium style article
-  RESEARCH = 'research',
-  ESSAY = 'essay',
-  REVIEW = 'review',
 }
 
 export enum ArticleStatus {
@@ -63,26 +60,8 @@ export class Article {
   @Column({ nullable: true })
   featuredImage: string;
 
-  @Column({ nullable: true })
-  pdfFile: string; // For academic papers
-
-  @Column({ nullable: true })
-  doi: string; // Digital Object Identifier for academic papers
-
-  @Column({ nullable: true })
-  journal: string; // Journal name for academic papers
-
-  @Column({ nullable: true })
-  publishedDate: Date; // Original publication date
-
   @Column({ type: 'simple-array', nullable: true })
   tags: string[];
-
-  @Column({ type: 'simple-array', nullable: true })
-  keywords: string[]; // For academic papers
-
-  @Column({ type: 'simple-array', nullable: true })
-  authors: string[]; // Co-authors
 
   @Column({ default: 0 })
   viewCount: number;
@@ -118,6 +97,13 @@ export class Article {
 
   @OneToMany(() => ArticleMedia, (media) => media.article)
   media: ArticleMedia[];
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'authorId' })
+  author: User;
+
+  @Column({ nullable: true })
+  authorId: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -4,95 +4,84 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
-import { Article } from '@/types';
+import MediumArticleEditor from '@/components/editor/MediumArticleEditor';
+import CategorySelector from '@/components/ui/CategorySelector';
+import TagSelector from '@/components/ui/TagSelector';
 import {
   ArrowLeftIcon,
-  PhotoIcon,
-  DocumentArrowUpIcon,
-  PlusIcon,
-  XMarkIcon,
+  EyeIcon,
+  GlobeAltIcon,
+  DocumentTextIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
-import ArticleEditor from '@/components/editor/ArticleEditor';
-import PDFViewer from '@/components/ui/PDFViewer';
 
 interface ArticleFormData {
   title: string;
   subtitle: string;
   excerpt: string;
   content: string;
-  type: string;
   status: string;
-  categoryId: string;
+  categoryId: number;
   featuredImage: string;
-  pdfFile: string;
-  doi: string;
-  journal: string;
-  publishedDate: string;
   tags: string[];
-  keywords: string[];
-  authors: string[];
   allowComments: boolean;
   isFeatured: boolean;
   metaTitle: string;
   metaDescription: string;
 }
 
+const statusOptions = [
+  { value: 'draft', label: 'Taslak', icon: PencilIcon, color: 'text-brown-medium' },
+  { value: 'published', label: 'Yayınlandı', icon: GlobeAltIcon, color: 'text-teal-medium' },
+  { value: 'archived', label: 'Arşivlendi', icon: DocumentTextIcon, color: 'text-brown-light' },
+];
+
+const commonTags = [
+  'teknoloji', 'bilim', 'araştırma', 'yazılım', 'makine öğrenmesi', 'yapay zeka',
+  'web geliştirme', 'mobil', 'tasarım', 'ui/ux', 'javascript', 'python', 'react',
+  'nodejs', 'database', 'devops', 'cloud', 'güvenlik', 'blockchain', 'iot'
+];
+
 export default function EditArticle() {
   const router = useRouter();
   const params = useParams();
-  const articleId = params.id as string;
+  const articleId = parseInt(params.id as string);
   
-  const [article, setArticle] = useState<Article | null>(null);
   const [formData, setFormData] = useState<ArticleFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
-  const [newTag, setNewTag] = useState('');
-  const [newKeyword, setNewKeyword] = useState('');
-  const [newAuthor, setNewAuthor] = useState('');
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
-  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
+  const [readTime, setReadTime] = useState(0);
 
   useEffect(() => {
-    if (articleId) {
-      fetchArticle();
-      fetchCategories();
-    }
-  }, [articleId]);
+    fetchArticle();
+    fetchCategories();
+  }, []);
 
   const fetchArticle = async () => {
     try {
-      const response = await articlesAPI.getById(parseInt(articleId));
-      const articleData = response.data;
-      setArticle(articleData);
+      const response = await articlesAPI.getById(articleId);
+      const article = response.data;
       
-      // Convert article data to form data
       setFormData({
-        title: articleData.title || '',
-        subtitle: articleData.subtitle || '',
-        excerpt: articleData.excerpt || '',
-        content: articleData.content || '',
-        type: articleData.type || 'blog_post',
-        status: articleData.status || 'draft',
-        categoryId: articleData.categoryId?.toString() || '',
-        featuredImage: articleData.featuredImage || '',
-        pdfFile: articleData.pdfFile || '',
-        doi: articleData.doi || '',
-        journal: articleData.journal || '',
-        publishedDate: articleData.publishedDate ? articleData.publishedDate.split('T')[0] : '',
-        tags: articleData.tags || [],
-        keywords: articleData.keywords || [],
-        authors: articleData.authors || [],
-        allowComments: articleData.allowComments ?? true,
-        isFeatured: articleData.isFeatured ?? false,
-        metaTitle: articleData.metaTitle || '',
-        metaDescription: articleData.metaDescription || '',
+        title: article.title || '',
+        subtitle: article.subtitle || '',
+        excerpt: article.excerpt || '',
+        content: article.content || '',
+        status: article.status || 'draft',
+        categoryId: article.categoryId || 0,
+        featuredImage: article.featuredImage || '',
+        tags: article.tags || [],
+        allowComments: article.allowComments ?? true,
+        isFeatured: article.isFeatured ?? false,
+        metaTitle: article.metaTitle || '',
+        metaDescription: article.metaDescription || '',
       });
+      
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching article:', error);
-      router.push('/admin/articles');
-    } finally {
       setLoading(false);
     }
   };
@@ -103,86 +92,77 @@ export default function EditArticle() {
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
-      // Fallback to mock data
-      setCategories([
-        { id: 1, name: 'Teknoloji' },
-        { id: 2, name: 'Bilim' },
-        { id: 3, name: 'Araştırma' },
-      ]);
     }
   };
 
   const handleInputChange = (field: keyof ArticleFormData, value: any) => {
-    if (!formData) return;
     setFormData(prev => prev ? ({
       ...prev,
       [field]: value,
     }) : null);
   };
 
-  const handleArrayAdd = (field: 'tags' | 'keywords' | 'authors', value: string) => {
-    if (!formData || !value.trim() || formData[field].includes(value.trim())) return;
-    setFormData(prev => prev ? ({
-      ...prev,
-      [field]: [...prev[field], value.trim()],
-    }) : null);
+  const handleContentChange = (content: string) => {
+    setFormData(prev => prev ? ({ ...prev, content }) : null);
+    
+    // Calculate word count and read time
+    const textContent = content.replace(/<[^>]*>/g, '').trim();
+    const words = textContent.split(/\s+/).filter(word => word.length > 0);
+    const newWordCount = words.length;
+    const newReadTime = Math.ceil(newWordCount / 200);
+    
+    setWordCount(newWordCount);
+    setReadTime(newReadTime);
   };
 
-  const handleArrayRemove = (field: 'tags' | 'keywords' | 'authors', index: number) => {
-    if (!formData) return;
-    setFormData(prev => prev ? ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }) : null);
-  };
-
-  const handleCreateCategory = async () => {
-    if (!newCategoryName.trim()) return;
-
-    setCreatingCategory(true);
+  const handleCategoryCreate = async (name: string, description: string) => {
     try {
-      const response = await categoriesAPI.create({
-        name: newCategoryName.trim(),
-        description: `${newCategoryName.trim()} kategorisi`,
-      });
-
-      // Add new category to the list
+      const response = await categoriesAPI.create({ name, description });
       setCategories(prev => [...prev, response.data]);
-
-      // Select the new category
-      setFormData(prev => prev ? ({
-        ...prev,
-        categoryId: response.data.id.toString(),
-      }) : null);
-
-      // Reset form
-      setNewCategoryName('');
-      setShowNewCategoryInput(false);
+      return response.data;
     } catch (error) {
       console.error('Error creating category:', error);
-      alert('Kategori oluşturulurken hata oluştu. Lütfen tekrar deneyin.');
-    } finally {
-      setCreatingCategory(false);
+      throw error;
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData) return;
+  const handleSubmit = async (status: string) => {
+    if (!formData || !formData.title || !formData.content || !formData.categoryId) {
+      alert('Lütfen başlık, içerik ve kategori alanlarını doldurun.');
+      return;
+    }
 
     setSaving(true);
 
     try {
-      const submitData = {
-        ...formData,
-        categoryId: parseInt(formData.categoryId),
-        publishedDate: formData.publishedDate || undefined,
+      // Clean and send only valid fields
+      const cleanData = {
+        title: formData.title,
+        subtitle: formData.subtitle,
+        excerpt: formData.excerpt,
+        content: formData.content,
+        type: 'blog_post', // Always Medium-style
+        status,
+        featuredImage: formData.featuredImage,
+        tags: formData.tags,
+        allowComments: formData.allowComments,
+        isFeatured: formData.isFeatured,
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
+        categoryId: formData.categoryId,
       };
 
-      await articlesAPI.update(parseInt(articleId), submitData);
-      router.push('/admin/articles');
+      console.log('Sending update data to backend:', cleanData);
+      
+      await articlesAPI.update(articleId, cleanData);
+      alert(status === 'published' ? 'Makale yayınlandı!' : 'Makale güncellendi!');
+      
+      if (status === 'published') {
+        router.push('/admin/articles');
+      }
     } catch (error) {
       console.error('Error updating article:', error);
+      alert('Makale güncellenirken hata oluştu.');
     } finally {
       setSaving(false);
     }
@@ -192,356 +172,240 @@ export default function EditArticle() {
     return (
       <ProtectedRoute requireAdmin>
         <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-teal-medium"></div>
+          <div className="text-brown-dark font-bookmania">Makale yükleniyor...</div>
         </div>
       </ProtectedRoute>
     );
   }
 
-  if (!article || !formData) {
+  if (!formData) {
     return (
       <ProtectedRoute requireAdmin>
         <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] flex items-center justify-center">
-          <div className="text-center">
-            <h3 className="text-lg font-bookmania-bold text-brown-dark">Makale bulunamadı</h3>
-            <p className="mt-2 text-sm font-bookmania text-brown-light">
-              Aradığınız makale mevcut değil veya erişim izniniz yok.
-            </p>
-            <button
-              onClick={() => router.push('/admin/articles')}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              Makale Listesine Dön
-            </button>
-          </div>
+          <div className="text-brown-dark font-bookmania">Makale bulunamadı.</div>
         </div>
       </ProtectedRoute>
     );
   }
 
-  const isAcademicPaper = formData.type === 'academic_paper';
-
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8 animate-fade-in">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.back()}
-                className="mr-4 p-2 text-brown-light hover:text-burgundy-medium transition-colors duration-300"
-              >
-                <ArrowLeftIcon className="h-6 w-6" />
-              </button>
-              <div>
-                <h1 className="heading-seljuk-large text-3xl lg:text-4xl text-brown-dark">Makale Düzenle</h1>
-                <p className="mt-2 font-bookmania text-brown-light">
-                  "{article.title}" makalesini düzenleyin
-                </p>
+      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
+        {/* Header */}
+        <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-teal-light/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center">
+                <button
+                  onClick={() => router.back()}
+                  className="mr-4 p-2 text-brown-light hover:text-burgundy-medium transition-colors duration-300"
+                >
+                  <ArrowLeftIcon className="h-6 w-6" />
+                </button>
+                <div>
+                  <h1 className="text-xl font-bookmania-bold text-brown-dark">
+                    Makale Düzenle
+                  </h1>
+                  <p className="text-sm text-brown-light font-bookmania">
+                    Medium tarzı zengin içerik editörü
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-brown-light">
+                    <span>{wordCount} kelime</span>
+                    <span>~{readTime} dk okuma</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleSubmit('draft')}
+                  disabled={saving}
+                  className="px-4 py-2 bg-gradient-to-r from-brown-light to-brown-medium text-white rounded-lg hover:from-brown-medium hover:to-brown-dark disabled:opacity-50 transition-all duration-300 font-bookmania-medium"
+                >
+                  <DocumentTextIcon className="w-4 h-4 inline mr-2" />
+                  Taslak Kaydet
+                </button>
+                
+                <button
+                  onClick={() => handleSubmit('published')}
+                  disabled={saving}
+                  className="px-4 py-2 bg-gradient-to-r from-burgundy-medium to-burgundy-dark text-white rounded-lg hover:from-burgundy-dark hover:to-burgundy-dark disabled:opacity-50 transition-all duration-300 font-bookmania-medium"
+                >
+                  <GlobeAltIcon className="w-4 h-4 inline mr-2" />
+                  Yayınla
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Basic Information */}
-            <div className="card-seljuk p-6 animate-scale-in">
-              <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">Temel Bilgiler</h3>
-              
-              <div className="grid grid-cols-1 gap-6">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Başlık *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Makale başlığını girin..."
-                  />
-                </div>
-
-                {/* Subtitle */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Alt Başlık
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.subtitle}
-                    onChange={(e) => handleInputChange('subtitle', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Alt başlık (opsiyonel)..."
-                  />
-                </div>
-
-                {/* Type and Category */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Makale Türü *
-                    </label>
-                    <select
-                      required
-                      value={formData.type}
-                      onChange={(e) => handleInputChange('type', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="blog_post">Blog Yazısı (Medium Tarzı)</option>
-                      <option value="academic_paper">Akademik Makale (IEEE Tarzı)</option>
-                      <option value="research">Araştırma</option>
-                      <option value="essay">Deneme</option>
-                      <option value="review">İnceleme</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kategori *
-                    </label>
-                    <div className="space-y-2">
-                      <select
-                        required
-                        value={formData.categoryId}
-                        onChange={(e) => handleInputChange('categoryId', e.target.value)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      >
-                        <option value="">Kategori seçin...</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-
-                      {/* New Category Input */}
-                      {showNewCategoryInput ? (
-                        <div className="flex space-x-2">
-                          <input
-                            type="text"
-                            value={newCategoryName}
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleCreateCategory();
-                              }
-                            }}
-                            placeholder="Yeni kategori adı..."
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleCreateCategory}
-                            disabled={creatingCategory || !newCategoryName.trim()}
-                            className="px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                          >
-                            {creatingCategory ? '...' : <PlusIcon className="h-4 w-4" />}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowNewCategoryInput(false);
-                              setNewCategoryName('');
-                            }}
-                            className="px-3 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-sm"
-                          >
-                            <XMarkIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setShowNewCategoryInput(true)}
-                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                          <PlusIcon className="h-4 w-4 mr-1" />
-                          Yeni Kategori Ekle
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Durum
-                    </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => handleInputChange('status', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="draft">Taslak</option>
-                      <option value="published">Yayınla</option>
-                      <option value="archived">Arşivle</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center space-x-6 pt-6">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.allowComments}
-                        onChange={(e) => handleInputChange('allowComments', e.target.checked)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Yorumlara izin ver</span>
-                    </label>
-
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.isFeatured}
-                        onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Öne çıkarılsın</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Excerpt */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Özet
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={formData.excerpt}
-                    onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Makale özeti (SEO ve önizleme için)..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Academic Paper PDF Section */}
-            {isAcademicPaper && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Title */}
               <div className="card-seljuk p-6">
-                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">PDF Dosyası</h3>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Makale başlığınızı buraya yazın..."
+                  className="w-full text-4xl font-bookmania-bold text-brown-dark bg-transparent border-none outline-none placeholder-brown-light/60 resize-none"
+                />
                 
-                {formData.pdfFile ? (
-                  <div className="space-y-4">
-                    <PDFViewer
-                      pdfUrl={formData.pdfFile}
-                      title={formData.title || 'PDF Dosyası'}
-                      showPreview={false}
-                    />
-                    <div className="flex space-x-3">
-                      <label className="cursor-pointer btn-primary text-sm">
-                        <span>Yeni PDF Yükle</span>
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          className="sr-only"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file && articleId) {
-                              const formData = new FormData();
-                              formData.append('pdf', file);
-                              try {
-                                const response = await articlesAPI.uploadPDF(parseInt(articleId), formData);
-                                handleInputChange('pdfFile', response.data.pdfFile);
-                                alert('PDF başarıyla güncellendi!');
-                              } catch (error) {
-                                console.error('PDF upload error:', error);
-                                alert('PDF yüklenirken hata oluştu.');
-                              }
-                            }
-                          }}
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => handleInputChange('pdfFile', '')}
-                        className="btn-secondary text-sm"
-                      >
-                        PDF'i Kaldır
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-teal-light rounded-lg bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] hover:border-teal-medium transition-colors duration-300">
-                    <div className="space-y-1 text-center">
-                      <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-teal-medium" />
-                      <div className="flex text-sm font-bookmania text-brown-dark">
-                        <label className="relative cursor-pointer bg-gradient-to-r from-teal-medium to-teal-dark rounded-md font-bookmania-medium text-white px-3 py-1 hover:from-teal-dark hover:to-teal-dark focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-teal-medium transition-all duration-300">
-                          <span>PDF dosyası yükle</span>
-                          <input
-                            type="file"
-                            accept=".pdf"
-                            className="sr-only"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file && articleId) {
-                                const formData = new FormData();
-                                formData.append('pdf', file);
-                                try {
-                                  const response = await articlesAPI.uploadPDF(parseInt(articleId), formData);
-                                  handleInputChange('pdfFile', response.data.pdfFile);
-                                  alert('PDF başarıyla yüklendi!');
-                                } catch (error) {
-                                  console.error('PDF upload error:', error);
-                                  alert('PDF yüklenirken hata oluştu.');
-                                }
-                              }
-                            }}
-                          />
-                        </label>
-                        <p className="pl-1">veya sürükle bırak</p>
-                      </div>
-                      <p className="text-xs font-bookmania text-brown-light">PDF dosyaları, maksimum 10MB</p>
-                    </div>
-                  </div>
-                )}
+                <input
+                  type="text"
+                  value={formData.subtitle}
+                  onChange={(e) => handleInputChange('subtitle', e.target.value)}
+                  placeholder="Alt başlık (opsiyonel)"
+                  className="w-full mt-4 text-xl font-bookmania text-brown-medium bg-transparent border-none outline-none placeholder-brown-light/60"
+                />
               </div>
-            )}
 
-            {/* Content Editor */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="p-6 border-b">
-                <h3 className="text-lg font-medium text-gray-900">İçerik Editörü</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Medium tarzı zengin metin editörü ile makalenizi düzenleyin
-                </p>
-              </div>
-              
-              <ArticleEditor
-                articleId={parseInt(articleId)}
+              {/* Editor */}
+              <MediumArticleEditor
                 initialContent={formData.content}
-                onChange={(content) => handleInputChange('content', content)}
-                placeholder={isAcademicPaper
-                  ? "Akademik makalenizi düzenleyin..."
-                  : "Hikayenizi düzenleyin..."
-                }
+                articleId={articleId}
+                onChange={handleContentChange}
+                placeholder="Hikayenizi anlatmaya başlayın..."
               />
             </div>
 
-            {/* Submit Buttons */}
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                İptal
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-              </button>
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Category */}
+              <div className="card-seljuk p-6">
+                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
+                  Kategori
+                </h3>
+                <CategorySelector
+                  categories={categories}
+                  selectedCategoryId={formData.categoryId}
+                  onCategorySelect={(id) => handleInputChange('categoryId', id)}
+                  onCategoryCreate={handleCategoryCreate}
+                />
+              </div>
+
+              {/* Tags */}
+              <div className="card-seljuk p-6">
+                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
+                  Etiketler
+                </h3>
+                <TagSelector
+                  tags={formData.tags}
+                  onTagsChange={(tags) => handleInputChange('tags', tags)}
+                  suggestions={commonTags}
+                  maxTags={10}
+                />
+              </div>
+
+              {/* Status */}
+              <div className="card-seljuk p-6">
+                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
+                  Durum
+                </h3>
+                <div className="space-y-2">
+                  {statusOptions.map((status) => (
+                    <button
+                      key={status.value}
+                      onClick={() => handleInputChange('status', status.value)}
+                      className={`w-full p-3 rounded-lg border-2 transition-all duration-300 text-left ${
+                        formData.status === status.value
+                          ? 'border-teal-medium bg-gradient-to-r from-teal-light/10 to-teal-medium/10'
+                          : 'border-teal-light hover:border-teal-medium/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <status.icon className={`w-5 h-5 ${status.color}`} />
+                        <span className="font-bookmania-medium text-brown-dark">
+                          {status.label}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* SEO */}
+              <div className="card-seljuk p-6">
+                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
+                  SEO Ayarları
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                      Meta Başlık
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.metaTitle}
+                      onChange={(e) => handleInputChange('metaTitle', e.target.value)}
+                      placeholder="SEO başlığı..."
+                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                      Meta Açıklama
+                    </label>
+                    <textarea
+                      value={formData.metaDescription}
+                      onChange={(e) => handleInputChange('metaDescription', e.target.value)}
+                      rows={3}
+                      placeholder="SEO açıklaması..."
+                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
+                      Özet
+                    </label>
+                    <textarea
+                      value={formData.excerpt}
+                      onChange={(e) => handleInputChange('excerpt', e.target.value)}
+                      rows={3}
+                      placeholder="Makale özeti..."
+                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Options */}
+              <div className="card-seljuk p-6">
+                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
+                  Seçenekler
+                </h3>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.allowComments}
+                      onChange={(e) => handleInputChange('allowComments', e.target.checked)}
+                      className="w-4 h-4 text-teal-medium border-teal-light rounded focus:ring-teal-medium"
+                    />
+                    <span className="font-bookmania text-brown-dark">
+                      Yorumlara izin ver
+                    </span>
+                  </label>
+                  
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.isFeatured}
+                      onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
+                      className="w-4 h-4 text-teal-medium border-teal-light rounded focus:ring-teal-medium"
+                    />
+                    <span className="font-bookmania text-brown-dark">
+                      Öne çıkarılsın
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </ProtectedRoute>

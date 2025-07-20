@@ -5,7 +5,6 @@ import {
   IsArray,
   IsNumber,
   IsBoolean,
-  IsDateString,
 } from 'class-validator';
 import { ArticleType, ArticleStatus } from '../../entities/article.entity';
 
@@ -36,35 +35,9 @@ export class CreateArticleDto {
   featuredImage?: string;
 
   @IsOptional()
-  @IsString()
-  pdfFile?: string;
-
-  @IsOptional()
-  @IsString()
-  doi?: string;
-
-  @IsOptional()
-  @IsString()
-  journal?: string;
-
-  @IsOptional()
-  @IsDateString()
-  publishedDate?: string;
-
-  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  keywords?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  authors?: string[];
 
   @IsOptional()
   @IsBoolean()

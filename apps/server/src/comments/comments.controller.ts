@@ -13,11 +13,9 @@ import {
   Ip,
   Headers,
 } from '@nestjs/common';
-import {
-  CommentsService,
-  CreateCommentDto,
-  UpdateCommentDto,
-} from './comments.service';
+import { CommentsService } from './comments.service';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';

@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Comment } from './comment.entity';
+import { Article } from './article.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -48,6 +49,9 @@ export class User {
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
+
+  @OneToMany(() => Article, (article) => article.author)
+  articles: Article[];
 
   @CreateDateColumn()
   createdAt: Date;

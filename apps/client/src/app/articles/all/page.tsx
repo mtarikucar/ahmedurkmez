@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, MagnifyingGlassIcon, FunnelIcon, BookOpenIcon, FilmIcon, PaintBrushIcon } from '@heroicons/react/24/outline';
+import { articlesAPI, categoriesAPI } from '@/lib/api';
 
 const AllArticlesPage = () => {
   const router = useRouter();
@@ -9,136 +10,90 @@ const AllArticlesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedYear, setSelectedYear] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [articles, setArticles] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = [
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch articles and categories in parallel
+        const [articlesResponse, categoriesResponse] = await Promise.all([
+          articlesAPI.getAll({ status: 'published' }),
+          categoriesAPI.getAll()
+        ]);
+
+        const articlesData = articlesResponse.data.data || articlesResponse.data;
+        const categoriesData = categoriesResponse.data.data || categoriesResponse.data;
+        
+        setArticles(articlesData);
+        setCategories(categoriesData);
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const categoryFilters = [
     { id: 'all', name: 'Tümü', icon: null },
     { id: 'printed', name: 'Basılı Yayınlar', icon: BookOpenIcon },
     { id: 'audiovisual', name: 'Görsel-İşitsel', icon: FilmIcon },
     { id: 'social', name: 'Sosyal & Sanatsal', icon: PaintBrushIcon }
   ];
 
-  const years = ['2024', '2023', '2022', '2021', '2020'];
-  
-  const allArticles = [
-    // Basılı Yayınlar
-    {
-      id: 1,
-      title: "Modern Eğitim Yaklaşımları ve Teknoloji Entegrasyonu",
-      category: "printed",
-      categoryName: "Basılı Yayınlar",
-      type: "Kitap",
-      year: "2024",
-      description: "21. yüzyıl eğitim paradigmalarında teknolojinin rolü ve uygulamalı örnekler.",
-      viewCount: 1250,
-      featured: true,
-      color: "blue"
-    },
-    {
-      id: 2,
-      title: "Dijital Okuryazarlık ve Medya Pedagojisi",
-      category: "printed",
-      categoryName: "Basılı Yayınlar",
-      type: "Makale",
-      year: "2024",
-      description: "Dijital çağda okuryazarlık kavramının gelişimi ve eğitimdeki yansımaları.",
-      viewCount: 890,
-      featured: true,
-      color: "blue"
-    },
-    // Görsel-İşitsel
-    {
-      id: 3,
-      title: "Dijital Dönüşüm Podcast Serisi",
-      category: "audiovisual",
-      categoryName: "Görsel-İşitsel",
-      type: "Podcast",
-      year: "2024",
-      description: "Dijital çağda eğitimin geleceği üzerine uzmanlarla yapılan derinlemesine sohbetler.",
-      viewCount: 15420,
-      featured: true,
-      color: "purple"
-    },
-    {
-      id: 4,
-      title: "Modern Eğitim Yaklaşımları Belgeseli",
-      category: "audiovisual",
-      categoryName: "Görsel-İşitsel",
-      type: "Video",
-      year: "2024",
-      description: "21. yüzyıl eğitim metodlarının uygulandığı okulları ziyaret eden belgesel serisi.",
-      viewCount: 8750,
-      featured: true,
-      color: "purple"
-    },
-    // Sosyal & Sanatsal
-    {
-      id: 5,
-      title: "Eğitimde Sosyal Medya Kullanımı Blog Serisi",
-      category: "social",
-      categoryName: "Sosyal & Sanatsal",
-      type: "Blog",
-      year: "2024",
-      description: "Sosyal medya platformlarının eğitimde etkin kullanımı üzerine pratik öneriler.",
-      viewCount: 28500,
-      featured: true,
-      color: "emerald"
-    },
-    {
-      id: 6,
-      title: "Instagram Eğitim İçerikleri",
-      category: "social",
-      categoryName: "Sosyal & Sanatsal",
-      type: "Sosyal Medya",
-      year: "2024",
-      description: "Eğitim konularında farkındalık yaratmak için hazırlanan görsel içerikler.",
-      viewCount: 125000,
-      featured: true,
-      color: "emerald"
-    },
-    // 2023 İçerikleri
-    {
-      id: 7,
-      title: "Uzaktan Eğitimde Öğrenci Motivasyonu Araştırması",
-      category: "printed",
-      categoryName: "Basılı Yayınlar",
-      type: "Araştırma",
-      year: "2023",
-      description: "Pandemi sonrası uzaktan eğitim süreçlerinde öğrenci motivasyon faktörleri.",
-      viewCount: 750,
-      featured: false,
-      color: "brown"
-    },
-    {
-      id: 8,
-      title: "Eğitim Gündemi - TV Programı",
-      category: "audiovisual",
-      categoryName: "Görsel-İşitsel",
-      type: "TV Programı",
-      year: "2023",
-      description: "Eğitim dünyasından güncel gelişmelerin ele alındığı haftalık program.",
-      viewCount: 125000,
-      featured: false,
-      color: "burgundy"
-    }
-  ];
+  // Get unique years from articles
+  const years = Array.from(new Set(
+    articles.map(article => new Date(article.createdAt).getFullYear())
+  )).sort((a, b) => b - a);
 
-  const filteredArticles = allArticles
+  // Map category types for filtering
+  const getCategoryType = (article: any) => {
+    const typeMapping: any = {
+      'blog_post': 'social',
+      'research_paper': 'printed',
+      'video': 'audiovisual',
+      'podcast': 'audiovisual',
+      'social_media': 'social'
+    };
+    
+    return typeMapping[article.type] || 'printed';
+  };
+  
+  const processedArticles = articles.map((article, index) => ({
+    ...article,
+    categoryType: getCategoryType(article),
+    categoryName: categories.find(cat => cat.id === article.categoryId)?.name || 'Genel',
+    year: new Date(article.createdAt).getFullYear().toString(),
+    description: article.content ? article.content.substring(0, 150) + '...' : article.title,
+    featured: article.featured || false,
+    color: index % 4 === 0 ? 'blue' : index % 4 === 1 ? 'purple' : index % 4 === 2 ? 'emerald' : 'brown'
+  }));
+
+  const filteredArticles = processedArticles
     .filter(article => {
       const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            article.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
-      const matchesYear = selectedYear === 'all' || article.year === selectedYear;
+      const matchesCategory = selectedCategory === 'all' || article.categoryType === selectedCategory;
+      const matchesYear = selectedYear === 'all' || article.year === selectedYear.toString();
       
       return matchesSearch && matchesCategory && matchesYear;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case 'newest':
-          return parseInt(b.year) - parseInt(a.year);
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         case 'oldest':
-          return parseInt(a.year) - parseInt(b.year);
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case 'mostViewed':
-          return b.viewCount - a.viewCount;
+          return (b.viewCount || 0) - (a.viewCount || 0);
         case 'alphabetical':
           return a.title.localeCompare(b.title);
         default:
@@ -207,7 +162,7 @@ const AllArticlesPage = () => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="w-full p-3 bg-white/80 border border-gray-300 rounded-lg text-brown-dark focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                 >
-                  {categories.map(cat => (
+                  {categoryFilters.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
@@ -223,7 +178,7 @@ const AllArticlesPage = () => {
                 >
                   <option value="all">Tüm Yıllar</option>
                   {years.map(year => (
-                    <option key={year} value={year}>{year}</option>
+                    <option key={year} value={year.toString()}>{year}</option>
                   ))}
                 </select>
               </div>
@@ -257,13 +212,32 @@ const AllArticlesPage = () => {
 
       {/* İçerik Listesi */}
       <div className="max-w-7xl mx-auto px-6 pb-20">
-        {filteredArticles.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-gray-700 rounded mb-4"></div>
+                  <div className="h-8 bg-gray-700 rounded mb-3"></div>
+                  <div className="h-20 bg-gray-700 rounded mb-4"></div>
+                  <div className="flex justify-between">
+                    <div className="h-4 bg-gray-700 rounded w-1/3"></div>
+                    <div className="h-8 bg-gray-700 rounded w-16"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredArticles.length === 0 ? (
           <div className="text-center py-20">
             <div className="bg-gray-800/50 rounded-2xl p-12 max-w-md mx-auto">
               <FunnelIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">Sonuç Bulunamadı</h3>
               <p className="text-gray-400">
-                Arama kriterlerinize uygun eser bulunamadı. Lütfen farklı filtreler deneyin.
+                {articles.length === 0 
+                  ? "Henüz yayınlanmış makale bulunmuyor."
+                  : "Arama kriterlerinize uygun eser bulunamadı. Lütfen farklı filtreler deneyin."
+                }
               </p>
             </div>
           </div>
@@ -275,7 +249,7 @@ const AllArticlesPage = () => {
                 className={`bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 cursor-pointer border border-gray-600/50 ${
                   article.featured ? 'ring-2 ring-blue-500/30' : ''
                 }`}
-                onClick={() => router.push(`/articles/${article.category}/${article.id}`)}
+                onClick={() => router.push(`/articles/${article.slug}`)}
               >
                 <div className="flex items-center justify-between mb-4">
                   {article.featured && (
@@ -284,8 +258,8 @@ const AllArticlesPage = () => {
                     </span>
                   )}
                   <div className="flex items-center space-x-2 ml-auto">
-                    <span className={`px-3 py-1 bg-${article.color}-500/20 text-${article.color}-400 text-xs font-medium rounded-full`}>
-                      {article.type}
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full">
+                      {article.type || 'Article'}
                     </span>
                     <span className="text-gray-400 text-xs">{article.year}</span>
                   </div>
@@ -302,7 +276,7 @@ const AllArticlesPage = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4 text-xs text-gray-400">
                     <span>{article.categoryName}</span>
-                    <span>👁 {article.viewCount.toLocaleString()}</span>
+                    <span>👁 {(article.viewCount || 0).toLocaleString()}</span>
                   </div>
                   <button className="text-teal-400 text-sm font-medium bg-gray-700 px-3 py-1 rounded">
                     Detaylar →

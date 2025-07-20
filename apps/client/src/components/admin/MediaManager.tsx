@@ -137,7 +137,7 @@ export default function MediaManager({
   };
 
   const filteredFiles = mediaFiles.filter(file => {
-    const matchesSearch = file.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = file.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     const matchesType = filterType === 'all' || file.type === filterType;
     const matchesAccepted = acceptedTypes.includes(file.type);
     return matchesSearch && matchesType && matchesAccepted;

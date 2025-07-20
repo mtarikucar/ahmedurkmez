@@ -144,7 +144,7 @@ export default function ArticlesManagement() {
                 </p>
               </div>
               <button
-                onClick={() => router.push('/admin/articles/new')}
+                onClick={() => router.push('/admin/articles/create')}
                 className="btn-primary inline-flex items-center"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
@@ -276,7 +276,7 @@ export default function ArticlesManagement() {
                       </button>
                     )}
                     <button
-                      onClick={() => router.push('/admin/articles/new')}
+                      onClick={() => router.push('/admin/articles/create')}
                       className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                     >
                       <PlusIcon className="h-5 w-5 mr-2" />

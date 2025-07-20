@@ -31,6 +31,7 @@ export class ArticlesController {
   @Roles(UserRole.ADMIN)
   @Post()
   create(@Body() createArticleDto: CreateArticleDto) {
+    console.log('Received article data:', createArticleDto);
     return this.articlesService.create(createArticleDto);
   }
 
@@ -147,5 +148,15 @@ export class ArticlesController {
     }
 
     return this.articlesService.uploadImage(id, file);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post(':id/embed-video')
+  async embedVideo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() embedData: { url: string; title?: string },
+  ) {
+    return this.articlesService.embedVideo(id, embedData);
   }
 }

@@ -55,9 +55,6 @@ export class ArticlesService {
       slug,
     };
 
-    if (createArticleDto.publishedDate) {
-      articleData.publishedDate = new Date(createArticleDto.publishedDate);
-    }
 
     const article = this.articleRepository.create(articleData);
     await this.articleRepository.save(article);
@@ -213,9 +210,6 @@ export class ArticlesService {
 
     Object.assign(article, updateArticleDto);
 
-    if ('publishedDate' in updateArticleDto && updateArticleDto.publishedDate) {
-      article.publishedDate = new Date(updateArticleDto.publishedDate);
-    }
 
     return this.articleRepository.save(article);
   }
@@ -272,7 +266,7 @@ export class ArticlesService {
   async uploadPDF(
     articleId: number,
     file: Express.Multer.File,
-  ): Promise<Article> {
+  ): Promise<{ message: string; media: any; pdfFile: string }> {
     const article = await this.findOne(articleId);
 
     // Upload the PDF file
@@ -283,17 +277,17 @@ export class ArticlesService {
 
     const uploadedMedia = await this.uploadService.uploadFile(file, mediaDto);
 
-    // Update article with PDF file URL
-    article.pdfFile = uploadedMedia.url;
-    await this.articleRepository.save(article);
-
-    return this.findOne(articleId);
+    return {
+      message: 'PDF uploaded successfully',
+      media: uploadedMedia,
+      pdfFile: uploadedMedia.url,
+    };
   }
 
   async uploadImage(
     articleId: number,
     file: Express.Multer.File,
-  ): Promise<ArticleMedia> {
+  ): Promise<{ message: string; media: any; url: string }> {
     const article = await this.findOne(articleId);
 
     // Upload the image file
@@ -304,6 +298,58 @@ export class ArticlesService {
 
     const uploadedMedia = await this.uploadService.uploadFile(file, mediaDto);
 
-    return uploadedMedia;
+    return {
+      message: 'Image uploaded successfully',
+      media: uploadedMedia,
+      url: uploadedMedia.url,
+    };
+  }
+
+  async embedVideo(
+    articleId: number,
+    embedData: { url: string; title?: string },
+  ): Promise<ArticleMedia> {
+    const article = await this.findOne(articleId);
+    
+    // Determine video type and extract ID
+    let mediaType: MediaType;
+    let externalId: string;
+    let embedUrl: string;
+    
+    const { url, title } = embedData;
+    
+    // YouTube detection
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+    if (youtubeMatch) {
+      mediaType = MediaType.YOUTUBE;
+      externalId = youtubeMatch[1];
+      embedUrl = `https://www.youtube.com/embed/${externalId}`;
+    } else {
+      // Vimeo detection
+      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+      if (vimeoMatch) {
+        mediaType = MediaType.VIMEO;
+        externalId = vimeoMatch[1];
+        embedUrl = `https://player.vimeo.com/video/${externalId}`;
+      } else {
+        // Direct video URL
+        mediaType = MediaType.VIDEO;
+        externalId = '';
+        embedUrl = url;
+      }
+    }
+    
+    // Create media entry
+    const media = this.articleMediaRepository.create({
+      articleId,
+      filename: `video_${Date.now()}`,
+      originalName: title || `Video from ${url}`,
+      type: mediaType,
+      url: embedUrl,
+      externalId,
+      embedCode: `<iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`,
+    });
+    
+    return this.articleMediaRepository.save(media);
   }
 }

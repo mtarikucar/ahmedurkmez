@@ -1,11 +1,73 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronRightIcon, DocumentTextIcon, FilmIcon, PaintBrushIcon, BookOpenIcon, MicrophoneIcon, CameraIcon } from '@heroicons/react/24/outline';
+import { articlesAPI, categoriesAPI } from '@/lib/api';
 
 const ArticlesPage = () => {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [articles, setArticles] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalArticles: 0,
+    totalViews: 0,
+    totalPlatforms: 0,
+    experience: 15
+  });
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch articles and categories in parallel
+        const [articlesResponse, categoriesResponse] = await Promise.all([
+          articlesAPI.getAll({ status: 'published', limit: 100 }),
+          categoriesAPI.getAll()
+        ]);
+
+        const articlesData = articlesResponse.data.data || articlesResponse.data;
+        const categoriesData = categoriesResponse.data.data || categoriesResponse.data;
+        
+        setArticles(articlesData);
+        setCategories(categoriesData);
+        
+        // Calculate stats
+        const totalViews = articlesData.reduce((sum: number, article: any) => sum + (article.viewCount || 0), 0);
+        setStats({
+          totalArticles: articlesData.length,
+          totalViews: totalViews,
+          totalPlatforms: new Set(articlesData.map((a: any) => a.type)).size,
+          experience: 15
+        });
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Group articles by category type for mapping to UI categories
+  const getCategoryStats = (categoryType: string) => {
+    const typeMapping: any = {
+      'printed': ['blog_post', 'research_paper'],
+      'audiovisual': ['video', 'podcast'],
+      'social': ['blog_post', 'social_media']
+    };
+    
+    const relevantTypes = typeMapping[categoryType] || [];
+    return articles.filter(article => 
+      relevantTypes.includes(article.type) || 
+      (categories.find(cat => cat.id === article.categoryId)?.name?.toLowerCase().includes(categoryType))
+    ).length;
+  };
 
   // Ana kategoriler - Site renk şemasına uygun
   const mainCategories = [
@@ -18,7 +80,7 @@ const ArticlesPage = () => {
       color: 'amber',
       bgClass: 'bg-gradient-brown',
       borderClass: 'border-brown-light/30',
-      itemCount: 127,
+      itemCount: getCategoryStats('printed'),
       subcategories: ['Kitaplar', 'Makaleler', 'Araştırmalar', 'Akademik Yayınlar']
     },
     {
@@ -30,7 +92,7 @@ const ArticlesPage = () => {
       color: 'red',
       bgClass: 'bg-gradient-burgundy',
       borderClass: 'border-burgundy-light/30',
-      itemCount: 89,
+      itemCount: getCategoryStats('audiovisual'),
       subcategories: ['Video İçerikler', 'Podcast\'ler', 'TV Programları', 'Röportajlar']
     },
     {
@@ -42,10 +104,15 @@ const ArticlesPage = () => {
       color: 'teal',
       bgClass: 'bg-gradient-teal',
       borderClass: 'border-teal-light/30',
-      itemCount: 156,
+      itemCount: getCategoryStats('social'),
       subcategories: ['Blog Yazıları', 'Sosyal Medya', 'Sanatsal Projeler', 'Fotoğrafçılık']
     }
   ];
+
+  // Get latest articles for preview
+  const latestArticles = articles
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
 
   const handleCategoryClick = (categoryId: string) => {
     router.push(`/articles/${categoryId}`);
@@ -87,19 +154,25 @@ const ArticlesPage = () => {
           {/* İstatistikler */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
             <div className="card-seljuk text-center">
-              <div className="text-3xl font-bookmania-bold text-teal-dark mb-2">372</div>
+              <div className="text-3xl font-bookmania-bold text-teal-dark mb-2">
+                {loading ? '...' : stats.totalArticles}
+              </div>
               <div className="text-brown-dark text-sm font-bookmania">Toplam Eser</div>
             </div>
             <div className="card-seljuk text-center">
-              <div className="text-3xl font-bookmania-bold text-burgundy-medium mb-2">15</div>
+              <div className="text-3xl font-bookmania-bold text-burgundy-medium mb-2">{stats.experience}</div>
               <div className="text-brown-dark text-sm font-bookmania">Yıllık Deneyim</div>
             </div>
             <div className="card-seljuk text-center">
-              <div className="text-3xl font-bookmania-bold text-brown-dark mb-2">45</div>
+              <div className="text-3xl font-bookmania-bold text-brown-dark mb-2">
+                {loading ? '...' : stats.totalPlatforms}
+              </div>
               <div className="text-brown-dark text-sm font-bookmania">Farklı Platform</div>
             </div>
             <div className="card-seljuk text-center">
-              <div className="text-3xl font-bookmania-bold text-amber-600 mb-2">1.2M</div>
+              <div className="text-3xl font-bookmania-bold text-amber-600 mb-2">
+                {loading ? '...' : stats.totalViews.toLocaleString()}
+              </div>
               <div className="text-brown-dark text-sm font-bookmania">Toplam Görüntüleme</div>
             </div>
           </div>
@@ -186,42 +259,48 @@ const ArticlesPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Modern Eğitim Yaklaşımları",
-                category: "Basılı Yayınlar",
-                date: "2024",
-                type: "Makale",
-                color: "teal"
-              },
-              {
-                title: "Dijital Dönüşüm Podcast Serisi",
-                category: "Görsel-İşitsel",
-                date: "2024",
-                type: "Podcast",
-                color: "burgundy"
-              },
-              {
-                title: "Sosyal Medya ve Toplum",
-                category: "Sosyal Yayınlar",
-                date: "2024",
-                type: "Blog Serisi",
-                color: "brown"
-              }
-            ].map((item, idx) => (
-              <div key={idx} className="card-seljuk cursor-pointer">
-                <div className="flex items-center justify-between mb-4 bg-gray-100 p-3 rounded-lg">
-                  <span className={`px-3 py-1 bg-${item.color}-light/30 text-${item.color}-dark text-sm font-bookmania font-medium rounded-full`}>
-                    {item.type}
-                  </span>
-                  <span className="text-brown-dark text-sm font-bookmania font-medium bg-white px-2 py-1 rounded">{item.date}</span>
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, idx) => (
+                <div key={idx} className="card-seljuk">
+                  <div className="animate-pulse">
+                    <div className="flex items-center justify-between mb-4 bg-gray-100 p-3 rounded-lg">
+                      <div className="h-6 bg-gray-300 rounded-full w-16"></div>
+                      <div className="h-6 bg-gray-300 rounded w-12"></div>
+                    </div>
+                    <div className="h-8 bg-gray-300 rounded-lg mb-3"></div>
+                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                  </div>
                 </div>
-                <h3 className="text-brown-dark font-bookmania font-medium mb-3 text-lg bg-gray-50 p-3 rounded-lg">
-                  {item.title}
-                </h3>
-                <p className="text-brown-light text-sm font-bookmania bg-gray-100/50 p-2 rounded">{item.category}</p>
+              ))
+            ) : latestArticles.length > 0 ? (
+              latestArticles.map((article) => (
+                <div 
+                  key={article.id} 
+                  className="card-seljuk cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => router.push(`/articles/${article.slug}`)}
+                >
+                  <div className="flex items-center justify-between mb-4 bg-gray-100 p-3 rounded-lg">
+                    <span className="px-3 py-1 bg-teal-light/30 text-teal-dark text-sm font-bookmania font-medium rounded-full">
+                      {article.type || 'Article'}
+                    </span>
+                    <span className="text-brown-dark text-sm font-bookmania font-medium bg-white px-2 py-1 rounded">
+                      {new Date(article.createdAt).getFullYear()}
+                    </span>
+                  </div>
+                  <h3 className="text-brown-dark font-bookmania font-medium mb-3 text-lg bg-gray-50 p-3 rounded-lg">
+                    {article.title}
+                  </h3>
+                  <p className="text-brown-light text-sm font-bookmania bg-gray-100/50 p-2 rounded">
+                    {categories.find(cat => cat.id === article.categoryId)?.name || 'Genel'}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-brown-light font-bookmania">Henüz yayınlanmış makale bulunmuyor.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

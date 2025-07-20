@@ -8,22 +8,8 @@ import { Repository, IsNull } from 'typeorm';
 import { Comment, CommentStatus } from '../entities/comment.entity';
 import { Article } from '../entities/article.entity';
 import { User } from '../entities/user.entity';
-
-export interface CreateCommentDto {
-  content: string;
-  articleId: number;
-  parentId?: number;
-  authorName?: string;
-  authorEmail?: string;
-  authorWebsite?: string;
-  isGuest?: boolean;
-  userId?: number;
-}
-
-export interface UpdateCommentDto {
-  content?: string;
-  status?: CommentStatus;
-}
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Injectable()
 export class CommentsService {

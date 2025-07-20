@@ -69,6 +69,8 @@ export const articlesAPI = {
   uploadImage: (id: number, formData: FormData) => api.post(`/articles/${id}/upload-image`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
+  embedVideo: (id: number, embedData: { url: string; title?: string }) => 
+    api.post(`/articles/${id}/embed-video`, embedData),
 };
 
 export const usersAPI = {
