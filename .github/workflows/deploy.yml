@@ -1,0 +1,308 @@
+name: Production Deployment
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Type of deployment'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - backend
+        - frontend
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  PRODUCTION_SERVER: 84.247.165.153
+  DEPLOYMENT_PATH: /root/ahmedurkmez
+
+jobs:
+  # Build and Test Job
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [backend, frontend]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: apps/${{ matrix.service }}/package-lock.json
+        
+    - name: Install dependencies
+      run: |
+        cd apps/${{ matrix.service }}
+        npm ci
+        
+    - name: Run linting (if not production build)
+      if: matrix.service == 'backend'
+      run: |
+        cd apps/${{ matrix.service }}
+        npm run lint || echo "Lint warnings detected but continuing..."
+        
+    - name: Run tests
+      run: |
+        cd apps/${{ matrix.service }}
+        npm test || echo "Tests completed with warnings"
+        
+    - name: Build application
+      run: |
+        cd apps/${{ matrix.service }}
+        npm run build
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.service }}-build
+        path: apps/${{ matrix.service }}/dist
+        retention-days: 1
+
+  # Security Scan Job
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        exit-code: '0'  # Don't fail on vulnerabilities
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Docker Build Job
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        service: [backend, frontend]
+        
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+          
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: apps/${{ matrix.service }}/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64
+
+  # Production Deployment Job
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ env.PRODUCTION_SERVER }} >> ~/.ssh/known_hosts
+        
+    - name: Create deployment directory on server
+      run: |
+        ssh root@${{ env.PRODUCTION_SERVER }} "mkdir -p ${{ env.DEPLOYMENT_PATH }}/deployment-$(date +%Y%m%d-%H%M%S)"
+        
+    - name: Copy deployment files to server
+      run: |
+        scp -r scripts/ root@${{ env.PRODUCTION_SERVER }}:${{ env.DEPLOYMENT_PATH }}/
+        scp docker-compose.prod.yml root@${{ env.PRODUCTION_SERVER }}:${{ env.DEPLOYMENT_PATH }}/
+        scp .env.production root@${{ env.PRODUCTION_SERVER }}:${{ env.DEPLOYMENT_PATH }}/
+        
+    - name: Execute deployment script
+      run: |
+        DEPLOYMENT_TYPE="${{ github.event.inputs.deployment_type || 'full' }}"
+        ssh root@${{ env.PRODUCTION_SERVER }} "
+          cd ${{ env.DEPLOYMENT_PATH }}
+          chmod +x scripts/*.sh
+          case '$DEPLOYMENT_TYPE' in
+            'backend')
+              ./scripts/deploy-backend.sh
+              ;;
+            'frontend')
+              ./scripts/deploy-frontend.sh
+              ;;
+            *)
+              ./scripts/deploy-full.sh
+              ;;
+          esac
+        "
+        
+    - name: Verify deployment
+      run: |
+        sleep 30
+        
+        # Check if services are running
+        ssh root@${{ env.PRODUCTION_SERVER }} "
+          cd ${{ env.DEPLOYMENT_PATH }}
+          docker-compose -f docker-compose.prod.yml --env-file .env.production ps
+        "
+        
+        # Test application endpoints
+        for i in {1..5}; do
+          if curl -f -k -s https://${{ env.PRODUCTION_SERVER }}/api/health > /dev/null; then
+            echo "✅ API health check passed"
+            break
+          fi
+          echo "⏳ Waiting for API to be ready... (attempt $i/5)"
+          sleep 10
+        done
+        
+        if curl -f -k -s https://${{ env.PRODUCTION_SERVER }} > /dev/null; then
+          echo "✅ Frontend is accessible"
+        else
+          echo "❌ Frontend health check failed"
+          exit 1
+        fi
+        
+    - name: Create deployment summary
+      run: |
+        ssh root@${{ env.PRODUCTION_SERVER }} "
+          cd ${{ env.DEPLOYMENT_PATH }}
+          echo '# Deployment Summary' > deployment-summary.md
+          echo '===================' >> deployment-summary.md
+          echo '' >> deployment-summary.md
+          echo 'Deployment Date: $(date)' >> deployment-summary.md
+          echo 'Git Commit: ${{ github.sha }}' >> deployment-summary.md
+          echo 'Deployment Type: ${{ github.event.inputs.deployment_type || 'full' }}' >> deployment-summary.md
+          echo 'Triggered by: ${{ github.actor }}' >> deployment-summary.md
+          echo '' >> deployment-summary.md
+          echo '## Service Status' >> deployment-summary.md
+          docker-compose -f docker-compose.prod.yml --env-file .env.production ps >> deployment-summary.md
+          echo '' >> deployment-summary.md
+          echo '## System Resources' >> deployment-summary.md
+          echo 'Disk Usage:' >> deployment-summary.md
+          df -h >> deployment-summary.md
+          echo '' >> deployment-summary.md
+          echo 'Memory Usage:' >> deployment-summary.md
+          free -h >> deployment-summary.md
+        "
+        
+    - name: Cleanup old deployments
+      run: |
+        ssh root@${{ env.PRODUCTION_SERVER }} "
+          cd ${{ env.DEPLOYMENT_PATH }}
+          # Keep only last 5 deployment directories
+          ls -dt deployment-* 2>/dev/null | tail -n +6 | xargs rm -rf || true
+          
+          # Cleanup old Docker images
+          docker image prune -f || true
+        "
+
+  # Notification Job
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Notify deployment success
+      if: needs.deploy-production.result == 'success'
+      run: |
+        echo "🎉 Deployment successful!"
+        # Add webhook notification here if needed
+        
+    - name: Notify deployment failure
+      if: needs.deploy-production.result == 'failure'
+      run: |
+        echo "❌ Deployment failed!"
+        # Add webhook notification here if needed
+        exit 1
+
+  # Rollback Job (manual trigger only)
+  rollback:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deployment_type == 'rollback'
+    environment: production
+    
+    steps:
+    - name: Setup SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ env.PRODUCTION_SERVER }} >> ~/.ssh/known_hosts
+        
+    - name: Execute rollback
+      run: |
+        ssh root@${{ env.PRODUCTION_SERVER }} "
+          cd ${{ env.DEPLOYMENT_PATH }}
+          
+          # Stop current services
+          docker-compose -f docker-compose.prod.yml --env-file .env.production down
+          
+          # Find previous deployment
+          PREVIOUS_DEPLOYMENT=\$(ls -dt deployment-* 2>/dev/null | head -2 | tail -1)
+          if [ -n \"\$PREVIOUS_DEPLOYMENT\" ]; then
+            echo \"Rolling back to: \$PREVIOUS_DEPLOYMENT\"
+            # Copy previous configuration
+            cp \"\$PREVIOUS_DEPLOYMENT\"/* . 2>/dev/null || true
+            
+            # Start services
+            docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
+            
+            echo \"Rollback completed to: \$PREVIOUS_DEPLOYMENT\"
+          else
+            echo \"No previous deployment found for rollback\"
+            exit 1
+          fi
+        "

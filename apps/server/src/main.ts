@@ -72,6 +72,8 @@ async function bootstrap() {
         configService.get('CORS_ORIGIN'),
         'https://ahmedurkmez.com',
         'https://www.ahmedurkmez.com',
+        'http://84.247.165.153',
+        'https://84.247.165.153'
       ].filter(Boolean)
     : [
         'http://localhost:3000',

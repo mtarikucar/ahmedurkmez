@@ -10,10 +10,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
+# Install all dependencies for building
+FROM base AS deps-all
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
 # Build stage
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps-all /app/node_modules ./node_modules
 COPY . .
 
 # Build the application

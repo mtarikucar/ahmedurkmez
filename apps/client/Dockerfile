@@ -10,15 +10,23 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
+# Install all dependencies (including devDependencies) for build
+FROM base AS deps-all
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps-all /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
+ENV NEXT_PUBLIC_API_URL http://84.247.165.153/api
 
 # Build the application
 RUN npm run build
@@ -29,6 +37,7 @@ WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_PUBLIC_API_URL http://84.247.165.153/api
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
