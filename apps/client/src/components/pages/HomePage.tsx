@@ -4,18 +4,59 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CategorySection from '@/components/ui/CategorySection';
 import ImageSlider from '@/components/ui/ImageSlider';
-import { AcademicCapIcon, BookOpenIcon, VideoCameraIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-
-// CSS Animation classes will be used instead of Framer Motion for now
+import { 
+  AcademicCapIcon, 
+  BookOpenIcon, 
+  VideoCameraIcon, 
+  ChevronDownIcon, 
+  ChevronUpIcon,
+  ArrowRightIcon,
+  SparklesIcon,
+  DocumentTextIcon,
+  PlayIcon,
+  UserIcon,
+  CalendarIcon,
+  EyeIcon,
+  HeartIcon
+} from '@heroicons/react/24/outline';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
   const [selectedWorkCategory, setSelectedWorkCategory] = useState<string>('all');
   const [expandedWorkCard, setExpandedWorkCard] = useState<number | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const router = useRouter();
 
-  // Resume categories data for left section - simplified
+  // Hero carousel data
+  const [heroSlides] = useState([
+    {
+      id: 1,
+      url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
+      title: 'Edebiyat ve Kültür Araştırmaları',
+      description: 'Modern Türk edebiyatından klasik eserlere, kültürel analizlerden akademik araştırmalara...',
+      ctaText: 'Araştırmalarımı İncele',
+      ctaLink: '/articles'
+    },
+    {
+      id: 2,
+      url: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
+      title: 'Akademik Yayınlar',
+      description: 'Kitaplarım, makalelerim ve bildirilerimle edebiyat dünyasına katkılarım...',
+      ctaText: 'Yayınlarımı Gör',
+      ctaLink: '/articles?category=publications'
+    },
+    {
+      id: 3,
+      url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
+      title: 'Eğitim ve Öğretim',
+      description: 'Üniversitedeki derslerimden öğrenci projelerine, eğitim felsefemden örneklere...',
+      ctaText: 'Eğitim Anlayışımı Öğren',
+      ctaLink: '/resume/career'
+    }
+  ]);
+
+  // Resume categories data for left section
   const [resumeCategories] = useState([
     {
       id: 1,
@@ -24,7 +65,8 @@ export default function HomePage() {
       shortDescription: 'Lisans, yüksek lisans ve doktora eğitim sürecim hakkında detaylı bilgiler.',
       color: '#3B82F6',
       icon: AcademicCapIcon,
-      route: '/resume/education'
+      route: '/resume/education',
+      stats: '4 Derece'
     },
     {
       id: 2,
@@ -33,7 +75,8 @@ export default function HomePage() {
       shortDescription: 'Araştırma görevliliğinden profesörlüğe kadar olan akademik kariyerim.',
       color: '#10B981',
       icon: BookOpenIcon,
-      route: '/resume/career'
+      route: '/resume/career',
+      stats: '15+ Yıl Deneyim'
     },
     {
       id: 3,
@@ -41,10 +84,43 @@ export default function HomePage() {
       description: 'Aldığım ödüller ve akademik başarılarım',
       shortDescription: 'Ulusal ve uluslararası düzeyde aldığım ödüller ve akademik başarılarım.',
       color: '#F59E0B',
-      icon: VideoCameraIcon,
-      route: '/resume/awards'
+      icon: SparklesIcon,
+      route: '/resume/awards',
+      stats: '12 Ödül'
     }
   ]);
+
+  // Quick stats data
+  const [quickStats] = useState([
+    { 
+      id: 1, 
+      icon: DocumentTextIcon, 
+      count: '25+', 
+      label: 'Akademik Yayın', 
+      color: 'text-teal-dark', 
+      bg: 'bg-teal-light/10',
+      description: 'Makale, kitap ve bildiri'
+    },
+    { 
+      id: 2, 
+      icon: UserIcon, 
+      count: '500+', 
+      label: 'Öğrenci', 
+      color: 'text-burgundy-medium', 
+      bg: 'bg-burgundy-light/10',
+      description: 'Mezun olan öğrenci sayısı'
+    },
+    { 
+      id: 3, 
+      icon: PlayIcon, 
+      count: '50+', 
+      label: 'Video İçerik', 
+      color: 'text-brown-dark', 
+      bg: 'bg-brown-light/10',
+      description: 'Eğitim ve söyleşi videoları'
+    }
+  ]);
+
   const [sliderImages] = useState([
     {
       id: 1,
@@ -297,25 +373,41 @@ export default function HomePage() {
     router.push(route);
   };
 
+  // Auto-rotate hero slides
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
+
   useEffect(() => {
     // Simulate loading time
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] animate-fade-in">
-        <div className="text-center font-bookmania animate-slide-up">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-teal-medium mx-auto mb-4"></div>
-          <p className="text-brown-dark text-lg">Sayfa yükleniyor...</p>
-          <div className="mt-4 flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-teal-light rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-burgundy-light rounded-full animate-pulse delay-75"></div>
-            <div className="w-2 h-2 bg-brown-light rounded-full animate-pulse delay-150"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
+        <div className="text-center font-bookmania">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-4 border-teal-light border-t-teal-dark mx-auto mb-6"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-burgundy-light opacity-30 animate-pulse"></div>
+          </div>
+          <h2 className="text-brown-dark text-xl mb-2">Prof. Dr. Ahmed Ürkmez</h2>
+          <p className="text-brown-light text-sm">Sayfa yükleniyor...</p>
+          <div className="mt-4 flex justify-center space-x-2">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-2 h-2 bg-teal-medium rounded-full animate-bounce"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -323,354 +415,449 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen font-bookmania bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] animate-fade-in">
-      {/* Decorative Seljuk Pattern Background */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="grid grid-cols-8 gap-4 h-full">
-          {Array.from({ length: 64 }).map((_, i) => (
+    <div className="min-h-screen font-bookmania bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
+      {/* Decorative Background Pattern */}
+      <div className="fixed inset-0 opacity-5 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-light/20 via-transparent to-burgundy-light/20"></div>
+        <div className="grid grid-cols-12 gap-4 h-full animate-pulse">
+          {Array.from({ length: 144 }).map((_, i) => (
             <div
               key={i}
-              className="bg-teal-medium rounded-full w-2 h-2 animate-pulse"
-              style={{ animationDelay: `${i * 0.1}s` }}
+              className="bg-brown-light rounded-full w-1 h-1"
+              style={{ 
+                animationDelay: `${i * 0.05}s`,
+                opacity: Math.random() * 0.5 + 0.1 
+              }}
             />
           ))}
         </div>
       </div>
 
-      {/* 15 Column Grid Layout */}
-      <div className="relative grid grid-cols-1 lg:grid-cols-15 gap-6 p-6 max-w-[1920px] mx-auto min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="container mx-auto px-6 py-12">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+            {/* Left Side - Hero Content */}
+            <div className="space-y-8 animate-slide-up">
+              <div className="space-y-4">
+                <div className="inline-flex items-center space-x-2 bg-teal-light/20 backdrop-blur-sm rounded-full px-4 py-2 text-sm text-teal-dark border border-teal-light/30">
+                  <SparklesIcon className="h-4 w-4" />
+                  <span className="font-medium">Edebiyat ve Kültür Uzmanı</span>
+                </div>
+                <h1 className="text-4xl lg:text-6xl font-bookmania-bold text-brown-dark leading-tight">
+                  Prof. Dr. Ahmed 
+                  <span className="block text-burgundy-medium">Ürkmez</span>
+                </h1>
+                <p className="text-lg text-brown-light leading-relaxed max-w-lg">
+                  Modern Selçuklu sanatından ilham alan akademik yaklaşımla, 
+                  edebiyat ve kültür araştırmalarında 15+ yıllık deneyim.
+                </p>
+              </div>
 
-        {/* Left Section - Resume (5 columns) */}
-        <div className="lg:col-span-5 rounded-xl shadow-lg p-6 h-fit bg-gradient-brown border-2 border-brown-light/30 backdrop-blur-sm">
-          <div className="sticky top-4">
-            <div className="flex items-center mb-6">
-              <AcademicCapIcon className="h-8 w-8  text-white mr-3 drop-shadow-lg" />
-              <h2 className=" text-2xl text-white drop-shadow-lg">Özgeçmiş</h2>
-            </div>
-            <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {resumeCategories.map((category, index) => (
-                <div key={category.id}>
-                  {/* Card Header */}
-                  <div 
-                    className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-4 cursor-pointer transition-colors duration-200 hover:bg-white/30"
-                    onClick={() => handleCardClick(category.id, category.route)}
+              {/* Quick Stats */}
+              <div className="grid grid-cols-3 gap-4">
+                {quickStats.map((stat) => (
+                  <div
+                    key={stat.id}
+                    className={`${stat.bg} rounded-xl p-4 text-center hover:scale-105 transition-all duration-300 border border-white/20 backdrop-blur-sm group cursor-pointer`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <category.icon 
-                          className="h-6 w-6 text-white" 
-                          style={{ color: category.color }}
-                        />
-                        <h3 className="text-white font-bookmania font-semibold text-lg">
-                          {category.name}
-                        </h3>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleNavigate(category.route);
-                          }}
-                          className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full transition-all duration-200"
-                        >
-                          İncele
-                        </button>
-                        {expandedCard === category.id ? (
-                          <ChevronUpIcon className="h-5 w-5 text-white" />
-                        ) : (
-                          <ChevronDownIcon className="h-5 w-5 text-white" />
-                        )}
-                      </div>
-                    </div>
+                    <stat.icon className={`h-6 w-6 mx-auto mb-2 ${stat.color} group-hover:scale-110 transition-transform`} />
+                    <div className={`text-xl font-bookmania-bold ${stat.color}`}>{stat.count}</div>
+                    <div className="text-xs text-brown-light mt-1">{stat.label}</div>
+                    <div className="text-xs text-brown-light opacity-75 mt-1">{stat.description}</div>
                   </div>
-
-                  {/* Expandable Content */}
-                  {expandedCard === category.id && (
-                    <div className="mt-2 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg p-4">
-                      <p className="text-gray-800 font-medium text-sm leading-relaxed">
-                        {category.shortDescription}
-                      </p>
-                      <div className="mt-3 flex justify-end">
-                        <button
-                          onClick={() => handleNavigate(category.route)}
-                          className="text-sm bg-teal-dark hover:bg-teal-medium text-white px-4 py-2 rounded-full transition-colors duration-200"
-                        >
-                          Detayları Gör →
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Center Section - Slider and Title (5 columns) */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Title Section */}
-          <div className="bg-gradient-burgundy rounded-xl shadow-lg p-8 text-center text-white border-2 border-burgundy-light/30">
-            <h1 className=" text-4xl lg:text-5xl mb-4 text-white drop-shadow-2xl">
-              Prof. Dr. Ahmed Ürkmez
-            </h1>
-            <p className="text-lg opacity-90 font-bookmania mb-2 drop-shadow-lg">
-              Edebiyat ve Kültür Araştırmaları Uzmanı
-            </p>
-            <p className="text-sm opacity-75 font-bookmania italic drop-shadow-md">
-              Modern Selçuklu Sanatı Esinlenmesi
-            </p>
-            <div className="mt-6 flex justify-center space-x-4 flex-wrap gap-y-2">
-              {['Akademisyen', 'Yazar', 'Araştırmacı'].map((role, index) => (
-                <div
-                  key={role}
-                  className="bg-white/20 rounded-full px-6 py-3 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-colors duration-200"
-                >
-                  <span className="text-base font-medium font-bookmania">{role}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Image Slider */}
-          <div className="rounded-xl shadow-lg overflow-hidden bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] border-2 border-teal-light/30">
-            <ImageSlider
-              images={sliderImages}
-              autoPlay={true}
-              interval={4000}
-              showDots={true}
-              showArrows={true}
-              className="h-96"
-            />
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { icon: BookOpenIcon, count: '25+', label: 'Yayın', color: 'text-teal-dark', bg: 'hover:bg-teal-light/20' },
-              { icon: AcademicCapIcon, count: '15+', label: 'Yıl Deneyim', color: 'text-burgundy-medium', bg: 'hover:bg-burgundy-light/20' },
-              { icon: VideoCameraIcon, count: '50+', label: 'Video İçerik', color: 'text-brown-dark', bg: 'hover:bg-brown-light/20' }
-            ].map((stat, index) => (
-              <div
-                key={stat.label}
-                className={`card-seljuk text-center group ${stat.bg} transition-colors duration-200`}
-              >
-                <stat.icon className={`h-8 w-8 mx-auto mb-2 ${stat.color}`} />
-                <div className="text-2xl font-bookmania-bold text-brown-dark">{stat.count}</div>
-                <div className="text-sm font-bookmania text-brown-light">{stat.label}</div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Right Section - Works (5 columns) */}
-        <div className="lg:col-span-5 rounded-xl shadow-lg p-6 h-fit bg-gradient-teal border-2 border-teal-light/30 backdrop-blur-sm">
-          <div className="sticky top-4">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <BookOpenIcon className="h-8 w-8 text-white mr-3 drop-shadow-lg" />
-                <h2 className=" text-2xl text-white drop-shadow-lg">Eserler</h2>
-              </div>
-              <div className="text-white/80 text-sm">
-                {worksCategories.reduce((total, cat) => 
-                  total + (cat.children ? 
-                    cat.children.reduce((childTotal, child) => childTotal + child.articles.length, 0) + cat.articles.length :
-                    cat.articles.length
-                  ), 0
-                )} toplam eser
-              </div>
-            </div>
-
-            {/* Category Filter */}
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2">
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-4">
                 <button
-                  onClick={() => setSelectedWorkCategory('all')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${
-                    selectedWorkCategory === 'all' 
-                      ? 'bg-white text-teal-dark shadow-sm' 
-                      : 'bg-white/25 text-white hover:bg-white/35 drop-shadow-sm'
-                  }`}
+                  onClick={() => router.push('/articles')}
+                  className="btn-primary flex items-center space-x-2 group"
                 >
-                  Tümü
+                  <span>Eserlerimi İncele</span>
+                  <ArrowRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-                {worksCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedWorkCategory(category.id.toString())}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${
-                      selectedWorkCategory === category.id.toString() 
-                        ? 'bg-white text-teal-dark shadow-sm' 
-                        : 'bg-white/25 text-white hover:bg-white/35 drop-shadow-sm'
+                <button
+                  onClick={() => router.push('/resume')}
+                  className="btn-secondary flex items-center space-x-2 group"
+                >
+                  <span>Özgeçmişim</span>
+                  <UserIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right Side - Hero Image Carousel */}
+            <div className="relative animate-fade-in">
+              <div className="relative h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 backdrop-blur-sm">
+                {heroSlides.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                      index === currentSlide
+                        ? 'opacity-100 translate-x-0'
+                        : index < currentSlide
+                        ? 'opacity-0 -translate-x-full'
+                        : 'opacity-0 translate-x-full'
                     }`}
                   >
-                    {category.name}
+                    <img
+                      src={slide.url}
+                      alt={slide.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brown-dark/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      <h3 className="text-xl font-bookmania-bold mb-2 drop-shadow-lg">
+                        {slide.title}
+                      </h3>
+                      <p className="text-sm opacity-90 mb-4 drop-shadow-md leading-relaxed">
+                        {slide.description}
+                      </p>
+                      <button
+                        onClick={() => router.push(slide.ctaLink)}
+                        className="bg-teal-medium hover:bg-teal-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300 flex items-center space-x-2 group"
+                      >
+                        <span>{slide.ctaText}</span>
+                        <ArrowRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Slide Indicators */}
+                <div className="absolute top-4 right-4 flex space-x-2">
+                  {heroSlides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        index === currentSlide
+                          ? 'bg-teal-light scale-125 shadow-lg'
+                          : 'bg-white/50 hover:bg-white/70'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Content Sections */}
+      <section className="container mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-12 gap-8">
+          {/* Left Section - Resume Cards */}
+          <div className="lg:col-span-4">
+            <div className="bg-gradient-brown rounded-2xl shadow-xl p-6 border-2 border-brown-light/30 backdrop-blur-sm sticky top-8">
+              <div className="flex items-center mb-6">
+                <AcademicCapIcon className="h-8 w-8 text-white mr-3 drop-shadow-lg" />
+                <h2 className="text-2xl text-white drop-shadow-lg font-bookmania-bold">Özgeçmiş</h2>
+              </div>
+              
+              <div className="space-y-4">
+                {resumeCategories.map((category, index) => (
+                  <div key={category.id} className="group">
+                    {/* Card Header */}
+                    <div 
+                      className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:bg-white/30 hover:scale-[1.02]"
+                      onClick={() => handleCardClick(category.id, category.route)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div 
+                            className="p-2 rounded-lg bg-white/20"
+                            style={{ backgroundColor: `${category.color}20` }}
+                          >
+                            <category.icon 
+                              className="h-6 w-6 text-white" 
+                              style={{ color: category.color }}
+                            />
+                          </div>
+                          <div>
+                            <h3 className="text-white font-bookmania font-semibold text-lg">
+                              {category.name}
+                            </h3>
+                            <p className="text-white/80 text-sm">{category.stats}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNavigate(category.route);
+                            }}
+                            className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full transition-all duration-200 flex items-center space-x-1"
+                          >
+                            <span>İncele</span>
+                            <ArrowRightIcon className="h-3 w-3" />
+                          </button>
+                          {expandedCard === category.id ? (
+                            <ChevronUpIcon className="h-5 w-5 text-white transition-transform duration-300" />
+                          ) : (
+                            <ChevronDownIcon className="h-5 w-5 text-white transition-transform duration-300" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expandable Content */}
+                    {expandedCard === category.id && (
+                      <div className="mt-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl p-4 animate-slide-up">
+                        <p className="text-gray-800 font-medium text-sm leading-relaxed mb-4">
+                          {category.shortDescription}
+                        </p>
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => handleNavigate(category.route)}
+                            className="bg-teal-dark hover:bg-teal-medium text-white px-4 py-2 rounded-full transition-colors duration-200 text-sm flex items-center space-x-2"
+                          >
+                            <span>Detayları Gör</span>
+                            <ArrowRightIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Additional Quick Links */}
+              <div className="mt-6 pt-6 border-t border-white/20">
+                <h3 className="text-white font-bookmania font-semibold mb-3">Hızlı Erişim</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => router.push('/contact')}
+                    className="bg-white/20 hover:bg-white/30 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
+                  >
+                    📧 İletişim
                   </button>
+                  <button 
+                    onClick={() => router.push('/about')}
+                    className="bg-white/20 hover:bg-white/30 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
+                  >
+                    👤 Hakkımda
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Middle Section - Featured Content */}
+          <div className="lg:col-span-4 space-y-8">
+            {/* Featured Slider */}
+           
+
+            {/* Recent Articles Preview */}
+            <div className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/30">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <DocumentTextIcon className="h-7 w-7 text-burgundy-medium" />
+                  <h2 className="text-xl font-bookmania-bold text-brown-dark">Son Yazılar</h2>
+                </div>
+                <button
+                  onClick={() => router.push('/articles')}
+                  className="text-sm text-burgundy-medium hover:text-burgundy-dark flex items-center space-x-1 transition-colors"
+                >
+                  <span>Tümünü Gör</span>
+                  <ArrowRightIcon className="h-4 w-4" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {[
+                  { 
+                    title: 'Modern Türk Edebiyatında Kimlik Sorunu', 
+                    date: '15 Ocak 2024', 
+                    category: 'Makale',
+                    views: '1.2K',
+                    likes: '45'
+                  },
+                  { 
+                    title: 'Dijital Çağda Okuma Kültürü', 
+                    date: '10 Ocak 2024', 
+                    category: 'Araştırma',
+                    views: '890',
+                    likes: '32'
+                  },
+                  { 
+                    title: 'Kültürlerarası İletişimde Dilin Rolü', 
+                    date: '5 Ocak 2024', 
+                    category: 'Bildiri',
+                    views: '756',
+                    likes: '28'
+                  }
+                ].map((article, index) => (
+                  <div 
+                    key={index}
+                    className="p-4 bg-white/60 rounded-xl border border-gray-200/50 hover:bg-white/80 transition-colors cursor-pointer group"
+                    onClick={() => router.push('/articles')}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-bookmania font-semibold text-brown-dark group-hover:text-burgundy-medium transition-colors">
+                          {article.title}
+                        </h3>
+                        <div className="flex items-center space-x-4 mt-2 text-sm text-brown-light">
+                          <div className="flex items-center space-x-1">
+                            <CalendarIcon className="h-4 w-4" />
+                            <span>{article.date}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <EyeIcon className="h-4 w-4" />
+                            <span>{article.views}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <HeartIcon className="h-4 w-4" />
+                            <span>{article.likes}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-xs bg-burgundy-light/20 text-burgundy-dark px-2 py-1 rounded-full">
+                        {article.category}
+                      </span>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className="space-y-4">
-              {worksCategories
-                .filter(category => selectedWorkCategory === 'all' || selectedWorkCategory === category.id.toString())
-                .map((category, index) => (
-                <div key={category.id} className="bg-white/20 backdrop-blur-sm border border-white/5 rounded-lg p-4 transition-colors duration-200">
-                  {/* Category Header */}
-                  <div 
-                    className="flex items-center justify-between mb-3 cursor-pointer hover:bg-white/10 rounded-lg p-2 -m-2 transition-colors duration-200"
-                    onClick={() => handleWorkCardToggle(category.id)}
+          {/* Right Section - Works Categories */}
+          <div className="lg:col-span-4">
+            <div className="bg-gradient-teal rounded-2xl shadow-xl p-6 border-2 border-teal-light/30 backdrop-blur-sm sticky top-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <BookOpenIcon className="h-8 w-8 text-white mr-3 drop-shadow-lg" />
+                  <h2 className="text-2xl text-white drop-shadow-lg font-bookmania-bold">Eserler</h2>
+                </div>
+                <div className="text-white/80 text-sm">
+                  {worksCategories.reduce((total, cat) => 
+                    total + (cat.children ? 
+                      cat.children.reduce((childTotal, child) => childTotal + child.articles.length, 0) + cat.articles.length :
+                      cat.articles.length
+                    ), 0
+                  )} toplam
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div className="mb-6">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedWorkCategory('all')}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                      selectedWorkCategory === 'all' 
+                        ? 'bg-white text-teal-dark shadow-sm scale-105' 
+                        : 'bg-white/25 text-white hover:bg-white/35 drop-shadow-sm'
+                    }`}
                   >
-                    <h3 className="text-white font-bookmania font-semibold text-lg drop-shadow-sm">
+                    Tümü
+                  </button>
+                  {worksCategories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedWorkCategory(category.id.toString())}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                        selectedWorkCategory === category.id.toString() 
+                          ? 'bg-white text-teal-dark shadow-sm scale-105' 
+                          : 'bg-white/25 text-white hover:bg-white/35 drop-shadow-sm'
+                      }`}
+                    >
                       {category.name}
-                    </h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs bg-white/25 text-white font-medium px-2 py-1 rounded-full drop-shadow-sm">
-                        {category.children ? 
-                          category.children.reduce((total, child) => total + child.articles.length, 0) + category.articles.length :
-                          category.articles.length
-                        } eser
-                      </span>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push('/articles');
-                        }}
-                        className="text-xs bg-white/25 hover:bg-white/35 text-white font-medium px-2 py-1 rounded-full transition-colors duration-200 drop-shadow-sm"
-                      >
-                        Detay
-                      </button>
-                      {expandedWorkCard === category.id ? (
-                        <ChevronUpIcon className="h-5 w-5 text-white" />
-                      ) : (
-                        <ChevronDownIcon className="h-5 w-5 text-white" />
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Collapsible Content */}
-                  {expandedWorkCard === category.id && (
-                    <div className="space-y-4 animate-fade-in">
-                      <p className="text-white text-sm leading-relaxed bg-gray-800/60 p-3 rounded-lg border border-gray-600/40">
-                        {category.description}
-                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                      {/* Sub-categories or Stats */}
-                      {category.children && category.children.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-2">
-                          {category.children.map((child) => (
-                            <div key={child.id} className="bg-gray-700/90 backdrop-blur-sm border border-gray-500/50 rounded-lg p-3">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h4 className="text-white font-bookmania text-sm font-medium mb-1">
-                                    {child.name}
-                                  </h4>
-                                  <p className="text-gray-200 text-xs bg-gray-600/60 p-2 rounded">
-                                    {child.description}
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <div className="text-white font-bookmania-bold text-lg bg-teal-600 px-2 py-1 rounded">
-                                    {child.articles.length}
-                                  </div>
-                                  <div className="text-gray-300 text-xs mt-1">eser</div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
+              {/* Works Categories */}
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {worksCategories
+                  .filter(category => selectedWorkCategory === 'all' || selectedWorkCategory === category.id.toString())
+                  .map((category, index) => (
+                  <div key={category.id} className="bg-white/20 backdrop-blur-sm border border-white/10 rounded-xl p-4 transition-all duration-300 hover:bg-white/30">
+                    {/* Category Header */}
+                    <div 
+                      className="flex items-center justify-between mb-3 cursor-pointer"
+                      onClick={() => handleWorkCardToggle(category.id)}
+                    >
+                      <h3 className="text-white font-bookmania font-semibold text-lg drop-shadow-sm">
+                        {category.name}
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs bg-white/25 text-white font-medium px-2 py-1 rounded-full">
+                          {category.children ? 
+                            category.children.reduce((total, child) => total + child.articles.length, 0) + category.articles.length :
+                            category.articles.length
+                          } eser
+                        </span>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push('/articles');
+                          }}
+                          className="text-xs bg-white/25 hover:bg-white/35 text-white font-medium px-2 py-1 rounded-full transition-colors duration-200 flex items-center space-x-1"
+                        >
+                          <span>Detay</span>
+                          <ArrowRightIcon className="h-3 w-3" />
+                        </button>
+                        {expandedWorkCard === category.id ? (
+                          <ChevronUpIcon className="h-5 w-5 text-white transition-transform duration-300" />
+                        ) : (
+                          <ChevronDownIcon className="h-5 w-5 text-white transition-transform duration-300" />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Collapsible Content */}
+                    {expandedWorkCard === category.id && (
+                      <div className="space-y-3 animate-slide-up">
+                        <p className="text-white text-sm leading-relaxed bg-gray-800/60 p-3 rounded-lg border border-gray-600/40">
+                          {category.description}
+                        </p>
+
+                        {/* Statistics */}
                         <div className="grid grid-cols-2 gap-3">
                           <div className="bg-gray-700/90 backdrop-blur-sm border border-gray-500/50 rounded-lg p-3 text-center">
                             <div className="text-white font-bookmania-bold text-lg">
-                              {category.articles.length}
+                              {category.children ? 
+                                category.children.reduce((total, child) => total + child.articles.length, 0) + category.articles.length :
+                                category.articles.length
+                              }
                             </div>
                             <div className="text-gray-200 text-xs">Toplam Eser</div>
                           </div>
                           <div className="bg-gray-700/90 backdrop-blur-sm border border-gray-500/50 rounded-lg p-3 text-center">
                             <div className="text-white font-bookmania-bold text-lg">
-                              {category.articles.reduce((total, article) => total + article.viewCount, 0)}
+                              {(category.children ? 
+                                category.children.flatMap(child => child.articles) : 
+                                category.articles
+                              ).reduce((total, article) => total + (article.viewCount || 0), 0).toLocaleString()}
                             </div>
                             <div className="text-gray-200 text-xs">Görüntülenme</div>
                           </div>
                         </div>
-                      )}
-
-                      {/* Popular Articles Preview */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between bg-gray-800/70 p-2 rounded-lg">
-                          <h4 className="text-white font-bookmania text-sm font-medium">En Popüler Eserler</h4>
-                          <span className="text-gray-300 text-xs bg-gray-700 px-2 py-1 rounded">Son 3</span>
-                        </div>
-                        {(category.children && category.children.length > 0 ? 
-                          category.children.flatMap(child => child.articles) : 
-                          category.articles
-                        )
-                          .sort((a, b) => b.viewCount - a.viewCount)
-                          .slice(0, 3)
-                          .map((article, idx) => (
-                            <div key={article.id} className="bg-gray-600/90 backdrop-blur-sm border border-gray-400/50 rounded-lg p-3 hover:bg-gray-500/90 transition-colors duration-200 cursor-pointer group">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1 min-w-0 mr-3">
-                                  <div className="flex items-center mb-2">
-                                    <span className="text-teal-300 text-xs mr-2 font-bold bg-gray-700 px-2 py-1 rounded">#{idx + 1}</span>
-                                    <h5 className="text-white text-sm font-bookmania font-medium">
-                                      {article.title}
-                                    </h5>
-                                  </div>
-                                  <p className="text-gray-100 text-xs leading-relaxed line-clamp-2 bg-gray-700/70 p-2 rounded mb-2">
-                                    {article.excerpt}
-                                  </p>
-                                  <div className="flex items-center space-x-2">
-                                    <span className="text-gray-200 text-xs bg-gray-700/80 px-2 py-1 rounded">
-                                      📅 {new Date(article.createdAt).getFullYear()}
-                                    </span>
-                                    <span className="text-gray-200 text-xs bg-gray-700/80 px-2 py-1 rounded">
-                                      📂 {article.category.name}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="text-right shrink-0 space-y-1">
-                                  <div className="text-white text-xs font-medium bg-teal-600 px-2 py-1 rounded">
-                                    👁 {article.viewCount.toLocaleString()}
-                                  </div>
-                                  <div className="text-gray-200 text-xs bg-gray-700 px-2 py-1 rounded">
-                                    ❤ {article.likeCount}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        }
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                ))}
+              </div>
 
               {/* Quick Actions */}
-              <div className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-4 mt-4">
-                <h3 className="text-white font-bookmania font-semibold text-lg mb-3 drop-shadow-sm">Hızlı Erişim</h3>
+              <div className="mt-6 pt-6 border-t border-white/20">
+                <h3 className="text-white font-bookmania font-semibold mb-3">Hızlı Erişim</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => router.push('/articles')}
-                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-bookmania font-medium py-3 rounded-lg transition-colors duration-200 flex items-center justify-center drop-shadow-sm"
+                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
                   >
                     📚 Tüm Eserler
                   </button>
                   <button 
-                    onClick={() => router.push('/articles?filter=recent')}
-                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-bookmania font-medium py-3 rounded-lg transition-colors duration-200 flex items-center justify-center drop-shadow-sm"
-                  >
-                    🆕 Son Eklenenler
-                  </button>
-                  <button 
-                    onClick={() => router.push('/articles?filter=popular')}
-                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-bookmania font-medium py-3 rounded-lg transition-colors duration-200 flex items-center justify-center drop-shadow-sm"
-                  >
-                    🔥 En Popülerler
-                  </button>
-                  <button 
                     onClick={() => router.push('/categories')}
-                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-bookmania font-medium py-3 rounded-lg transition-colors duration-200 flex items-center justify-center drop-shadow-sm"
+                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
                   >
                     🗂 Kategoriler
                   </button>
@@ -679,7 +866,35 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer Section with Contact CTA */}
+      <section className="bg-gradient-to-r from-brown-dark to-burgundy-dark py-16">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bookmania-bold font-bookmania-bold text-brown-dark mb-4">
+            Akademik İşbirliği ve İletişim
+          </h2>
+          <p className="font-bookmania-bold text-brown-dark/90 text-lg mb-8 max-w-2xl mx-auto">
+            Edebiyat ve kültür araştırmaları konularında işbirliği yapmak, 
+            projelerimden haberdar olmak veya sorularınızı sormak için benimle iletişime geçin.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <button
+              onClick={() => router.push('/contact')}
+              className="bg-teal-medium hover:bg-teal-dark font-bookmania-bold text-brown-dark px-8 py-3 rounded-full font-bookmania font-medium transition-all duration-300 flex items-center space-x-2 group shadow-lg"
+            >
+              <span className='text-white'>İletişime Geç</span>
+              <ArrowRightIcon className="h-5 w-5 text-white group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button
+              onClick={() => router.push('/articles')}
+              className="bg-transparent border-2 border-white font-bookmania-bold text-brown-dark hover:bg-white hover:text-brown-dark px-8 py-3 rounded-full font-bookmania font-medium transition-all duration-300"
+            >
+              Tüm Çalışmalarımı İncele
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

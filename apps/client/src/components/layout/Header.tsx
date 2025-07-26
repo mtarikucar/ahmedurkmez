@@ -22,7 +22,7 @@ export default function Header() {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
 
   return (
-    <header className="bg-gradient-to-r from-[var(--bg-secondary)] to-[var(--bg-tertiary)] shadow-lg border-b-2 border-teal-light">
+    <header className="bg-gradient-to-r from-[var(--bg-secondary)] to-[var(--bg-tertiary)] shadow-lg sticky top-0 z-50 border-b-2 border-teal-light">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex w-full items-center justify-between py-6">
           <div className="flex items-center">
