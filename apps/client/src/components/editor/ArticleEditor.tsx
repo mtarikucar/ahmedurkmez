@@ -356,13 +356,15 @@ export default function ArticleEditor({
           >
             {showPreview ? (
               <>
-                <EyeOff className="w-4 h-4" />
-                Düzenle
+                <EyeOff className="w-4 h-4 text-brown-dark" />
+                <span className="hidden md:inline text-brown-dark">Düzenleme</span>
+                <span className="md:hidden text-brown-dark">Düzenle</span>
               </>
             ) : (
               <>
-                <Eye className="w-4 h-4" />
-                Önizleme
+                <Eye className="w-4 h-4 text-brown-dark" />
+                <span className="hidden md:inline text-brown-dark">Önizleme</span>
+                <span className="md:hidden text-brown-dark">Önizle</span>
               </>
             )}
           </button>

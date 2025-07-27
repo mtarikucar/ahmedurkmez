@@ -177,7 +177,26 @@ export default function CreateArticle() {
     }
   }, [articleId, formData]);
 
-  // Auto-save when necessary fields are filled
+  // Auto-update existing article when changes are made
+  const handleAutoUpdate = useCallback(async () => {
+    if (articleId && formData.title && formData.content && formData.categoryId) {
+      setIsSaving(true);
+      try {
+        // Clean and send only valid fields
+        const submitData = cleanFormData(formData);
+
+        console.log('Auto-update sending data to backend:', submitData);
+        
+        await articlesAPI.update(articleId, submitData);
+      } catch (error) {
+        console.error('Auto-update error:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  }, [articleId, formData]);
+
+  // Auto-save when necessary fields are filled (initial save)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!articleId && formData.title && formData.content && formData.categoryId) {
@@ -187,6 +206,17 @@ export default function CreateArticle() {
 
     return () => clearTimeout(timer);
   }, [formData.title, formData.content, formData.categoryId, articleId, handleAutoSave]);
+
+  // Auto-update when article exists and any field changes (including status)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (articleId && formData.title && formData.content && formData.categoryId) {
+        handleAutoUpdate();
+      }
+    }, 1500); // Faster update for existing articles
+
+    return () => clearTimeout(timer);
+  }, [formData.title, formData.content, formData.categoryId, formData.status, formData.tags, formData.allowComments, formData.isFeatured, formData.metaTitle, formData.metaDescription, formData.excerpt, articleId, handleAutoUpdate]);
 
   const handleSubmit = async (status: string) => {
     if (!formData.title || !formData.content || !formData.categoryId) {
@@ -248,11 +278,22 @@ export default function CreateArticle() {
                   <div className="flex items-center gap-4 text-sm text-brown-light">
                     <span>{wordCount} kelime</span>
                     <span>~{readTime} dk okuma</span>
-                    {articleId && (
-                      <span className="text-teal-medium">Otomatik kaydedildi</span>
-                    )}
                     {isSaving && (
-                      <span className="text-burgundy-medium">Kaydediliyor...</span>
+                      <span className="text-orange-500 flex items-center gap-1">
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {articleId ? 'Güncelleniyor...' : 'İlk kayıt yapılıyor...'}
+                      </span>
+                    )}
+                    {!isSaving && articleId && (
+                      <span className="text-green-500 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Otomatik kaydedildi
+                      </span>
                     )}
                   </div>
                 </div>
@@ -315,7 +356,7 @@ export default function CreateArticle() {
               {/* Editor */}
               <MediumArticleEditor
                 initialContent={formData.content}
-                articleId={articleId}
+                articleId={articleId || undefined}
                 onChange={handleContentChange}
                 placeholder="Hikayenizi anlatmaya başlayın..."
               />
@@ -350,29 +391,91 @@ export default function CreateArticle() {
               </div>
 
               {/* Status */}
-              <div className="card-seljuk p-6">
-                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
-                  Durum
+              <div className="card-seljuk p-6 border-l-4 border-l-orange-400">
+                <h3 className="text-xl font-bookmania-bold text-brown-dark mb-2 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
+                  Makale Durumu
                 </h3>
-                <div className="space-y-2">
+                <p className="text-sm text-brown-medium mb-6 font-bookmania">
+                  Makalenizin yayınlanma durumunu seçin
+                </p>
+                <div className="space-y-3">
                   {statusOptions.map((status) => (
                     <button
                       key={status.value}
                       onClick={() => handleInputChange('status', status.value)}
-                      className={`w-full p-3 rounded-lg border-2 transition-all duration-300 text-left ${
+                      className={`w-full p-4 rounded-xl border-2 transition-all duration-300 text-left transform hover:scale-[1.02] ${
                         formData.status === status.value
-                          ? 'border-teal-medium bg-gradient-to-r from-teal-light/10 to-teal-medium/10'
-                          : 'border-teal-light hover:border-teal-medium/50'
+                          ? status.value === 'published' 
+                            ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100 shadow-lg shadow-green-200/50'
+                            : status.value === 'draft'
+                            ? 'border-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100 shadow-lg shadow-yellow-200/50'
+                            : 'border-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 shadow-lg shadow-gray-200/50'
+                          : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-md'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <status.icon className={`w-5 h-5 ${status.color}`} />
-                        <span className="font-bookmania-medium text-brown-dark">
-                          {status.label}
-                        </span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-2 rounded-lg ${
+                            formData.status === status.value
+                              ? status.value === 'published' 
+                                ? 'bg-green-500'
+                                : status.value === 'draft'
+                                ? 'bg-yellow-500'
+                                : 'bg-gray-500'
+                              : 'bg-gray-200'
+                          }`}>
+                            <status.icon className={`w-5 h-5 ${
+                              formData.status === status.value ? 'text-white' : 'text-gray-500'
+                            }`} />
+                          </div>
+                          <div>
+                            <span className={`font-bookmania-bold text-lg ${
+                              formData.status === status.value ? 'text-gray-800' : 'text-gray-600'
+                            }`}>
+                              {status.label}
+                            </span>
+                            <p className={`text-sm font-bookmania ${
+                              formData.status === status.value ? 'text-gray-600' : 'text-gray-400'
+                            }`}>
+                              {status.value === 'published' && 'Herkes tarafından görülebilir'}
+                              {status.value === 'draft' && 'Sadece siz görebilirsiniz'}
+                              {status.value === 'archived' && 'Arşivde saklanır'}
+                            </p>
+                          </div>
+                        </div>
+                        {formData.status === status.value && (
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            status.value === 'published' ? 'bg-green-500' :
+                            status.value === 'draft' ? 'bg-yellow-500' : 'bg-gray-500'
+                          }`}>
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </div>
                     </button>
                   ))}
+                </div>
+                
+                {/* Current Status Info */}
+                <div className={`mt-4 p-3 rounded-lg ${
+                  formData.status === 'published' 
+                    ? 'bg-green-50 border border-green-200'
+                    : formData.status === 'draft'
+                    ? 'bg-yellow-50 border border-yellow-200'
+                    : 'bg-gray-50 border border-gray-200'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${
+                      formData.status === 'published' ? 'bg-green-500' :
+                      formData.status === 'draft' ? 'bg-yellow-500' : 'bg-gray-500'
+                    }`}></span>
+                    <span className="text-sm font-bookmania-medium text-gray-700">
+                      Şu anki durum: <strong>{statusOptions.find(s => s.value === formData.status)?.label}</strong>
+                    </span>
+                  </div>
                 </div>
               </div>
 

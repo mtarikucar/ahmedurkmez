@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CategorySection from '@/components/ui/CategorySection';
 import ImageSlider from '@/components/ui/ImageSlider';
+import { articlesAPI, categoriesAPI, adminAPI } from '@/lib/api';
+import { extractArticlesArray, extractCategoriesArray, safeArrayStats, safeFilter } from '@/lib/arrayUtils';
 import { 
   AcademicCapIcon, 
   BookOpenIcon, 
@@ -26,35 +28,98 @@ export default function HomePage() {
   const [selectedWorkCategory, setSelectedWorkCategory] = useState<string>('all');
   const [expandedWorkCard, setExpandedWorkCard] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // API Data States
+  const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
+  const [recentArticles, setRecentArticles] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
+  const [categoryArticles, setCategoryArticles] = useState<{[key: string]: any[]}>({});
+  
   const router = useRouter();
 
-  // Hero carousel data
-  const [heroSlides] = useState([
-    {
-      id: 1,
-      url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
-      title: 'Edebiyat ve Kültür Araştırmaları',
-      description: 'Modern Türk edebiyatından klasik eserlere, kültürel analizlerden akademik araştırmalara...',
-      ctaText: 'Araştırmalarımı İncele',
-      ctaLink: '/articles'
-    },
-    {
-      id: 2,
-      url: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
-      title: 'Akademik Yayınlar',
-      description: 'Kitaplarım, makalelerim ve bildirilerimle edebiyat dünyasına katkılarım...',
-      ctaText: 'Yayınlarımı Gör',
-      ctaLink: '/articles?category=publications'
-    },
-    {
-      id: 3,
-      url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
-      title: 'Eğitim ve Öğretim',
-      description: 'Üniversitedeki derslerimden öğrenci projelerine, eğitim felsefemden örneklere...',
-      ctaText: 'Eğitim Anlayışımı Öğren',
-      ctaLink: '/resume/career'
+  // Load data from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        // Load featured articles (for hero section)
+        const featuredResponse = await articlesAPI.getAll({ featured: true, limit: 5 });
+        const featuredData = extractArticlesArray(featuredResponse);
+        setFeaturedArticles(featuredData);
+        
+        // Load recent articles
+        const recentResponse = await articlesAPI.getAll({ limit: 6, sort: 'createdAt', order: 'desc' });
+        const recentData = extractArticlesArray(recentResponse);
+        setRecentArticles(recentData);
+        
+        // Load categories
+        const categoriesResponse = await categoriesAPI.getAll();
+        const categoriesData = extractCategoriesArray(categoriesResponse);
+        setCategories(categoriesData);
+        
+        // Load articles for each category to show counts
+        const categoryArticlesMap: {[key: string]: any[]} = {};
+        for (const category of categoriesData.slice(0, 5)) { // Limit to first 5 categories for performance
+          try {
+            const categoryArticlesResponse = await articlesAPI.getAll({ 
+              categoryId: category.id, 
+              limit: 10 
+            });
+            const articlesList = extractArticlesArray(categoryArticlesResponse);
+            categoryArticlesMap[category.id] = articlesList;
+          } catch (error) {
+            console.warn(`Could not load articles for category ${category.id}:`, error);
+            categoryArticlesMap[category.id] = [];
+          }
+        }
+        setCategoryArticles(categoryArticlesMap);
+        
+        // Load dashboard stats
+        try {
+          const statsResponse = await adminAPI.getDashboardStats();
+          setDashboardStats(statsResponse);
+        } catch (error) {
+          console.warn('Dashboard stats not available:', error);
+          // Fallback to calculated stats from articles
+          setDashboardStats({
+            totalArticles: recentData.length,
+            totalCategories: categoriesData.length,
+            totalViews: recentData.reduce((sum: number, article: any) => sum + (article.views || 0), 0),
+            totalLikes: recentData.reduce((sum: number, article: any) => sum + (article.likes || 0), 0)
+          });
+        }
+        
+      } catch (error) {
+        console.error('Error loading homepage data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
+
+  // Auto-slide for hero section
+  useEffect(() => {
+    if (featuredArticles.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
+      }, 5000);
+      return () => clearInterval(interval);
     }
-  ]);
+  }, [featuredArticles.length]);
+
+  // Generate hero slides from featured articles
+  const heroSlides = featuredArticles.map((article, index) => ({
+    id: article.id || index + 1,
+    url: article.featuredImage || `https://images.unsplash.com/photo-150700321116${index}?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80`,
+    title: article.title || 'Featured Article',
+    description: article.excerpt || article.content?.substring(0, 100) + '...' || 'Discover more content',
+    ctaText: 'Makaleyi Oku',
+    ctaLink: `/articles/${article.slug || article.id}`
+  }));
 
   // Resume categories data for left section
   const [resumeCategories] = useState([
@@ -90,8 +155,36 @@ export default function HomePage() {
     }
   ]);
 
-  // Quick stats data
-  const [quickStats] = useState([
+  // Generate quick stats from dashboard data or fallback
+  const quickStats = dashboardStats ? [
+    { 
+      id: 1, 
+      icon: DocumentTextIcon, 
+      count: `${dashboardStats.totalArticles}+`, 
+      label: 'Akademik Yayın', 
+      color: 'text-teal-dark', 
+      bg: 'bg-teal-light/10',
+      description: 'Makale, kitap ve bildiri'
+    },
+    { 
+      id: 2, 
+      icon: EyeIcon, 
+      count: `${Math.floor(dashboardStats.totalViews / 1000)}K+`, 
+      label: 'Toplam Görüntüleme', 
+      color: 'text-burgundy-medium', 
+      bg: 'bg-burgundy-light/10',
+      description: 'İçeriklere yapılan ziyaretler'
+    },
+    { 
+      id: 3, 
+      icon: HeartIcon, 
+      count: `${dashboardStats.totalLikes}+`, 
+      label: 'Beğeni', 
+      color: 'text-brown-dark', 
+      bg: 'bg-brown-light/10',
+      description: 'Kullanıcı etkileşimleri'
+    }
+  ] : [
     { 
       id: 1, 
       icon: DocumentTextIcon, 
@@ -119,32 +212,26 @@ export default function HomePage() {
       bg: 'bg-brown-light/10',
       description: 'Eğitim ve söyleşi videoları'
     }
-  ]);
+  ];
 
-  const [sliderImages] = useState([
-    {
-      id: 1,
-      url: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-      title: 'Akademik Araştırmalar',
-      description: 'Edebiyat ve kültür alanındaki çalışmalarım'
-    },
-    {
-      id: 2,
-      url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-      title: 'Yayınlarım',
-      description: 'Kitaplar, makaleler ve bildiriler'
-    },
-    {
-      id: 3,
-      url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-      title: 'Öğretmenlik Deneyimim',
-      description: 'Eğitim hayatımdan kareler'
-    }
-  ]);
+  // Generate slider images from recent articles
+  const sliderImages = recentArticles.slice(0, 3).map((article, index) => ({
+    id: article.id || index + 1,
+    url: article.featuredImage || `https://images.unsplash.com/photo-148162783487${index}?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80`,
+    title: article.title || 'Featured Content',
+    description: article.excerpt || 'İçeriği keşfedin'
+  }));
 
-
-
-  const [worksCategories] = useState([
+  // Generate works categories from API categories
+  const worksCategories = categories.length > 0 ? categories.map(category => ({
+    id: category.id,
+    name: category.name,
+    description: category.description || 'Bu kategorideki içerikleri keşfedin',
+    color: '#F59E0B',
+    articles: categoryArticles[category.id] || [],
+    children: [],
+    articleCount: (categoryArticles[category.id] || []).length
+  })) : [
     {
       id: 10,
       name: 'Basılı Yayınlar',
@@ -349,7 +436,7 @@ export default function HomePage() {
       ],
       children: []
     }
-  ]);
+  ];
 
   // Function to handle card click
   const handleCardClick = (cardId: number, route: string) => {
@@ -380,15 +467,6 @@ export default function HomePage() {
     }, 5000);
     return () => clearInterval(timer);
   }, [heroSlides.length]);
-
-  useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   if (loading) {
     return (
@@ -667,60 +745,49 @@ export default function HomePage() {
               </div>
               
               <div className="space-y-4">
-                {[
-                  { 
-                    title: 'Modern Türk Edebiyatında Kimlik Sorunu', 
-                    date: '15 Ocak 2024', 
-                    category: 'Makale',
-                    views: '1.2K',
-                    likes: '45'
-                  },
-                  { 
-                    title: 'Dijital Çağda Okuma Kültürü', 
-                    date: '10 Ocak 2024', 
-                    category: 'Araştırma',
-                    views: '890',
-                    likes: '32'
-                  },
-                  { 
-                    title: 'Kültürlerarası İletişimde Dilin Rolü', 
-                    date: '5 Ocak 2024', 
-                    category: 'Bildiri',
-                    views: '756',
-                    likes: '28'
-                  }
-                ].map((article, index) => (
+                {recentArticles.length > 0 ? recentArticles.slice(0, 3).map((article, index) => (
                   <div 
-                    key={index}
+                    key={article.id || index}
                     className="p-4 bg-white/60 rounded-xl border border-gray-200/50 hover:bg-white/80 transition-colors cursor-pointer group"
-                    onClick={() => router.push('/articles')}
+                    onClick={() => router.push(`/articles/${article.slug || article.id}`)}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-bookmania font-semibold text-brown-dark group-hover:text-burgundy-medium transition-colors">
-                          {article.title}
+                          {article.title || 'Başlıksız Makale'}
                         </h3>
                         <div className="flex items-center space-x-4 mt-2 text-sm text-brown-light">
                           <div className="flex items-center space-x-1">
                             <CalendarIcon className="h-4 w-4" />
-                            <span>{article.date}</span>
+                            <span>{new Date(article.createdAt || Date.now()).toLocaleDateString('tr-TR')}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <EyeIcon className="h-4 w-4" />
-                            <span>{article.views}</span>
+                            <span>{article.views || article.viewCount || 0}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <HeartIcon className="h-4 w-4" />
-                            <span>{article.likes}</span>
+                            <span>{article.likes || article.likeCount || 0}</span>
                           </div>
                         </div>
                       </div>
                       <span className="text-xs bg-burgundy-light/20 text-burgundy-dark px-2 py-1 rounded-full">
-                        {article.category}
+                        {article.category?.name || article.type || 'Makale'}
                       </span>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-8">
+                    <DocumentTextIcon className="h-12 w-12 text-brown-light/50 mx-auto mb-4" />
+                    <p className="text-brown-light">Henüz makale yüklenmemiş</p>
+                    <button
+                      onClick={() => router.push('/articles')}
+                      className="mt-2 text-burgundy-medium hover:text-burgundy-dark transition-colors"
+                    >
+                      Tüm makaleleri görüntüle →
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -734,11 +801,8 @@ export default function HomePage() {
                   <h2 className="text-2xl text-white drop-shadow-lg font-bookmania-bold">Eserler</h2>
                 </div>
                 <div className="text-white/80 text-sm">
-                  {worksCategories.reduce((total, cat) => 
-                    total + (cat.children ? 
-                      cat.children.reduce((childTotal, child) => childTotal + child.articles.length, 0) + cat.articles.length :
-                      cat.articles.length
-                    ), 0
+                  {worksCategories.reduce((total: number, cat: any) => 
+                    total + (cat.articleCount || cat.articles?.length || 0), 0
                   )} toplam
                 </div>
               </div>
@@ -756,7 +820,7 @@ export default function HomePage() {
                   >
                     Tümü
                   </button>
-                  {worksCategories.map((category) => (
+                  {worksCategories.map((category: any) => (
                     <button
                       key={category.id}
                       onClick={() => setSelectedWorkCategory(category.id.toString())}
@@ -775,8 +839,8 @@ export default function HomePage() {
               {/* Works Categories */}
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {worksCategories
-                  .filter(category => selectedWorkCategory === 'all' || selectedWorkCategory === category.id.toString())
-                  .map((category, index) => (
+                  .filter((category: any) => selectedWorkCategory === 'all' || selectedWorkCategory === category.id.toString())
+                  .map((category: any, index: number) => (
                   <div key={category.id} className="bg-white/20 backdrop-blur-sm border border-white/10 rounded-xl p-4 transition-all duration-300 hover:bg-white/30">
                     {/* Category Header */}
                     <div 
@@ -788,15 +852,12 @@ export default function HomePage() {
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs bg-white/25 text-white font-medium px-2 py-1 rounded-full">
-                          {category.children ? 
-                            category.children.reduce((total, child) => total + child.articles.length, 0) + category.articles.length :
-                            category.articles.length
-                          } eser
+                          {category.articleCount || category.articles?.length || 0} eser
                         </span>
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            router.push('/articles');
+                            router.push(`/articles?category=${category.id}`);
                           }}
                           className="text-xs bg-white/25 hover:bg-white/35 text-white font-medium px-2 py-1 rounded-full transition-colors duration-200 flex items-center space-x-1"
                         >
@@ -822,19 +883,13 @@ export default function HomePage() {
                         <div className="grid grid-cols-2 gap-3">
                           <div className="bg-gray-700/90 backdrop-blur-sm border border-gray-500/50 rounded-lg p-3 text-center">
                             <div className="text-white font-bookmania-bold text-lg">
-                              {category.children ? 
-                                category.children.reduce((total, child) => total + child.articles.length, 0) + category.articles.length :
-                                category.articles.length
-                              }
+                              {category.articleCount || category.articles?.length || 0}
                             </div>
                             <div className="text-gray-200 text-xs">Toplam Eser</div>
                           </div>
                           <div className="bg-gray-700/90 backdrop-blur-sm border border-gray-500/50 rounded-lg p-3 text-center">
                             <div className="text-white font-bookmania-bold text-lg">
-                              {(category.children ? 
-                                category.children.flatMap(child => child.articles) : 
-                                category.articles
-                              ).reduce((total, article) => total + (article.viewCount || 0), 0).toLocaleString()}
+                              {(category.articles || []).reduce((total: number, article: any) => total + (article.viewCount || article.views || 0), 0).toLocaleString()}
                             </div>
                             <div className="text-gray-200 text-xs">Görüntülenme</div>
                           </div>

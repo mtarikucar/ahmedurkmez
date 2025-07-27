@@ -79,7 +79,7 @@ export default function TagSelector({
           {tags.map((tag, index) => (
             <span
               key={index}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-teal-light to-teal-medium text-white rounded-full text-sm font-bookmania-medium animate-fadeIn"
+              className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-teal-light to-teal-medium text-dark rounded-full text-sm font-bookmania-medium animate-fadeIn"
             >
               <Hash className="w-3 h-3" />
               {tag}
@@ -105,7 +105,7 @@ export default function TagSelector({
                 }
               }}
               placeholder={tags.length === 0 ? placeholder : ''}
-              className="flex-1 min-w-[120px] bg-transparent outline-none font-bookmania text-brown-dark placeholder-brown-light/70"
+              className="flex-1 min-w-[120px]  outline-none font-bookmania text-brown-dark placeholder-brown-light/70"
             />
           )}
         </div>

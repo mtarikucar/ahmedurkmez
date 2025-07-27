@@ -110,7 +110,7 @@ export default function CategorySelector({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-20 w-full mt-2 bg-white rounded-lg shadow-xl border border-teal-light max-h-80 overflow-hidden">
+        <div className="w-full mt-2 bg-white rounded-lg shadow-xl border border-teal-light max-h-80 overflow-hidden">
           {/* Search */}
           <div className="p-3 border-b border-teal-light/30">
             <input
