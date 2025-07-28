@@ -210,10 +210,10 @@ const ArticlesPage = () => {
                 <div className="relative p-8 h-full flex flex-col">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 bg-white/90 rounded-xl backdrop-blur-sm border border-gray-200/50 shadow-sm">
+                    <div className="p-3 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-xl backdrop-blur-sm border border-teal-light shadow-sm">
                       <IconComponent className="w-8 h-8 text-brown-dark" />
                     </div>
-                    <div className="text-right bg-white/80 p-3 rounded-lg shadow-sm">
+                    <div className="text-right bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] p-3 rounded-lg shadow-sm">
                       <div className="text-brown-light text-sm font-bookmania">Toplam</div>
                       <div className="text-2xl font-bookmania-bold text-brown-dark">{category.itemCount}</div>
                     </div>
@@ -221,10 +221,10 @@ const ArticlesPage = () => {
 
                   {/* Title and Description */}
                   <div className="flex-1">
-                    <h3 className="text-2xl heading-seljuk font-bold text-brown-dark mb-4 bg-white/60 p-3 rounded-lg shadow-sm">
+                    <h3 className="text-2xl heading-seljuk font-bold text-brown-dark mb-4 bg-gradient-to-br from-[var(--bg-secondary)]/80 to-[var(--bg-tertiary)]/80 p-3 rounded-lg shadow-sm">
                       {category.name}
                     </h3>
-                    <p className="text-brown-dark text-sm leading-relaxed mb-6 font-bookmania bg-white/70 p-4 rounded-lg shadow-sm">
+                    <p className="text-brown-dark text-sm leading-relaxed mb-6 font-bookmania bg-gradient-to-br from-[var(--bg-secondary)]/90 to-[var(--bg-tertiary)]/90 p-4 rounded-lg shadow-sm">
                       {category.description}
                     </p>
 
@@ -233,7 +233,7 @@ const ArticlesPage = () => {
                       <div className="text-brown-dark text-sm font-bookmania font-medium mb-3">Alt Kategoriler:</div>
                       <div className="space-y-2">
                         {category.subcategories.map((sub, idx) => (
-                          <div key={idx} className="flex items-center text-brown-dark text-sm font-bookmania bg-white/70 p-2 rounded shadow-sm">
+                          <div key={idx} className="flex items-center text-brown-dark text-sm font-bookmania bg-gradient-to-br from-[var(--bg-secondary)]/90 to-[var(--bg-tertiary)]/90 p-2 rounded shadow-sm">
                             <div className="w-2 h-2 bg-teal-400 rounded-full mr-3" />
                             {sub}
                           </div>
@@ -243,7 +243,7 @@ const ArticlesPage = () => {
                   </div>
 
                   {/* Action Button */}
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-300/50 bg-white/70 p-3 rounded-lg shadow-sm">
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-teal-light/50 bg-gradient-to-br from-[var(--bg-secondary)]/90 to-[var(--bg-tertiary)]/90 p-3 rounded-lg shadow-sm">
                     <span className="text-brown-dark text-sm font-bookmania font-medium">Detayları Görüntüle</span>
                     <ChevronRightIcon className="w-5 h-5 text-brown-light" />
                   </div>
@@ -300,7 +300,7 @@ const ArticlesPage = () => {
                     <span className="px-3 py-1 bg-teal-light/30 text-teal-dark text-sm font-bookmania font-medium rounded-full">
                       {article.type || 'Article'}
                     </span>
-                    <span className="text-brown-dark text-sm font-bookmania font-medium bg-white px-2 py-1 rounded">
+                    <span className="text-brown-dark text-sm font-bookmania font-medium bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] px-2 py-1 rounded">
                       {new Date(article.createdAt).getFullYear()}
                     </span>
                   </div>

@@ -748,7 +748,7 @@ export default function HomePage() {
                 {recentArticles.length > 0 ? recentArticles.slice(0, 3).map((article, index) => (
                   <div 
                     key={article.id || index}
-                    className="p-4 bg-white/60 rounded-xl border border-gray-200/50 hover:bg-white/80 transition-colors cursor-pointer group"
+                    className="p-4 bg-gradient-to-br from-[var(--bg-secondary)]/80 to-[var(--bg-tertiary)]/80 rounded-xl border border-teal-light/50 hover:from-[var(--bg-secondary)] hover:to-[var(--bg-tertiary)] transition-colors cursor-pointer group"
                     onClick={() => router.push(`/articles/${article.slug || article.id}`)}
                   >
                     <div className="flex items-start justify-between">

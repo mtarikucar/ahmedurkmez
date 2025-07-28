@@ -63,7 +63,7 @@ export default function UsersPage() {
       ) : (
         <div className="grid gap-4">
           {users.map((user) => (
-            <div key={user.id} className="bg-white shadow-md rounded-lg p-6 border">
+            <div key={user.id} className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] shadow-md rounded-lg p-6 border border-teal-light">
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-800">

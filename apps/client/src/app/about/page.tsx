@@ -99,7 +99,7 @@ export default function AboutPage() {
         >
           <motion.div variants={itemVariants} className="relative inline-block mb-8">
             <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-[#a68e81] to-[#933853] p-1">
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] flex items-center justify-center">
                 <div className="w-28 h-28 rounded-full bg-gradient-to-r from-[#a68e81] to-[#933853] flex items-center justify-center text-white text-4xl font-bold">
                   AU
                 </div>
@@ -135,7 +135,7 @@ export default function AboutPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={containerVariants}
-              className="bg-white rounded-2xl p-8 shadow-lg"
+              className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-2xl p-8 shadow-lg"
             >
               <motion.h2 variants={itemVariants} className="text-3xl font-bold text-[#2d1810] mb-6 flex items-center">
                 <div className="w-8 h-8 bg-[#933853] rounded-lg mr-3 flex items-center justify-center">
@@ -169,7 +169,7 @@ export default function AboutPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={containerVariants}
-              className="bg-white rounded-2xl p-8 shadow-lg"
+              className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-2xl p-8 shadow-lg"
             >
               <motion.h2 variants={itemVariants} className="text-3xl font-bold text-[#2d1810] mb-6 flex items-center">
                 <div className="w-8 h-8 bg-[#7339b3] rounded-lg mr-3 flex items-center justify-center">
@@ -216,7 +216,7 @@ export default function AboutPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={containerVariants}
-              className="bg-white rounded-2xl p-8 shadow-lg"
+              className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-2xl p-8 shadow-lg"
             >
               <motion.h2 variants={itemVariants} className="text-3xl font-bold text-[#2d1810] mb-6 flex items-center">
                 <div className="w-8 h-8 bg-[#b4987a] rounded-lg mr-3 flex items-center justify-center">

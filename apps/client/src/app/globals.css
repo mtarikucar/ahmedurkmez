@@ -26,8 +26,9 @@
   --text-primary: #69412C;      /* Dark brown for main text */
   --text-secondary: #7f5d4b;    /* Medium brown for secondary text */
   --text-light: #932641;        /* Burgundy for accents */
-  --text-white: #ffffff;        /* White text */
+  --text-white: #ffffff;        /* White text - only for dark backgrounds */
   --text-cream: #f4f3e1;        /* Cream text for dark backgrounds */
+  --text-dark-on-light: #2d1810; /* Very dark brown for light backgrounds */
 
   /* Interactive Colors */
   --primary: #269393;           /* Primary action color - medium teal */
@@ -93,6 +94,9 @@ body {
 .text-primary-color { color: var(--primary); }
 .text-secondary-color { color: var(--secondary); }
 .text-accent { color: var(--accent); }
+.text-dark-on-light { color: var(--text-dark-on-light); }
+.text-safe-white { color: var(--text-white); }
+.text-safe-cream { color: var(--text-cream); }
 
 /* Border Colors */
 .border-teal-light { border-color: var(--teal-light); }

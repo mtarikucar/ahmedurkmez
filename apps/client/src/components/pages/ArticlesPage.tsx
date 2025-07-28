@@ -153,7 +153,7 @@ export default function ArticlesPage() {
             {articles.map((article) => (
               <article 
                 key={article.id} 
-                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 hover:border-center-secondary/30 transform hover:-translate-y-2"
+                className="group bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-teal-light/30 hover:border-teal-medium/50 transform hover:-translate-y-2"
               >
                 {article.featuredImage && (
                   <div className="aspect-[16/10] w-full overflow-hidden">

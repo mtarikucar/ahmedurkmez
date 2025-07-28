@@ -74,7 +74,7 @@ export default function TagSelector({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="min-h-[48px] px-4 py-3 border-2 border-teal-light rounded-lg bg-white focus-within:ring-2 focus-within:ring-teal-medium focus-within:border-teal-medium transition-all duration-300 shadow-sm">
+      <div className="min-h-[48px] px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] focus-within:ring-2 focus-within:ring-teal-medium focus-within:border-teal-medium transition-all duration-300 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           {tags.map((tag, index) => (
             <span
@@ -113,7 +113,7 @@ export default function TagSelector({
 
       {/* Suggestions Dropdown */}
       {showSuggestions && (
-        <div className="absolute z-20 w-full mt-2 bg-white rounded-lg shadow-xl border border-teal-light max-h-48 overflow-y-auto">
+        <div className="absolute z-20 w-full mt-2 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-lg shadow-xl border border-teal-light max-h-48 overflow-y-auto">
           {filteredSuggestions.map((suggestion, index) => (
             <button
               key={index}

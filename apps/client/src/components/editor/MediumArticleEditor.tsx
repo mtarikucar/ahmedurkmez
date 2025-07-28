@@ -223,7 +223,7 @@ export default function MediumArticleEditor({
   const AddContentMenu = () => (
     <div 
       ref={menuRef}
-      className={`absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-teal-light z-50 ${showAddMenu ? 'block' : 'hidden'}`}
+      className={`absolute left-0 mt-2 w-56 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-lg shadow-xl border border-teal-light z-50 ${showAddMenu ? 'block' : 'hidden'}`}
     >
       <div className="py-2">
         <button
