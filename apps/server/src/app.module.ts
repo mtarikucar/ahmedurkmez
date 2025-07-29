@@ -21,6 +21,10 @@ import { ContactsModule } from './contacts/contacts.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
+import { BooksModule } from './books/books.module';
+import { PapersModule } from './papers/papers.module';
+import { MediaPublicationsModule } from './media-publications/media-publications.module';
+import { CreativeWorksModule } from './creative-works/creative-works.module';
 import {
   User,
   Category,
@@ -29,6 +33,11 @@ import {
   ArticleMedia,
   Contact,
   Settings,
+  Publication,
+  Book,
+  Paper,
+  MediaPublication,
+  CreativeWork,
 } from './entities';
 
 @Module({
@@ -82,6 +91,11 @@ import {
           ArticleMedia,
           Contact,
           Settings,
+          Publication,
+          Book,
+          Paper,
+          MediaPublication,
+          CreativeWork,
         ],
         synchronize:
           configService.get('NODE_ENV', 'development') === 'development',
@@ -98,6 +112,10 @@ import {
     UploadModule,
     AdminModule,
     MailModule,
+    BooksModule,
+    PapersModule,
+    MediaPublicationsModule,
+    CreativeWorksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

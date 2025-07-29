@@ -1,321 +1,187 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { articlesAPI } from '@/lib/api';
-import { Article } from '@/types';
-import { extractArticlesArray, extractPaginationInfo } from '@/lib/arrayUtils';
 import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
   EyeIcon,
   DocumentTextIcon,
-  AcademicCapIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
-interface ArticleFilters {
-  status?: string;
-  type?: string;
-  categoryId?: string;
-  search?: string;
-  page?: number;
-  limit?: number;
+interface Article {
+  id: number;
+  title: string;
+  subtitle?: string;
+  excerpt?: string;
+  status: string;
+  viewCount: number;
+  createdAt: string;
+  category?: {
+    id: number;
+    name: string;
+  };
 }
 
+const statusLabels = {
+  draft: 'Taslak',
+  published: 'Yayınlandı',
+  archived: 'Arşivlendi'
+};
+
+const statusColors = {
+  draft: 'bg-yellow-100 text-yellow-800',
+  published: 'bg-green-100 text-green-800',
+  archived: 'bg-gray-100 text-gray-800'
+};
+
 export default function ArticlesManagement() {
-  const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-  const [filters, setFilters] = useState<ArticleFilters>({
-    page: 1,
-    limit: 10,
-  });
-  const [showFilters, setShowFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
     fetchArticles();
-  }, [filters]);
+  }, [searchTerm, statusFilter]);
 
   const fetchArticles = async () => {
     try {
       setLoading(true);
-      const response = await articlesAPI.getAll(filters);
+      const params: any = {};
+      if (searchTerm) params.search = searchTerm;
+      if (statusFilter) params.status = statusFilter;
 
-      // Use robust extraction utilities
-      const validArticles = extractArticlesArray(response);
-      const paginationInfo = extractPaginationInfo(response);
-      
-      setArticles(validArticles);
-      setTotalCount(paginationInfo.total);
+      const response = await articlesAPI.getAll(params);
+      setArticles(response.data.data || []);
     } catch (error) {
       console.error('Error fetching articles:', error);
       // Set empty arrays on error to prevent crashes
       setArticles([]);
-      setTotalCount(0);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Bu makaleyi silmek istediğinizden emin misiniz?')) {
-      try {
-        await articlesAPI.delete(id);
-        fetchArticles();
-      } catch (error) {
-        console.error('Error deleting article:', error);
-      }
+    if (!confirm('Bu makaleyi silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      await articlesAPI.delete(id);
+      setArticles(articles.filter(article => article.id !== id));
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      alert('Makale silinirken hata oluştu.');
     }
   };
 
-  const handleFilterChange = (key: keyof ArticleFilters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value || undefined,
-      page: 1, // Reset to first page when filtering
-    }));
-  };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      published: { color: 'bg-green-100 text-green-800', text: 'Yayınlandı' },
-      draft: { color: 'bg-yellow-100 text-yellow-800', text: 'Taslak' },
-      archived: { color: 'bg-gray-100 text-gray-800', text: 'Arşivlendi' },
-    };
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    return (
-      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${config.color}`}>
-        {config.text}
-      </span>
-    );
-  };
-
-  const getTypeIcon = (type: string) => {
-    return type === 'academic_paper' ? (
-      <AcademicCapIcon className="h-5 w-5 text-blue-600" />
-    ) : (
-      <DocumentTextIcon className="h-5 w-5 text-green-600" />
-    );
-  };
-
-  const getTypeText = (type: string) => {
-    const typeConfig = {
-      academic_paper: 'Akademik Makale',
-      blog_post: 'Blog Yazısı',
-      research: 'Araştırma',
-      essay: 'Deneme',
-      review: 'İnceleme',
-    };
-    return typeConfig[type as keyof typeof typeConfig] || type;
-  };
-
-  if (loading) {
-    return (
-      <ProtectedRoute requireAdmin>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="heading-seljuk-large text-3xl lg:text-4xl text-brown-dark">Makale Yönetimi</h1>
-                <p className="mt-2 font-bookmania text-brown-light">
-                  Makalelerinizi oluşturun, düzenleyin ve yönetin
-                </p>
-              </div>
-              <button
-                onClick={() => router.push('/admin/articles/create')}
-                className="btn-primary inline-flex items-center"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Yeni Makale
-              </button>
+      <div className="px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="sm:flex sm:items-center">
+          <div className="sm:flex-auto">
+            <h1 className="text-2xl font-semibold text-gray-900">Makalelerim</h1>
+            <p className="mt-2 text-sm text-gray-700">
+              Makalelerinizi yönetin, düzenleyin ve yeni makaleler ekleyin.
+            </p>
+          </div>
+          <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <Link
+              href="/admin/articles/create"
+              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+            >
+              <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" />
+              Yeni Makale
+            </Link>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
             </div>
+            <input
+              type="text"
+              placeholder="Makale ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+            />
           </div>
 
-          {/* Filters */}
-          <div className="card-seljuk mb-6 animate-scale-in">
-            <div className="px-4 py-3 border-b border-teal-light">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bookmania-bold text-brown-dark">Filtreler</h3>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="btn-secondary text-sm"
-                >
-                  <FunnelIcon className="h-4 w-4 mr-1" />
-                  {showFilters ? 'Gizle' : 'Göster'}
-                </button>
-              </div>
-            </div>
-            
-            {showFilters && (
-              <div className="px-4 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {/* Search */}
-                  <div>
-                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-1">
-                      Arama
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Makale başlığı..."
-                        value={filters.search || ''}
-                        onChange={(e) => handleFilterChange('search', e.target.value)}
-                        className="block w-full pl-10 pr-3 py-2 border-2 border-teal-light rounded-lg leading-5 bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] placeholder-brown-light focus:outline-none focus:placeholder-brown-light focus:ring-2 focus:ring-teal-medium focus:border-teal-medium font-bookmania text-brown-dark"
-                      />
-                      <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-brown-light" />
-                    </div>
-                  </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
+          >
+            <option value="">Tüm Durumlar</option>
+            <option value="draft">Taslak</option>
+            <option value="published">Yayınlandı</option>
+            <option value="archived">Arşivlendi</option>
+          </select>
+        </div>
 
-                  {/* Status Filter */}
-                  <div>
-                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-1">
-                      Durum
-                    </label>
-                    <select
-                      value={filters.status || ''}
-                      onChange={(e) => handleFilterChange('status', e.target.value)}
-                      className="block w-full px-3 py-2 border-2 border-teal-light rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-medium focus:border-teal-medium bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] font-bookmania text-brown-dark"
-                    >
-                      <option value="">Tümü</option>
-                      <option value="published">Yayınlandı</option>
-                      <option value="draft">Taslak</option>
-                      <option value="archived">Arşivlendi</option>
-                    </select>
-                  </div>
-
-                  {/* Type Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tür
-                    </label>
-                    <select
-                      value={filters.type || ''}
-                      onChange={(e) => handleFilterChange('type', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="">Tümü</option>
-                      <option value="academic_paper">Akademik Makale</option>
-                      <option value="blog_post">Blog Yazısı</option>
-                      <option value="research">Araştırma</option>
-                      <option value="essay">Deneme</option>
-                      <option value="review">İnceleme</option>
-                    </select>
-                  </div>
-
-                  {/* Results per page */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Sayfa başına
-                    </label>
-                    <select
-                      value={filters.limit || 10}
-                      onChange={(e) => handleFilterChange('limit', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value="10">10</option>
-                      <option value="25">25</option>
-                      <option value="50">50</option>
-                      <option value="100">100</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Articles Table */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Makaleler ({totalCount})
-                </h3>
-              </div>
-
-              {!loading && articles.length === 0 ? (
-                <div className="text-center py-12">
-                  <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Makale bulunamadı</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {filters.search || filters.status || filters.type
-                      ? 'Arama kriterlerinize uygun makale bulunamadı. Filtreleri temizleyerek tekrar deneyin.'
-                      : 'Yeni bir makale oluşturarak başlayın.'
-                    }
-                  </p>
-                  <div className="mt-6 space-x-3">
-                    {(filters.search || filters.status || filters.type) && (
-                      <button
-                        onClick={() => {
-                          setFilters({ page: 1, limit: 10 });
-                        }}
-                        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                      >
-                        Filtreleri Temizle
-                      </button>
-                    )}
-                    <button
-                      onClick={() => router.push('/admin/articles/create')}
-                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                    >
-                      <PlusIcon className="h-5 w-5 mr-2" />
-                      Yeni Makale
-                    </button>
-                  </div>
-                </div>
-              ) : articles.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+        {/* Articles Table */}
+        <div className="mt-8 flow-root">
+          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Makale
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Kategori
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Durum
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Görüntülenme
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Tarih
+                      </th>
+                      <th className="relative px-6 py-3">
+                        <span className="sr-only">İşlemler</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {loading ? (
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Makale
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Tür
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Durum
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          İstatistikler
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Tarih
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          İşlemler
-                        </th>
+                        <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                          Yükleniyor...
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {articles.map((article) => (
+                    ) : articles.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                          Henüz makale bulunmuyor.
+                        </td>
+                      </tr>
+                    ) : (
+                      articles.map((article) => (
                         <tr key={article.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              {article.featuredImage && (
-                                <img
-                                  className="h-10 w-10 rounded-lg object-cover mr-3"
-                                  src={article.featuredImage}
-                                  alt={article.title}
-                                />
-                              )}
-                              <div>
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+                                </div>
+                              </div>
+                              <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">
                                   {article.title}
                                 </div>
@@ -324,30 +190,21 @@ export default function ArticlesManagement() {
                                     {article.subtitle}
                                   </div>
                                 )}
-                                {article.category && (
-                                  <div className="text-xs text-gray-400">
-                                    {article.category.name}
-                                  </div>
-                                )}
                               </div>
                             </div>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {article.category?.name || '-'}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[article.status as keyof typeof statusColors]}`}>
+                              {statusLabels[article.status as keyof typeof statusLabels] || article.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div className="flex items-center">
-                              {getTypeIcon(article.type)}
-                              <span className="ml-2 text-sm text-gray-900">
-                                {getTypeText(article.type)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getStatusBadge(article.status)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="space-y-1">
-                              <div>{article.viewCount} görüntülenme</div>
-                              <div>{article.likeCount} beğeni</div>
-                              <div>{article.comments?.length || 0} yorum</div>
+                              <EyeIcon className="h-4 w-4 text-gray-400 mr-1" />
+                              {article.viewCount}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -355,95 +212,27 @@ export default function ArticlesManagement() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex items-center justify-end space-x-2">
-                              <button
-                                onClick={() => window.open(`/articles/${article.slug}`, '_blank')}
-                                className="text-indigo-600 hover:text-indigo-900"
-                                title="Görüntüle"
+                              <Link
+                                href={`/admin/articles/${article.id}/edit`}
+                                className="text-blue-600 hover:text-blue-900"
                               >
-                                <EyeIcon className="h-5 w-5" />
-                              </button>
-                              <button
-                                onClick={() => router.push(`/admin/articles/${article.id}/edit`)}
-                                className="text-indigo-600 hover:text-indigo-900"
-                                title="Düzenle"
-                              >
-                                <PencilIcon className="h-5 w-5" />
-                              </button>
+                                <PencilIcon className="h-4 w-4" />
+                              </Link>
                               <button
                                 onClick={() => handleDelete(article.id)}
                                 className="text-red-600 hover:text-red-900"
-                                title="Sil"
                               >
-                                <TrashIcon className="h-5 w-5" />
+                                <TrashIcon className="h-4 w-4" />
                               </button>
                             </div>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                  <p className="mt-2 text-sm text-gray-500">Makaleler yükleniyor...</p>
-                </div>
-              )}
-            </div>
-
-            {/* Pagination */}
-            {articles.length > 0 && totalCount > (filters.limit || 10) && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div className="flex-1 flex justify-between sm:hidden">
-                  <button
-                    onClick={() => handleFilterChange('page', Math.max(1, (filters.page || 1) - 1).toString())}
-                    disabled={(filters.page || 1) <= 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Önceki
-                  </button>
-                  <button
-                    onClick={() => handleFilterChange('page', ((filters.page || 1) + 1).toString())}
-                    disabled={(filters.page || 1) >= Math.ceil(totalCount / (filters.limit || 10))}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Sonraki
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">{((filters.page || 1) - 1) * (filters.limit || 10) + 1}</span>
-                      {' - '}
-                      <span className="font-medium">
-                        {Math.min((filters.page || 1) * (filters.limit || 10), totalCount)}
-                      </span>
-                      {' / '}
-                      <span className="font-medium">{totalCount}</span>
-                      {' sonuç gösteriliyor'}
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                      <button
-                        onClick={() => handleFilterChange('page', Math.max(1, (filters.page || 1) - 1).toString())}
-                        disabled={(filters.page || 1) <= 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Önceki
-                      </button>
-                      <button
-                        onClick={() => handleFilterChange('page', ((filters.page || 1) + 1).toString())}
-                        disabled={(filters.page || 1) >= Math.ceil(totalCount / (filters.limit || 10))}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Sonraki
-                      </button>
-                    </nav>
-                  </div>
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

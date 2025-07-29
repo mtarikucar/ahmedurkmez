@@ -85,40 +85,40 @@ const ArticlesPage = () => {
   // Ana kategoriler - Site renk şemasına uygun
   const mainCategories = [
     {
-      id: 'printed',
+      id: 'printed-publications',
       name: 'Basılı Yayınlar',
-      description: 'Kitaplar, makaleler, araştırmalar ve akademik yayınlar',
+      description: 'Kitaplar, makaleler ve bildiriler',
       icon: BookOpenIcon,
       gradient: 'from-amber-600 via-amber-700 to-orange-800',
       color: 'amber',
       bgClass: 'bg-gradient-brown',
       borderClass: 'border-brown-light/30',
-      itemCount: getCategoryStats('printed'),
-      subcategories: ['Kitaplar', 'Makaleler', 'Araştırmalar', 'Akademik Yayınlar']
+      itemCount: 0, // Will be calculated dynamically
+      subcategories: ['Kitaplarım', 'Makalelerim', 'Bildirilerim']
     },
     {
       id: 'audiovisual',
-      name: 'Görsel-İşitsel Yayınlar',
-      description: 'Video içerikler, podcast\'ler, televizyon programları',
+      name: 'Sesli/Görüntülü Yayınlar',
+      description: 'TV oturumları, radyo programları ve cami dersleri',
       icon: FilmIcon,
       gradient: 'from-red-600 via-red-700 to-red-800',
       color: 'red',
       bgClass: 'bg-gradient-burgundy',
       borderClass: 'border-burgundy-light/30',
-      itemCount: getCategoryStats('audiovisual'),
-      subcategories: ['Video İçerikler', 'Podcast\'ler', 'TV Programları', 'Röportajlar']
+      itemCount: 0, // Will be calculated dynamically
+      subcategories: ['TV Oturumları', 'Radyo Programları', 'Cami Dersleri']
     },
     {
-      id: 'social',
-      name: 'Sosyal ve Sanatsal Yayınlar',
-      description: 'Blog yazıları, sosyal medya içerikleri, sanatsal projeler',
+      id: 'social-artistic',
+      name: 'Sosyal/Sanatsal Yayınlar',
+      description: 'Sunumlar, şiirler ve denemeler',
       icon: PaintBrushIcon,
       gradient: 'from-teal-600 via-teal-700 to-teal-800',
       color: 'teal',
       bgClass: 'bg-gradient-teal',
       borderClass: 'border-teal-light/30',
-      itemCount: getCategoryStats('social'),
-      subcategories: ['Blog Yazıları', 'Sosyal Medya', 'Sanatsal Projeler', 'Fotoğrafçılık']
+      itemCount: 0, // Will be calculated dynamically
+      subcategories: ['Sunumlarım', 'Şiirlerim', 'Denemelerim']
     }
   ];
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { adminAPI } from '@/lib/api';
 import {
@@ -125,43 +126,32 @@ export default function AdminDashboard() {
       name: 'Toplam Kullanıcı',
       value: stats?.users?.total || 0,
       icon: UserGroupIcon,
-      color: 'bg-gradient-teal',
-      textColor: 'text-teal-dark',
     },
     {
       name: 'Toplam Makale',
       value: stats?.articles?.total || 0,
       icon: DocumentTextIcon,
-      color: 'bg-gradient-burgundy',
-      textColor: 'text-burgundy-dark',
     },
     {
       name: 'Toplam Yorum',
       value: stats?.comments?.total || 0,
       icon: ChatBubbleLeftRightIcon,
-      color: 'bg-gradient-brown',
-      textColor: 'text-brown-dark',
     },
     {
       name: 'Toplam İletişim',
       value: stats?.contacts?.total || 0,
       icon: EyeIcon,
-      color: 'bg-gradient-primary',
-      textColor: 'text-teal-dark',
     },
   ];
 
   if (loading) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-teal-medium mx-auto mb-4"></div>
-            <p className="text-brown-dark font-bookmania text-lg">Admin paneli yükleniyor...</p>
-            <div className="mt-4 flex justify-center space-x-1">
-              <div className="w-2 h-2 bg-teal-light rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-burgundy-light rounded-full animate-pulse delay-75"></div>
-              <div className="w-2 h-2 bg-brown-light rounded-full animate-pulse delay-150"></div>
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Admin paneli yükleniyor...</p>
             </div>
           </div>
         </div>
@@ -171,164 +161,150 @@ export default function AdminDashboard() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 text-center animate-fade-in">
-            <h1 className="heading-seljuk-large text-4xl lg:text-5xl mb-4">Admin Dashboard</h1>
-            <p className="text-lg font-bookmania text-brown-light">
-              Sistem istatistikleri ve son aktiviteler
-            </p>
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+          <p className="mt-2 text-sm text-gray-700">
+            Sistem istatistikleri ve son aktiviteler
+          </p>
+        </div>
 
-            {/* Decorative Seljuk Pattern */}
-            <div className="flex justify-center mt-6 animate-bounce-in">
-              <div className="flex space-x-2">
-                <div className="w-3 h-3 bg-teal-light rounded-full animate-pulse"></div>
-                <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5 animate-pulse" style={{animationDelay: '0.1s'}}></div>
-                <div className="w-4 h-4 bg-brown-light rounded-full -mt-0.5 animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                <div className="w-2 h-2 bg-burgundy-light rounded-full mt-0.5 animate-pulse" style={{animationDelay: '0.3s'}}></div>
-                <div className="w-3 h-3 bg-teal-light rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {statCards.map((stat, index) => (
-              <div
-                key={stat.name}
-                className="card-seljuk overflow-hidden group hover:scale-105 transition-all duration-300 animate-scale-in"
-                style={{animationDelay: `${index * 0.1}s`}}
-              >
-                <div className="p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className={`${stat.color} p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                        <stat.icon className="h-6 w-6 text-white" />
-                      </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statCards.map((stat, index) => (
+            <div
+              key={stat.name}
+              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200"
+            >
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                      <stat.icon className="h-5 w-5 text-white" />
                     </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-bookmania-medium text-brown-light truncate">
-                          {stat.name}
-                        </dt>
-                        <dd className={`text-2xl font-bookmania-bold ${stat.textColor} group-hover:scale-110 transition-transform duration-300`}>
-                          {stat.value.toLocaleString()}
-                        </dd>
-                      </dl>
-                    </div>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        {stat.name}
+                      </dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        {stat.value.toLocaleString()}
+                      </dd>
+                    </dl>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Recent Activity */}
-          <div className="card-seljuk">
-            <div className="px-6 py-6">
-              <h3 className="heading-seljuk text-xl mb-6">
-                Son Aktiviteler
-              </h3>
-              <div className="flow-root">
-                <ul className="-mb-8">
-                  {recentActivity.map((activity, index) => (
-                    <li key={activity.id}>
-                      <div className="relative pb-8">
-                        {index !== recentActivity.length - 1 && (
-                          <span
-                            className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-teal-light"
-                            aria-hidden="true"
-                          />
-                        )}
-                        <div className="relative flex space-x-3">
-                          <div>
-                            <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-4 ring-white shadow-lg ${
-                              activity.type === 'article' ? 'bg-gradient-burgundy' :
-                              activity.type === 'comment' ? 'bg-gradient-teal' :
-                              'bg-gradient-brown'
-                            }`}>
-                              <span className="text-white text-sm font-bookmania-bold">
-                                {activity.type.charAt(0).toUpperCase()}
-                              </span>
+        {/* Recent Activity */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-6">
+              Son Aktiviteler
+            </h3>
+            <div className="flow-root">
+              <ul className="-mb-8">
+                {recentActivity.map((activity, index) => (
+                  <li key={activity.id}>
+                    <div className="relative pb-8">
+                      {index !== recentActivity.length - 1 && (
+                        <span
+                          className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <div className="relative flex space-x-3">
+                        <div>
+                          <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-4 ring-white shadow ${
+                            activity.type === 'article' ? 'bg-blue-500' :
+                            activity.type === 'comment' ? 'bg-green-500' :
+                            'bg-purple-500'
+                          }`}>
+                            <span className="text-white text-sm font-medium">
+                              {activity.type.charAt(0).toUpperCase()}
                             </span>
+                          </span>
+                        </div>
+                        <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                          <div>
+                            <p className="text-sm text-gray-900">
+                              {activity.description}
+                            </p>
                           </div>
-                          <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                            <div>
-                              <p className="text-sm font-bookmania text-brown-dark">
-                                {activity.description}
-                              </p>
-                            </div>
-                            <div className="text-right text-sm whitespace-nowrap font-bookmania text-brown-light">
-                              {new Date(activity.createdAt).toLocaleDateString('tr-TR')}
-                            </div>
+                          <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                            {new Date(activity.createdAt).toLocaleDateString('tr-TR')}
                           </div>
                         </div>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
+        </div>
 
-          {/* Quick Actions */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <a
-              href="/admin/users"
-              className="card-seljuk p-6 group hover:scale-105 hover:shadow-2xl transition-all duration-300"
-            >
-              <div className="flex items-center">
-                <div className="bg-gradient-teal p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <UserGroupIcon className="h-8 w-8 text-white" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-bookmania-bold text-brown-dark group-hover:text-teal-dark transition-colors duration-300">
-                    Kullanıcı Yönetimi
-                  </h3>
-                  <p className="text-sm font-bookmania text-brown-light">
-                    Kullanıcıları görüntüle ve yönet
-                  </p>
-                </div>
+        {/* Quick Actions */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Link
+            href="/admin/users"
+            className="bg-white p-6 shadow rounded-lg hover:shadow-md transition-shadow duration-200 group"
+          >
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors duration-200">
+                <UserGroupIcon className="h-6 w-6 text-white" />
               </div>
-            </a>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                  Kullanıcı Yönetimi
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Kullanıcıları görüntüle ve yönet
+                </p>
+              </div>
+            </div>
+          </Link>
 
-            <a
-              href="/admin/articles"
-              className="card-seljuk p-6 group hover:scale-105 hover:shadow-2xl transition-all duration-300"
-            >
-              <div className="flex items-center">
-                <div className="bg-gradient-burgundy p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <DocumentTextIcon className="h-8 w-8 text-white" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-bookmania-bold text-brown-dark group-hover:text-burgundy-dark transition-colors duration-300">
-                    Makale Yönetimi
-                  </h3>
-                  <p className="text-sm font-bookmania text-brown-light">
-                    Makaleleri görüntüle ve yönet
-                  </p>
-                </div>
+          <Link
+            href="/admin/articles"
+            className="bg-white p-6 shadow rounded-lg hover:shadow-md transition-shadow duration-200 group"
+          >
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors duration-200">
+                <DocumentTextIcon className="h-6 w-6 text-white" />
               </div>
-            </a>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900 group-hover:text-green-600 transition-colors duration-200">
+                  Makale Yönetimi
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Makaleleri görüntüle ve yönet
+                </p>
+              </div>
+            </div>
+          </Link>
 
-            <a
-              href="/admin/analytics"
-              className="card-seljuk p-6 group hover:scale-105 hover:shadow-2xl transition-all duration-300"
-            >
-              <div className="flex items-center">
-                <div className="bg-gradient-brown p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <EyeIcon className="h-8 w-8 text-white" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-bookmania-bold text-brown-dark group-hover:text-brown-dark transition-colors duration-300">
-                    Analitik
-                  </h3>
-                  <p className="text-sm font-bookmania text-brown-light">
-                    İstatistikleri görüntüle
-                  </p>
-                </div>
+          <Link
+            href="/admin/analytics"
+            className="bg-white p-6 shadow rounded-lg hover:shadow-md transition-shadow duration-200 group"
+          >
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors duration-200">
+                <EyeIcon className="h-6 w-6 text-white" />
               </div>
-            </a>
-          </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900 group-hover:text-purple-600 transition-colors duration-200">
+                  Analitik
+                </h3>
+                <p className="text-sm text-gray-500">
+                  İstatistikleri görüntüle
+                </p>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
     </ProtectedRoute>

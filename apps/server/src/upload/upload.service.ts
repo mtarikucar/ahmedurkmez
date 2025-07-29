@@ -31,6 +31,22 @@ export class UploadService {
     private configService: ConfigService,
   ) {}
 
+  async uploadPDF(file: Express.Multer.File): Promise<{ url: string; filename: string; size: number }> {
+    const baseUrl = this.configService.get<string>(
+      'BASE_URL',
+      'http://localhost:3001',
+    );
+
+    // File is already saved by multer, just return the URL
+    const fileUrl = `${baseUrl}/uploads/pdfs/${file.filename}`;
+
+    return {
+      url: fileUrl,
+      filename: file.filename,
+      size: file.size,
+    };
+  }
+
   async uploadFile(
     file: Express.Multer.File,
     createMediaDto: CreateMediaDto,

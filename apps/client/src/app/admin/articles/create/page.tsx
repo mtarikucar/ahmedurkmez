@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { articlesAPI, categoriesAPI } from '@/lib/api';
+import { useNotification } from '@/hooks/useNotification';
 import MediumArticleEditor from '@/components/editor/MediumArticleEditor';
 import CategorySelector from '@/components/ui/CategorySelector';
 import TagSelector from '@/components/ui/TagSelector';
@@ -22,12 +23,9 @@ interface ArticleFormData {
   content: string;
   status: string;
   categoryId: number | null;
-  featuredImage: string;
   tags: string[];
   allowComments: boolean;
   isFeatured: boolean;
-  metaTitle: string;
-  metaDescription: string;
 }
 
 const initialFormData: ArticleFormData = {
@@ -37,12 +35,9 @@ const initialFormData: ArticleFormData = {
   content: '',
   status: 'draft',
   categoryId: null,
-  featuredImage: '',
   tags: [],
   allowComments: true,
   isFeatured: false,
-  metaTitle: '',
-  metaDescription: '',
 };
 
 // Clean function to remove any unwanted properties
@@ -112,6 +107,7 @@ export default function CreateArticle() {
   const [showPreview, setShowPreview] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [readTime, setReadTime] = useState(0);
+  const { showSuccess, showError, showWarning, NotificationComponent } = useNotification();
 
   useEffect(() => {
     fetchCategories();
@@ -220,7 +216,7 @@ export default function CreateArticle() {
 
   const handleSubmit = async (status: string) => {
     if (!formData.title || !formData.content || !formData.categoryId) {
-      alert('Lütfen başlık, içerik ve kategori alanlarını doldurun.');
+      showWarning('Eksik Bilgi', 'Lütfen başlık, içerik ve kategori alanlarını doldurun.');
       return;
     }
 
@@ -240,14 +236,14 @@ export default function CreateArticle() {
         setArticleId(response.data.id);
       }
 
-      alert(status === 'published' ? 'Makale yayınlandı!' : 'Makale kaydedildi!');
-      
-      if (status === 'published') {
-        router.push('/admin/articles');
-      }
+      showSuccess(
+        status === 'published' ? 'Makale Yayınlandı!' : 'Makale Kaydedildi!',
+        status === 'published' ? 'Makale başarıyla yayınlandı.' : 'Makale taslak olarak kaydedildi.',
+        status === 'published' ? () => router.push('/admin/articles') : undefined
+      );
     } catch (error) {
       console.error('Error saving article:', error);
-      alert('Makale kaydedilirken hata oluştu.');
+      showError('Hata Oluştu', 'Makale kaydedilirken hata oluştu.');
     } finally {
       setLoading(false);
     }
@@ -562,6 +558,7 @@ export default function CreateArticle() {
           </div>
         </div>
       </div>
+      <NotificationComponent />
     </ProtectedRoute>
   );
 }

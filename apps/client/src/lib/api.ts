@@ -154,4 +154,135 @@ export const contactAPI = {
   create: (data: any) => api.post('/contacts', data),
 };
 
+// Upload API
+export const uploadAPI = {
+  uploadPDF: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post('/upload/pdf', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response;
+  },
+
+  uploadFile: async (file: File, mediaData: any) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    Object.keys(mediaData).forEach(key => {
+      formData.append(key, mediaData[key]);
+    });
+
+    const response = await api.post('/upload/file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response;
+  },
+};
+
+// Books API
+export const booksAPI = {
+  getAll: (params?: any) => safeAPICall(
+    () => api.get('/books', { params }),
+    { data: { data: [], total: 0 } }
+  ),
+  getById: (id: number) => api.get(`/books/${id}`),
+  create: (data: any) => api.post('/books', data),
+  update: (id: number, data: any) => api.patch(`/books/${id}`, data),
+  delete: (id: number) => api.delete(`/books/${id}`),
+  getFeatured: () => safeAPICall(
+    () => api.get('/books/featured'),
+    { data: [] }
+  ),
+  getByType: (bookType: string) => safeAPICall(
+    () => api.get(`/books/by-type/${bookType}`),
+    { data: [] }
+  ),
+  incrementView: (id: number) => api.post(`/books/${id}/view`),
+};
+
+// Papers API
+export const papersAPI = {
+  getAll: (params?: any) => safeAPICall(
+    () => api.get('/papers', { params }),
+    { data: { data: [], total: 0 } }
+  ),
+  getById: (id: number) => api.get(`/papers/${id}`),
+  create: (data: any) => api.post('/papers', data),
+  update: (id: number, data: any) => api.patch(`/papers/${id}`, data),
+  delete: (id: number) => api.delete(`/papers/${id}`),
+  getFeatured: () => safeAPICall(
+    () => api.get('/papers/featured'),
+    { data: [] }
+  ),
+  getByType: (paperType: string) => safeAPICall(
+    () => api.get(`/papers/by-type/${paperType}`),
+    { data: [] }
+  ),
+  incrementView: (id: number) => api.post(`/papers/${id}/view`),
+};
+
+// Media Publications API
+export const mediaPublicationsAPI = {
+  getAll: (params?: any) => safeAPICall(
+    () => api.get('/media-publications', { params }),
+    { data: { data: [], total: 0 } }
+  ),
+  getById: (id: number) => api.get(`/media-publications/${id}`),
+  create: (data: any) => api.post('/media-publications', data),
+  update: (id: number, data: any) => api.patch(`/media-publications/${id}`, data),
+  delete: (id: number) => api.delete(`/media-publications/${id}`),
+  getFeatured: () => safeAPICall(
+    () => api.get('/media-publications/featured'),
+    { data: [] }
+  ),
+  getByType: (mediaType: string) => safeAPICall(
+    () => api.get(`/media-publications/by-type/${mediaType}`),
+    { data: [] }
+  ),
+  getByChannel: (channel: string) => safeAPICall(
+    () => api.get(`/media-publications/by-channel/${channel}`),
+    { data: [] }
+  ),
+  incrementView: (id: number) => api.post(`/media-publications/${id}/view`),
+  extractYouTubeId: (url: string) => api.get('/media-publications/youtube/extract-id', { params: { url } }),
+};
+
+// Creative Works API
+export const creativeWorksAPI = {
+  getAll: (params?: any) => safeAPICall(
+    () => api.get('/creative-works', { params }),
+    { data: { data: [], total: 0 } }
+  ),
+  getById: (id: number) => api.get(`/creative-works/${id}`),
+  create: (data: any) => api.post('/creative-works', data),
+  update: (id: number, data: any) => api.patch(`/creative-works/${id}`, data),
+  delete: (id: number) => api.delete(`/creative-works/${id}`),
+  getFeatured: () => safeAPICall(
+    () => api.get('/creative-works/featured'),
+    { data: [] }
+  ),
+  getByType: (workType: string) => safeAPICall(
+    () => api.get(`/creative-works/by-type/${workType}`),
+    { data: [] }
+  ),
+  getPoems: () => safeAPICall(
+    () => api.get('/creative-works/poems'),
+    { data: [] }
+  ),
+  getEssays: () => safeAPICall(
+    () => api.get('/creative-works/essays'),
+    { data: [] }
+  ),
+  getPresentations: () => safeAPICall(
+    () => api.get('/creative-works/presentations'),
+    { data: [] }
+  ),
+  incrementView: (id: number) => api.post(`/creative-works/${id}/view`),
+};
+
 export default api;

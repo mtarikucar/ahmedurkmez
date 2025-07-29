@@ -27,6 +27,13 @@ async function bootstrap() {
     logger.log(`Created uploads directory at: ${uploadsPath}`);
   }
 
+  // Ensure PDFs directory exists
+  const pdfsPath = path.join(uploadsPath, 'pdfs');
+  if (!fs.existsSync(pdfsPath)) {
+    fs.mkdirSync(pdfsPath, { recursive: true });
+    logger.log(`Created PDFs directory at: ${pdfsPath}`);
+  }
+
   // Compression middleware
   app.use(compression());
 

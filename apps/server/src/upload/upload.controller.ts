@@ -13,6 +13,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import * as fs from 'fs';
 import { UploadService, CreateMediaDto } from './upload.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -43,6 +46,46 @@ export class UploadController {
     }
 
     return this.uploadService.uploadFile(file, createMediaDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('pdf')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: (req, file, callback) => {
+        const uploadPath = './uploads/pdfs';
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        callback(null, uploadPath);
+      },
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        const filename = `pdf-${uniqueSuffix}${ext}`;
+        callback(null, filename);
+      },
+    }),
+    fileFilter: (req, file, callback) => {
+      if (file.mimetype === 'application/pdf') {
+        callback(null, true);
+      } else {
+        callback(new Error('Only PDF files are allowed'), false);
+      }
+    },
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit for PDFs
+    },
+  }))
+  async uploadPDF(
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No PDF file uploaded');
+    }
+
+    return this.uploadService.uploadPDF(file);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
