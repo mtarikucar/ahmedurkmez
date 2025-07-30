@@ -17,7 +17,7 @@ import {
   CheckIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import ArticlePDFSection from '@/components/article/ArticlePDFSection';
+import EBookViewer from '@/components/ui/EBookViewer';
 
 interface ArticleDetailPageProps {
   slug: string;
@@ -32,6 +32,8 @@ export default function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
   const [isLiking, setIsLiking] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
+  const [showEBookViewer, setShowEBookViewer] = useState(false);
+  const [currentEBook, setCurrentEBook] = useState<{url: string, title: string} | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -56,6 +58,25 @@ export default function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
 
     fetchArticle();
   }, [slug]);
+
+  // Add event listener for embedded e-book buttons
+  useEffect(() => {
+    const handleEBookClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('ebook-open-btn')) {
+        e.preventDefault();
+        const src = target.getAttribute('data-src');
+        const title = target.getAttribute('data-title');
+        if (src && title) {
+          setCurrentEBook({ url: src, title });
+          setShowEBookViewer(true);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleEBookClick);
+    return () => document.removeEventListener('click', handleEBookClick);
+  }, [article]); // Re-run when article content changes
 
   // Like functionality
   const handleLike = async () => {
@@ -287,12 +308,6 @@ export default function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
 
-            {/* PDF Section for Academic Papers */}
-            {article.pdfFile && (
-              <div className="my-12">
-                <ArticlePDFSection article={article} />
-              </div>
-            )}
 
             {/* Actions */}
             <div className="mt-12 pt-8 border-t-2" style={{ borderColor: 'var(--center-primary)' }}>
@@ -311,7 +326,7 @@ export default function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
                     disabled={isLiking}
                     className={`btn-elegant flex items-center space-x-2 transition-all duration-300 ${
                       isLiked 
-                        ? 'bg-red-500 text-white hover:bg-red-600' 
+                        ? 'btn-secondary bg-red-50 hover:text-white' 
                         : 'btn-secondary hover:bg-red-50 hover:text-red-600'
                     } ${isLiking ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
@@ -391,6 +406,25 @@ export default function ArticleDetailPage({ slug }: ArticleDetailPageProps) {
             </div>
           </div>
         </article>
+
+        {/* E-Book Viewer Modal */}
+        {showEBookViewer && currentEBook && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+            <button
+              onClick={() => setShowEBookViewer(false)}
+              className="absolute top-4 right-4 z-60 p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <EBookViewer
+              pdfUrl={currentEBook.url}
+              title={currentEBook.title}
+              onClose={() => setShowEBookViewer(false)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

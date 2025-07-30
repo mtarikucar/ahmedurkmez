@@ -21,6 +21,17 @@ const nextConfig: NextConfig = {
     unoptimized: false,
   },
   
+  // Webpack configuration for PDF.js
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Copy PDF.js worker to public directory
+      config.resolve.alias = {
+        ...config.resolve.alias,
+      };
+    }
+    return config;
+  },
+  
   // Security headers
   async headers() {
     return [

@@ -7,6 +7,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as compression from 'compression';
+import * as express from 'express';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -36,6 +37,28 @@ async function bootstrap() {
 
   // Compression middleware
   app.use(compression());
+
+  // Specific CORS for uploads directory (must be before static middleware)
+  app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
+
+  // Serve static files from uploads directory
+  const staticUploadsPath = path.resolve(uploadsPath);
+  app.use('/uploads', express.static(staticUploadsPath, {
+    maxAge: '1d', // Cache for 1 day
+    etag: true,
+    lastModified: true,
+    index: false, // Don't serve index.html files
+  }));
+  logger.log(`📁 Static files served from: ${staticUploadsPath}`);
 
   // Enhanced security middleware
   app.use(helmet({

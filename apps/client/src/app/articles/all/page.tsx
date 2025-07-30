@@ -3,19 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, MagnifyingGlassIcon, FunnelIcon, BookOpenIcon, FilmIcon, PaintBrushIcon, HeartIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import { articlesAPI, categoriesAPI } from '@/lib/api';
-import { extractArticlesArray, extractCategoriesArray, safeMap, safeFilter, safeFind } from '@/lib/arrayUtils';
+import { publicationsAPI, categoriesAPI, articlesAPI } from '@/lib/api';
+import { extractCategoriesArray, safeMap, safeFilter, safeFind } from '@/lib/arrayUtils';
 
-const AllArticlesPage = () => {
+const AllPublicationsPage = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedYear, setSelectedYear] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
-  const [articles, setArticles] = useState<any[]>([]);
+  const [publications, setPublications] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [likedArticles, setLikedArticles] = useState<number[]>([]);
+  const [likedPublications, setLikedPublications] = useState<number[]>([]);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -23,27 +23,27 @@ const AllArticlesPage = () => {
       try {
         setLoading(true);
         
-        // Fetch articles and categories in parallel
-        const [articlesResponse, categoriesResponse] = await Promise.all([
-          articlesAPI.getAll({ status: 'published', limit: 100 }),
+        // Fetch all publications and categories in parallel
+        const [publicationsResponse, categoriesResponse] = await Promise.all([
+          publicationsAPI.getAll(),
           categoriesAPI.getAll()
         ]);
 
         // Use robust array extraction utilities
-        const validArticles = extractArticlesArray(articlesResponse);
+        const validPublications = publicationsResponse.data?.data || [];
         const validCategories = extractCategoriesArray(categoriesResponse);
         
-        setArticles(validArticles);
+        setPublications(validPublications);
         setCategories(validCategories);
         
-        // Load liked articles from localStorage
-        const liked = JSON.parse(localStorage.getItem('likedArticles') || '[]');
-        setLikedArticles(liked);
+        // Load liked publications from localStorage
+        const liked = JSON.parse(localStorage.getItem('likedPublications') || '[]');
+        setLikedPublications(liked);
         
       } catch (error) {
         console.error('Error fetching data:', error);
         // Set empty arrays on error to prevent crashes
-        setArticles([]);
+        setPublications([]);
         setCategories([]);
       } finally {
         setLoading(false);
@@ -54,57 +54,65 @@ const AllArticlesPage = () => {
   }, []);
 
   // Like functionality
-  const handleLike = async (article: any, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent navigation to article
+  const handleLike = async (publication: any, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent navigation to publication
     
     try {
-      const isLiked = likedArticles.includes(article.id);
+      const isLiked = likedPublications.includes(publication.id);
       
       if (isLiked) {
         // Unlike
-        setLikedArticles(prev => prev.filter(id => id !== article.id));
-        localStorage.setItem('likedArticles', JSON.stringify(likedArticles.filter(id => id !== article.id)));
+        setLikedPublications(prev => prev.filter(id => id !== publication.id));
+        localStorage.setItem('likedPublications', JSON.stringify(likedPublications.filter(id => id !== publication.id)));
         
-        // Update article in state
-        setArticles(prev => prev.map(a => 
-          a.id === article.id ? { ...a, likeCount: Math.max(0, (a.likeCount || 0) - 1) } : a
+        // Update publication in state
+        setPublications(prev => prev.map(p => 
+          p.id === publication.id ? { ...p, likeCount: Math.max(0, (p.likeCount || 0) - 1) } : p
         ));
       } else {
-        // Like
-        await articlesAPI.like(article.id);
-        setLikedArticles(prev => [...prev, article.id]);
-        localStorage.setItem('likedArticles', JSON.stringify([...likedArticles, article.id]));
+        // Like - try different API endpoints based on type
+        try {
+          if (publication.type === 'article') {
+            await articlesAPI.like(publication.id);
+          }
+          // Add other API like calls here when available
+        } catch (apiError) {
+          console.log('API like not available for this type, using local storage only');
+        }
         
-        // Update article in state
-        setArticles(prev => prev.map(a => 
-          a.id === article.id ? { ...a, likeCount: (a.likeCount || 0) + 1 } : a
+        setLikedPublications(prev => [...prev, publication.id]);
+        localStorage.setItem('likedPublications', JSON.stringify([...likedPublications, publication.id]));
+        
+        // Update publication in state
+        setPublications(prev => prev.map(p => 
+          p.id === publication.id ? { ...p, likeCount: (p.likeCount || 0) + 1 } : p
         ));
       }
     } catch (error) {
-      console.error('Error liking article:', error);
+      console.error('Error liking publication:', error);
     }
   };
 
   // Share functionality
-  const handleShare = async (article: any, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent navigation to article
+  const handleShare = async (publication: any, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent navigation to publication
     
-    const articleUrl = `${window.location.origin}/articles/${article.slug}`;
+    const publicationUrl = `${window.location.origin}/articles/${publication.slug || publication.id}`;
     const shareData = {
-      title: article.title,
-      text: article.description || `${article.title} - Ahmed Ürkmez`,
-      url: articleUrl,
+      title: publication.title,
+      text: publication.description || `${publication.title} - Ahmed Ürkmez`,
+      url: publicationUrl,
     };
 
     try {
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(articleUrl);
+        await navigator.clipboard.writeText(publicationUrl);
         // Could show a toast notification here
       }
     } catch (error) {
-      console.error('Error sharing article:', error);
+      console.error('Error sharing publication:', error);
     }
   };
 
@@ -115,39 +123,39 @@ const AllArticlesPage = () => {
     { id: 'social', name: 'Sosyal & Sanatsal', icon: PaintBrushIcon }
   ];
 
-  // Get unique years from articles using safe operations
+  // Get unique years from publications using safe operations
   const years = Array.from(new Set(
-    safeMap(articles, (article: any) => new Date(article.createdAt).getFullYear())
+    safeMap(publications, (publication: any) => new Date(publication.createdAt).getFullYear())
   )).sort((a, b) => b - a);
 
-  // Map category types for filtering
-  const getCategoryType = (article: any) => {
+  // Get publication type display name
+  const getTypeDisplayName = (publication: any) => {
     const typeMapping: any = {
-      'blog_post': 'social',
-      'research_paper': 'printed',
-      'video': 'audiovisual',
-      'podcast': 'audiovisual',
-      'social_media': 'social'
+      'article': 'Makale',
+      'book': 'Kitap',
+      'paper': 'Bildiri',
+      'media': 'Medya',
+      'creative': 'Sanatsal'
     };
     
-    return typeMapping[article.type] || 'printed';
+    return typeMapping[publication.type] || 'Eser';
   };
   
-  const processedArticles = safeMap(articles, (article: any, index: number) => ({
-    ...article,
-    categoryType: getCategoryType(article),
-    categoryName: safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name || 'Genel',
-    year: new Date(article.createdAt).getFullYear().toString(),
-    description: article.content ? article.content.substring(0, 150) + '...' : article.title,
-    featured: article.featured || false,
-    color: index % 4 === 0 ? 'blue' : index % 4 === 1 ? 'purple' : index % 4 === 2 ? 'emerald' : 'brown'
+  const processedPublications = safeMap(publications, (publication: any, index: number) => ({
+    ...publication,
+    categoryName: safeFind(categories, (cat: any) => cat.id === publication.categoryId)?.name || getTypeDisplayName(publication),
+    year: new Date(publication.createdAt).getFullYear().toString(),
+    description: publication.excerpt || publication.description || publication.content?.substring(0, 150) + '...' || publication.title,
+    featured: publication.featured || false,
+    typeDisplayName: getTypeDisplayName(publication)
   }));
 
-  const filteredArticles = safeFilter(processedArticles, (article: any) => {
-    const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || article.categoryType === selectedCategory;
-    const matchesYear = selectedYear === 'all' || article.year === selectedYear.toString();
+  const filteredPublications = safeFilter(processedPublications, (publication: any) => {
+    const matchesSearch = publication.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         publication.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         publication.typeDisplayName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || publication.categoryType === selectedCategory;
+    const matchesYear = selectedYear === 'all' || publication.year === selectedYear.toString();
     
     return matchesSearch && matchesCategory && matchesYear;
   }).sort((a: any, b: any) => {
@@ -265,7 +273,7 @@ const AllArticlesPage = () => {
               {/* Sonuç Sayısı */}
               <div className="flex items-end">
                 <div className="bg-white/80 rounded-lg p-3 w-full text-center shadow-sm">
-                  <div className="text-2xl font-bold text-brown-dark">{filteredArticles.length}</div>
+                  <div className="text-2xl font-bold text-brown-dark">{filteredPublications.length}</div>
                   <div className="text-brown-light text-sm">Sonuç</div>
                 </div>
               </div>
@@ -306,18 +314,18 @@ const AllArticlesPage = () => {
               </div>
             ))}
           </div>
-        ) : filteredArticles.length === 0 ? (
+        ) : filteredPublications.length === 0 ? (
           <div className="text-center py-20">
             <div className="card-seljuk max-w-md mx-auto">
               <FunnelIcon className="w-16 h-16 text-brown-light mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-brown-dark mb-2 font-bookmania-bold">Sonuç Bulunamadı</h3>
               <p className="text-brown-light font-bookmania">
-                {articles.length === 0 
-                  ? "Henüz yayınlanmış makale bulunmuyor."
+                {publications.length === 0 
+                  ? "Henüz yayınlanmış eser bulunmuyor."
                   : "Arama kriterlerinize uygun eser bulunamadı. Lütfen farklı filtreler deneyin."
                 }
               </p>
-              {articles.length > 0 && (
+              {publications.length > 0 && (
                 <button
                   onClick={() => {
                     setSearchTerm('');
@@ -333,16 +341,16 @@ const AllArticlesPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredArticles.map((article) => (
+            {filteredPublications.map((publication) => (
               <div
-                key={article.id}
+                key={publication.id}
                 className={`card-seljuk hover:shadow-2xl transition-all duration-300 cursor-pointer group relative overflow-hidden ${
-                  article.featured ? 'ring-2 ring-teal-medium/50 shadow-teal-medium/20' : ''
+                  publication.featured ? 'ring-2 ring-teal-medium/50 shadow-teal-medium/20' : ''
                 }`}
-                onClick={() => router.push(`/articles/${article.slug || article.id}`)}
+                onClick={() => router.push(`/articles/${publication.slug || publication.id}`)}
               >
                 {/* Featured Badge */}
-                {article.featured && (
+                {publication.featured && (
                   <div className="absolute top-4 left-4 z-10">
                     <span className="px-3 py-1 bg-gradient-to-r from-teal-medium to-teal-dark text-white text-xs font-medium rounded-full shadow-sm">
                       Öne Çıkan
@@ -353,23 +361,23 @@ const AllArticlesPage = () => {
                 {/* Category and Year */}
                 <div className="flex items-center justify-between mb-4">
                   <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                    article.categoryType === 'printed' ? 'bg-amber-100 text-amber-800' :
-                    article.categoryType === 'audiovisual' ? 'bg-purple-100 text-purple-800' :
+                    publication.categoryType === 'printed' ? 'bg-amber-100 text-amber-800' :
+                    publication.categoryType === 'audiovisual' ? 'bg-purple-100 text-purple-800' :
                     'bg-teal-100 text-teal-800'
                   }`}>
-                    {article.categoryName}
+                    {publication.typeDisplayName}
                   </span>
-                  <span className="text-brown-light text-sm font-bookmania">{article.year}</span>
+                  <span className="text-brown-light text-sm font-bookmania">{publication.year}</span>
                 </div>
 
                 {/* Title */}
                 <h3 className="text-xl font-bookmania-bold text-brown-dark mb-3 line-clamp-2 group-hover:text-teal-dark transition-colors duration-300">
-                  {article.title}
+                  {publication.title}
                 </h3>
 
                 {/* Description */}
                 <p className="text-brown-light text-sm leading-relaxed mb-6 line-clamp-3 font-bookmania">
-                  {article.excerpt || article.description || `${article.title} hakkında detaylı bilgi için makaleyi okuyun.`}
+                  {publication.description}
                 </p>
 
                 {/* Stats Row */}
@@ -380,16 +388,16 @@ const AllArticlesPage = () => {
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                         <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
                       </svg>
-                      <span>{(article.viewCount || 0).toLocaleString()}</span>
+                      <span>{(publication.viewCount || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
                       </svg>
-                      <span>{article.likeCount || 0}</span>
+                      <span>{publication.likeCount || 0}</span>
                     </div>
                     <span className="text-xs">
-                      {new Date(article.createdAt).toLocaleDateString('tr-TR')}
+                      {new Date(publication.createdAt).toLocaleDateString('tr-TR')}
                     </span>
                   </div>
                 </div>
@@ -398,14 +406,14 @@ const AllArticlesPage = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <button 
-                      onClick={(e) => handleLike(article, e)}
+                      onClick={(e) => handleLike(publication, e)}
                       className={`p-2 rounded-lg transition-all duration-300 ${
-                        likedArticles.includes(article.id) 
+                        likedPublications.includes(publication.id) 
                           ? 'bg-red-100 text-red-600 hover:bg-red-200' 
                           : 'bg-gray-100 text-brown-light hover:bg-red-100 hover:text-red-600'
                       }`}
                     >
-                      {likedArticles.includes(article.id) ? (
+                      {likedPublications.includes(publication.id) ? (
                         <HeartIconSolid className="h-4 w-4" />
                       ) : (
                         <HeartIcon className="h-4 w-4" />
@@ -413,7 +421,7 @@ const AllArticlesPage = () => {
                     </button>
                     
                     <button 
-                      onClick={(e) => handleShare(article, e)}
+                      onClick={(e) => handleShare(publication, e)}
                       className="p-2 rounded-lg bg-gray-100 text-brown-light hover:bg-blue-100 hover:text-blue-600 transition-all duration-300"
                     >
                       <ShareIcon className="h-4 w-4" />
@@ -421,7 +429,7 @@ const AllArticlesPage = () => {
                   </div>
                   
                   <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-medium to-teal-dark text-white text-sm font-medium rounded-lg hover:from-teal-dark hover:to-teal-medium transition-all duration-300 shadow-sm hover:shadow-md">
-                    Oku
+                    {publication.type === 'media' ? 'İzle' : 'Oku'}
                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -433,7 +441,7 @@ const AllArticlesPage = () => {
         )}
 
         {/* Sayfalama (eğer çok fazla sonuç varsa) */}
-        {filteredArticles.length > 12 && (
+        {filteredPublications.length > 12 && (
           <div className="mt-16 flex justify-center">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center space-x-2">
@@ -458,4 +466,4 @@ const AllArticlesPage = () => {
   );
 };
 
-export default AllArticlesPage;
+export default AllPublicationsPage;

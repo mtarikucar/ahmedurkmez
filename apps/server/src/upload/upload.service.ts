@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export interface CreateMediaDto {
-  articleId: number;
+  articleId?: number;
   type: MediaType;
   url?: string; // For external URLs
   thumbnailUrl?: string;
@@ -21,6 +21,7 @@ export interface CreateMediaDto {
   sortOrder?: number;
   externalId?: string; // For YouTube, Vimeo etc.
   embedCode?: string;
+  title?: string;
 }
 
 @Injectable()
@@ -64,7 +65,7 @@ export class UploadService {
     // Determine media type based on file extension
     const mediaType = this.getMediaTypeFromFile(file);
 
-    const media = this.mediaRepository.create({
+    const mediaData = {
       ...createMediaDto,
       filename: file.filename,
       originalName: file.originalname,
@@ -72,7 +73,14 @@ export class UploadService {
       url: fileUrl,
       mimeType: file.mimetype,
       fileSize: file.size,
-    });
+    };
+
+    // Only add articleId if it exists
+    if (createMediaDto.articleId) {
+      mediaData.articleId = createMediaDto.articleId;
+    }
+
+    const media = this.mediaRepository.create(mediaData);
 
     return this.mediaRepository.save(media);
   }

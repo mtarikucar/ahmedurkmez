@@ -65,6 +65,9 @@ export class ArticleMedia {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ nullable: true })
+  title: string;
+
   @Column({ default: 0 })
   sortOrder: number;
 
@@ -78,12 +81,12 @@ export class ArticleMedia {
   @Column({ nullable: true })
   embedCode: string; // Custom embed code
 
-  @ManyToOne(() => Article, (article) => article.media)
+  @ManyToOne(() => Article, (article) => article.media, { nullable: true })
   @JoinColumn({ name: 'articleId' })
   article: Article;
 
-  @Column()
-  articleId: number;
+  @Column({ nullable: true })
+  articleId?: number;
 
   @CreateDateColumn()
   createdAt: Date;

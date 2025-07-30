@@ -12,7 +12,7 @@ import Color from '@tiptap/extension-color';
 import TextStyle from '@tiptap/extension-text-style';
 import { VideoEmbed } from './extensions/VideoEmbed';
 import { PDFEmbed } from './extensions/PDFEmbed';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Bold,
   Italic,
@@ -39,8 +39,9 @@ import {
   Plus,
   X,
 } from 'lucide-react';
-import { articlesAPI } from '@/lib/api';
+import { articlesAPI, uploadAPI, mediaAPI } from '@/lib/api';
 import MediaManager from '@/components/admin/MediaManager';
+import EBookViewer from '@/components/ui/EBookViewer';
 
 interface MediumArticleEditorProps {
   initialContent?: string;
@@ -60,7 +61,28 @@ export default function MediumArticleEditor({
   const [showMediaManager, setShowMediaManager] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | 'pdf'>('image');
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showEBookViewer, setShowEBookViewer] = useState(false);
+  const [currentEBook, setCurrentEBook] = useState<{url: string, title: string} | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Add event listener for e-book buttons
+  useEffect(() => {
+    const handleEBookClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('ebook-open-btn')) {
+        e.preventDefault();
+        const src = target.getAttribute('data-src');
+        const title = target.getAttribute('data-title');
+        if (src && title) {
+          setCurrentEBook({ url: src, title });
+          setShowEBookViewer(true);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleEBookClick);
+    return () => document.removeEventListener('click', handleEBookClick);
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -78,7 +100,7 @@ export default function MediumArticleEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-burgundy-medium hover:text-burgundy-dark underline',
+          class: 'text-indigo-600 hover:text-indigo-500 underline',
         },
       }),
       Placeholder.configure({
@@ -97,21 +119,36 @@ export default function MediumArticleEditor({
     content: initialContent,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none font-bookmania text-brown-dark focus:outline-none min-h-[400px] px-4 py-2',
+        class: 'prose prose-lg max-w-none focus:outline-none min-h-[400px] px-4 py-2',
       },
     },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       onChange?.(html);
     },
+    onCreate: ({ editor }) => {
+      // Re-attach event listeners when editor is created with existing content
+      setTimeout(() => {
+        const handleEBookClick = (e: Event) => {
+          const target = e.target as HTMLElement;
+          if (target.classList.contains('ebook-open-btn')) {
+            e.preventDefault();
+            const src = target.getAttribute('data-src');
+            const title = target.getAttribute('data-title');
+            if (src && title) {
+              setCurrentEBook({ url: src, title });
+              setShowEBookViewer(true);
+            }
+          }
+        };
+
+        document.addEventListener('click', handleEBookClick);
+        return () => document.removeEventListener('click', handleEBookClick);
+      }, 100);
+    },
   });
 
   const handleImageUpload = useCallback(async () => {
-    if (!articleId) {
-      alert('Lütfen önce makaleyi kaydedin.');
-      return;
-    }
-
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -123,11 +160,15 @@ export default function MediumArticleEditor({
       setIsUploading(true);
       
       try {
+        // Create FormData for image upload
         const formData = new FormData();
-        formData.append('image', file);
-
-        const response = await articlesAPI.uploadImage(articleId, formData);
-        const imageUrl = response.data.url || response.data.media?.url;
+        formData.append('file', file);
+        formData.append('type', 'image');
+        formData.append('title', file.name);
+        formData.append('description', 'Image uploaded from editor');
+        
+        const response = await mediaAPI.uploadFile(formData);
+        const imageUrl = response.data.url;
 
         editor?.chain().focus().setImage({ src: imageUrl }).run();
       } catch (error) {
@@ -139,7 +180,7 @@ export default function MediumArticleEditor({
     };
 
     input.click();
-  }, [editor, articleId]);
+  }, [editor]);
 
   const handleVideoEmbed = useCallback(() => {
     const url = window.prompt('Video URL\'sini girin (YouTube, Vimeo veya direkt video)');
@@ -149,12 +190,7 @@ export default function MediumArticleEditor({
     }
   }, [editor]);
 
-  const handlePDFUpload = useCallback(async () => {
-    if (!articleId) {
-      alert('Lütfen önce makaleyi kaydedin.');
-      return;
-    }
-
+  const handlePDFUpload = useCallback(async (displayMode: 'viewer' | 'ebook' = 'viewer') => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf';
@@ -166,13 +202,15 @@ export default function MediumArticleEditor({
       setIsUploading(true);
       
       try {
-        const formData = new FormData();
-        formData.append('pdf', file);
+        // Use dedicated PDF upload endpoint
+        const response = await uploadAPI.uploadPDF(file);
+        const pdfUrl = response.data.url;
 
-        const response = await articlesAPI.uploadPDF(articleId, formData);
-        const pdfUrl = response.data.pdfFile || response.data.media?.url;
-
-        editor?.chain().focus().setPDFEmbed({ src: pdfUrl, title: file.name }).run();
+        editor?.chain().focus().setPDFEmbed({ 
+          src: pdfUrl, 
+          title: file.name.replace('.pdf', ''),
+          displayMode 
+        }).run();
       } catch (error) {
         console.error('Error uploading PDF:', error);
         alert('PDF yüklenirken hata oluştu.');
@@ -182,7 +220,7 @@ export default function MediumArticleEditor({
     };
 
     input.click();
-  }, [editor, articleId]);
+  }, [editor]);
 
   const handleMediaSelect = useCallback((media: any[]) => {
     if (media.length > 0) {
@@ -193,7 +231,11 @@ export default function MediumArticleEditor({
       } else if (mediaType === 'video') {
         editor?.chain().focus().setVideoEmbed({ src: selectedMedia.url }).run();
       } else if (mediaType === 'pdf') {
-        editor?.chain().focus().setPDFEmbed({ src: selectedMedia.url, title: selectedMedia.originalName }).run();
+        editor?.chain().focus().setPDFEmbed({ 
+          src: selectedMedia.url, 
+          title: selectedMedia.originalName || selectedMedia.title || 'PDF Belgesi',
+          displayMode: 'ebook' 
+        }).run();
       }
     }
     
@@ -223,7 +265,7 @@ export default function MediumArticleEditor({
   const AddContentMenu = () => (
     <div 
       ref={menuRef}
-      className={`absolute left-0 mt-2 w-56 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-lg shadow-xl border border-teal-light z-50 ${showAddMenu ? 'block' : 'hidden'}`}
+      className={`absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 ${showAddMenu ? 'block' : 'hidden'}`}
     >
       <div className="py-2">
         <button
@@ -231,9 +273,10 @@ export default function MediumArticleEditor({
             handleImageUpload();
             setShowAddMenu(false);
           }}
-          className="w-full px-4 py-2 text-left text-brown-dark hover:bg-gradient-to-r hover:from-[var(--bg-primary)] hover:to-[var(--bg-secondary)] flex items-center gap-3"
+          disabled={isUploading}
+          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <ImageIcon className="w-5 h-5 text-teal-medium" />
+          <ImageIcon className="w-5 h-5 text-gray-500" />
           <span>Resim Ekle</span>
         </button>
         
@@ -243,9 +286,9 @@ export default function MediumArticleEditor({
             setShowMediaManager(true);
             setShowAddMenu(false);
           }}
-          className="w-full px-4 py-2 text-left text-brown-dark hover:bg-gradient-to-r hover:from-[var(--bg-primary)] hover:to-[var(--bg-secondary)] flex items-center gap-3"
+          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3"
         >
-          <ImageIcon className="w-5 h-5 text-teal-medium" />
+          <ImageIcon className="w-5 h-5 text-gray-500" />
           <span>Medya Kütüphanesi</span>
         </button>
         
@@ -254,50 +297,83 @@ export default function MediumArticleEditor({
             handleVideoEmbed();
             setShowAddMenu(false);
           }}
-          className="w-full px-4 py-2 text-left text-brown-dark hover:bg-gradient-to-r hover:from-[var(--bg-primary)] hover:to-[var(--bg-secondary)] flex items-center gap-3"
+          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3"
         >
-          <Video className="w-5 h-5 text-burgundy-medium" />
+          <Video className="w-5 h-5 text-gray-500" />
           <span>Video Embed</span>
         </button>
         
-        <button
-          onClick={() => {
-            handlePDFUpload();
-            setShowAddMenu(false);
-          }}
-          className="w-full px-4 py-2 text-left text-brown-dark hover:bg-gradient-to-r hover:from-[var(--bg-primary)] hover:to-[var(--bg-secondary)] flex items-center gap-3"
-        >
-          <FileText className="w-5 h-5 text-brown-medium" />
-          <span>PDF Ekle</span>
-        </button>
+        <div className="border-t border-gray-100">
+          <div className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+            PDF Ekle
+          </div>
+          <button
+            onClick={() => {
+              handlePDFUpload('viewer');
+              setShowAddMenu(false);
+            }}
+            disabled={isUploading}
+            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FileText className="w-5 h-5 text-gray-500" />
+            <div>
+              <div className="font-medium">PDF Viewer</div>
+              <div className="text-xs text-gray-500">Geleneksel PDF görüntüleyici</div>
+            </div>
+          </button>
+          <button
+            onClick={() => {
+              handlePDFUpload('ebook');
+              setShowAddMenu(false);
+            }}
+            disabled={isUploading}
+            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+            </svg>
+            <div>
+              <div className="font-medium">E-Kitap</div>
+              <div className="text-xs text-gray-500">Kitap kartı şeklinde görüntü</div>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   );
 
   const EditorToolbar = () => (
-    <div className="sticky top-0 z-10 bg-gradient-to-r from-[var(--bg-primary)] to-[var(--bg-secondary)] border-b-2 border-teal-light p-3 space-y-2">
+    <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 p-3 space-y-2">
       <div className="flex flex-wrap items-center gap-1">
         {/* Add Content Button */}
         <div className="relative">
           <button
             onClick={() => setShowAddMenu(!showAddMenu)}
-            className={`p-2 rounded-full bg-gradient-to-r from-teal-medium to-teal-dark text-white hover:from-teal-dark hover:to-teal-dark transition-all duration-300 ${showAddMenu ? 'rotate-45' : ''}`}
-            title="İçerik Ekle"
+            disabled={isUploading}
+            className={`p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${showAddMenu ? 'rotate-45' : ''}`}
+            title={isUploading ? 'Yükleniyor...' : 'İçerik Ekle'}
           >
-            <Plus className="w-5 h-5" />
+            {isUploading ? (
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <Plus className="w-5 h-5" />
+            )}
           </button>
           <AddContentMenu />
         </div>
 
-        <div className="w-px h-8 bg-teal-light mx-2" />
+        <div className="w-px h-8 bg-gray-300 mx-2" />
 
         {/* Text Style */}
         <div className="flex items-center gap-1 pr-2">
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
             disabled={!editor.can().chain().focus().toggleBold().run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('bold') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('bold') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Kalın"
           >
@@ -306,8 +382,8 @@ export default function MediumArticleEditor({
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
             disabled={!editor.can().chain().focus().toggleItalic().run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('italic') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('italic') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="İtalik"
           >
@@ -316,8 +392,8 @@ export default function MediumArticleEditor({
           <button
             onClick={() => editor.chain().focus().toggleUnderline().run()}
             disabled={!editor.can().chain().focus().toggleUnderline().run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('underline') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('underline') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Altı Çizili"
           >
@@ -325,14 +401,14 @@ export default function MediumArticleEditor({
           </button>
         </div>
 
-        <div className="w-px h-8 bg-teal-light mx-2" />
+        <div className="w-px h-8 bg-gray-300 mx-2" />
 
         {/* Headings */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('heading', { level: 1 }) ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('heading', { level: 1 }) ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Başlık 1"
           >
@@ -340,8 +416,8 @@ export default function MediumArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('heading', { level: 2 }) ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('heading', { level: 2 }) ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Başlık 2"
           >
@@ -349,8 +425,8 @@ export default function MediumArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('heading', { level: 3 }) ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('heading', { level: 3 }) ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Başlık 3"
           >
@@ -358,14 +434,14 @@ export default function MediumArticleEditor({
           </button>
         </div>
 
-        <div className="w-px h-8 bg-teal-light mx-2" />
+        <div className="w-px h-8 bg-gray-300 mx-2" />
 
         {/* Lists and Quotes */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('bulletList') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('bulletList') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Liste"
           >
@@ -373,8 +449,8 @@ export default function MediumArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('orderedList') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('orderedList') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Numaralı Liste"
           >
@@ -382,14 +458,14 @@ export default function MediumArticleEditor({
           </button>
         </div>
 
-        <div className="w-px h-8 bg-teal-light mx-2" />
+        <div className="w-px h-8 bg-gray-300 mx-2" />
 
         {/* Quote and Code */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('blockquote') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('blockquote') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Alıntı"
           >
@@ -397,8 +473,8 @@ export default function MediumArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive('codeBlock') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive('codeBlock') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Kod Bloğu"
           >
@@ -406,27 +482,27 @@ export default function MediumArticleEditor({
           </button>
         </div>
 
-        <div className="w-px h-8 bg-teal-light mx-2" />
+        <div className="w-px h-8 bg-gray-300 mx-2" />
 
         {/* Link */}
         <button
           onClick={setLink}
-          className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-            editor.isActive('link') ? 'bg-teal-medium text-white' : 'text-brown-dark'
+          className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+            editor.isActive('link') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
           }`}
           title="Link Ekle"
         >
           <LinkIcon className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-8 bg-teal-light mx-2" />
+        <div className="w-px h-8 bg-gray-300 mx-2" />
 
         {/* Alignment */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => editor.chain().focus().setTextAlign('left').run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive({ textAlign: 'left' }) ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive({ textAlign: 'left' }) ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Sola Hizala"
           >
@@ -434,8 +510,8 @@ export default function MediumArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().setTextAlign('center').run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive({ textAlign: 'center' }) ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive({ textAlign: 'center' }) ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Ortala"
           >
@@ -443,8 +519,8 @@ export default function MediumArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().setTextAlign('right').run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive({ textAlign: 'right' }) ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive({ textAlign: 'right' }) ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="Sağa Hizala"
           >
@@ -452,8 +528,8 @@ export default function MediumArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-            className={`p-2 rounded hover:bg-teal-light/20 transition-colors ${
-              editor.isActive({ textAlign: 'justify' }) ? 'bg-teal-medium text-white' : 'text-brown-dark'
+            className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+              editor.isActive({ textAlign: 'justify' }) ? 'bg-indigo-100 text-indigo-600' : 'text-gray-600'
             }`}
             title="İki Yana Yasla"
           >
@@ -461,14 +537,14 @@ export default function MediumArticleEditor({
           </button>
         </div>
 
-        <div className="w-px h-8 bg-teal-light mx-2" />
+        <div className="w-px h-8 bg-gray-300 mx-2" />
 
         {/* History */}
         <div className="flex items-center gap-1">
           <button
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().chain().focus().undo().run()}
-            className="p-2 rounded hover:bg-teal-light/20 transition-colors text-brown-dark disabled:opacity-50"
+            className="p-2 rounded hover:bg-gray-100 transition-colors text-gray-600 disabled:opacity-50"
             title="Geri Al"
           >
             <Undo className="w-4 h-4" />
@@ -476,7 +552,7 @@ export default function MediumArticleEditor({
           <button
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().chain().focus().redo().run()}
-            className="p-2 rounded hover:bg-teal-light/20 transition-colors text-brown-dark disabled:opacity-50"
+            className="p-2 rounded hover:bg-gray-100 transition-colors text-gray-600 disabled:opacity-50"
             title="İleri Al"
           >
             <Redo className="w-4 h-4" />
@@ -487,21 +563,19 @@ export default function MediumArticleEditor({
         <div className="ml-auto">
           <button
             onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-burgundy-medium to-burgundy-dark text-white rounded-lg hover:from-burgundy-dark hover:to-burgundy-dark transition-all duration-300"
+            className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-all duration-300"
           >
             {showPreview ? (
               <>
-                <EyeOff className="w-4 h-4 text-brown-dark" />
-                <span className="hidden md:inline text-brown-dark">Düzenleme</span>
-                <span className="md:hidden text-brown-dark">Düzenle</span>
-                {/* For mobile view */}
+                <EyeOff className="w-4 h-4" />
+                <span className="hidden md:inline">Düzenleme</span>
+                <span className="md:hidden">Düzenle</span>
               </>
             ) : (
               <>
-                <Eye className="w-4 h-4 text-brown-dark" />
-                <span className="hidden md:inline text-brown-dark">Önizleme</span>
-                <span className="md:hidden text-brown-dark">Önizle</span>
-                {/* For mobile view */}
+                <Eye className="w-4 h-4" />
+                <span className="hidden md:inline">Önizleme</span>
+                <span className="md:hidden">Önizle</span>
               </>
             )}
           </button>
@@ -512,12 +586,12 @@ export default function MediumArticleEditor({
 
   return (
     <>
-      <div className="card-seljuk overflow-hidden">
+      <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg overflow-hidden">
         <EditorToolbar />
         
         <div className="p-6">
           {showPreview ? (
-            <div className="prose prose-lg max-w-none font-bookmania text-brown-dark">
+            <div className="prose prose-lg max-w-none">
               <div 
                 dangerouslySetInnerHTML={{ __html: editor.getHTML() }}
                 className="preview-content"
@@ -526,7 +600,7 @@ export default function MediumArticleEditor({
           ) : (
             <EditorContent 
               editor={editor} 
-              className="min-h-[400px] focus-within:ring-2 focus-within:ring-teal-medium rounded-lg"
+              className="min-h-[400px] focus-within:ring-2 focus-within:ring-indigo-500 rounded-lg"
             />
           )}
         </div>
@@ -539,7 +613,7 @@ export default function MediumArticleEditor({
           .ProseMirror p.is-editor-empty:first-child::before {
             content: attr(data-placeholder);
             float: left;
-            color: #69412C80;
+            color: #9CA3AF;
             pointer-events: none;
             height: 0;
           }
@@ -552,42 +626,40 @@ export default function MediumArticleEditor({
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            font-family: var(--font-heading);
-            color: #69412C;
+            color: #111827;
           }
 
           .ProseMirror h2 {
             font-size: 2rem;
             font-weight: 600;
             margin-bottom: 0.75rem;
-            font-family: var(--font-heading);
-            color: #69412C;
+            color: #111827;
           }
 
           .ProseMirror h3 {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
-            font-family: var(--font-heading);
-            color: #69412C;
+            color: #111827;
           }
 
           .ProseMirror p {
             margin-bottom: 1rem;
             line-height: 1.8;
+            color: #374151;
           }
 
           .ProseMirror blockquote {
-            border-left: 4px solid #932641;
+            border-left: 4px solid #6366F1;
             padding-left: 1rem;
             margin: 1rem 0;
             font-style: italic;
-            color: #7f5d4b;
+            color: #6B7280;
           }
 
           .ProseMirror pre {
-            background: #f4f3e1;
-            border: 1px solid #269393;
+            background: #F3F4F6;
+            border: 1px solid #D1D5DB;
             border-radius: 0.5rem;
             padding: 1rem;
             margin: 1rem 0;
@@ -595,11 +667,11 @@ export default function MediumArticleEditor({
           }
 
           .ProseMirror code {
-            background: #f4f3e1;
+            background: #F3F4F6;
             padding: 0.2rem 0.4rem;
             border-radius: 0.25rem;
             font-size: 0.875rem;
-            color: #932641;
+            color: #6366F1;
           }
 
           .ProseMirror ul,
@@ -622,13 +694,13 @@ export default function MediumArticleEditor({
           }
 
           .ProseMirror a {
-            color: #932641;
+            color: #6366F1;
             text-decoration: underline;
             transition: color 0.3s;
           }
 
           .ProseMirror a:hover {
-            color: #800020;
+            color: #4F46E5;
           }
 
           /* Video embed styles */
@@ -648,7 +720,7 @@ export default function MediumArticleEditor({
           /* PDF embed styles */
           .pdf-embed {
             margin: 2rem 0;
-            border: 2px solid #269393;
+            border: 2px solid #D1D5DB;
             border-radius: 0.5rem;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -661,7 +733,7 @@ export default function MediumArticleEditor({
           }
 
           .pdf-embed .pdf-header {
-            background: #269393;
+            background: #6366F1;
             color: white;
             padding: 0.75rem 1rem;
             font-weight: 600;
@@ -699,7 +771,7 @@ export default function MediumArticleEditor({
 
           .preview-content .pdf-embed {
             margin: 2rem 0;
-            border: 2px solid #269393;
+            border: 2px solid #D1D5DB;
             border-radius: 0.5rem;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -712,7 +784,7 @@ export default function MediumArticleEditor({
           }
 
           .preview-content .pdf-embed .pdf-header {
-            background: #269393;
+            background: #6366F1;
             color: white;
             padding: 0.75rem 1rem;
             font-weight: 600;
@@ -742,6 +814,112 @@ export default function MediumArticleEditor({
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           }
+
+          /* E-book embed styles */
+          .pdf-ebook-embed {
+            margin: 2rem 0;
+            text-align: center;
+          }
+
+          .ebook-placeholder {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 2px solid #0ea5e9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+
+          .ebook-placeholder:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          }
+
+          .ebook-open-btn {
+            background: #0ea5e9 !important;
+            color: white !important;
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+
+          .ebook-open-btn:hover {
+            background: #0284c7 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          }
+
+          .preview-content .pdf-ebook-embed {
+            margin: 2rem 0;
+            text-align: center;
+          }
+
+          .preview-content .ebook-placeholder {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 2px solid #0ea5e9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+
+          .preview-content .ebook-placeholder:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          }
+
+          .preview-content .ebook-open-btn {
+            background: #0ea5e9 !important;
+            color: white !important;
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+
+          .preview-content .ebook-open-btn:hover {
+            background: #0284c7 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          }
+
+          /* E-book embed styles */
+          .pdf-ebook-embed {
+            margin: 2rem 0;
+            text-align: center;
+          }
+
+          .pdf-ebook-embed button:hover {
+            transform: translateY(-1px);
+          }
+
+          .pdf-ebook-embed a:hover {
+            transform: translateY(-1px);
+          }
+
+          .preview-content .pdf-ebook-embed {
+            margin: 2rem 0;
+            text-align: center;
+          }
+
+          .preview-content .pdf-ebook-embed button:hover {
+            transform: translateY(-1px);
+          }
+
+          .preview-content .pdf-ebook-embed a:hover {
+            transform: translateY(-1px);
+          }
         `}</style>
       </div>
 
@@ -754,6 +932,23 @@ export default function MediumArticleEditor({
           selectionMode="single"
           fileType={mediaType === 'pdf' ? 'document' : mediaType}
         />
+      )}
+
+      {/* E-Book Viewer Modal */}
+      {showEBookViewer && currentEBook && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+          <button
+            onClick={() => setShowEBookViewer(false)}
+            className="absolute top-4 right-4 z-60 p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-white transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <EBookViewer
+            pdfUrl={currentEBook.url}
+            title={currentEBook.title}
+            onClose={() => setShowEBookViewer(false)}
+          />
+        </div>
       )}
     </>
   );

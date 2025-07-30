@@ -728,25 +728,6 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-
-              {/* Additional Quick Links */}
-              <div className="mt-6 pt-6 border-t border-white/20">
-                <h3 className="text-white font-bookmania font-semibold mb-3">Hızlı Erişim</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => router.push('/contact')}
-                    className="bg-white/20 hover:bg-white/30 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
-                  >
-                    📧 İletişim
-                  </button>
-                  <button 
-                    onClick={() => router.push('/about')}
-                    className="bg-white/20 hover:bg-white/30 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
-                  >
-                    👤 Hakkımda
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -930,24 +911,7 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Quick Actions */}
-              <div className="mt-6 pt-6 border-t border-white/20">
-                <h3 className="text-white font-bookmania font-semibold mb-3">Hızlı Erişim</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => router.push('/articles')}
-                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
-                  >
-                    📚 Tüm Eserler
-                  </button>
-                  <button 
-                    onClick={() => router.push('/categories')}
-                    className="bg-white/25 hover:bg-white/35 text-white text-sm font-medium py-2 rounded-lg transition-colors duration-200"
-                  >
-                    🗂 Kategoriler
-                  </button>
-                </div>
-              </div>
+              
             </div>
           </div>
         </div>
@@ -956,26 +920,16 @@ export default function HomePage() {
       {/* Footer Section with Contact CTA */}
       <section className="bg-gradient-to-r from-brown-dark to-burgundy-dark py-16">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bookmania-bold font-bookmania-bold text-brown-dark mb-4">
-            Akademik İşbirliği ve İletişim
-          </h2>
           <p className="font-bookmania-bold text-brown-dark/90 text-lg mb-8 max-w-2xl mx-auto">
             Hadis İlmi, İslami araştırmalar ve din eğitimi konularında işbirliği yapmak, 
             projelerimden haberdar olmak veya sorularınızı sormak için benimle iletişime geçin.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              onClick={() => router.push('/contact')}
-              className="bg-teal-medium hover:bg-teal-dark font-bookmania-bold text-brown-dark px-8 py-3 rounded-full font-bookmania font-medium transition-all duration-300 flex items-center space-x-2 group shadow-lg"
-            >
-              <span className='text-white'>İletişime Geç</span>
-              <ArrowRightIcon className="h-5 w-5 text-white group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button
               onClick={() => router.push('/articles')}
-              className="bg-transparent border-2 border-white font-bookmania-bold text-brown-dark hover:bg-white hover:text-brown-dark px-8 py-3 rounded-full font-bookmania font-medium transition-all duration-300"
+              className="bg-teal-medium cursor-pointer hover:bg-teal-dark font-bookmania-bold text-brown-dark px-8 py-3 rounded-full font-bookmania font-medium transition-all duration-300 flex items-center space-x-2 group shadow-lg"
             >
-              Tüm Çalışmalarımı İncele
+              <span className='text-white'>Tüm Çalışmalarımı İncele</span>
             </button>
           </div>
         </div>

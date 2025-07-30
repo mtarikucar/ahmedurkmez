@@ -285,4 +285,99 @@ export const creativeWorksAPI = {
   incrementView: (id: number) => api.post(`/creative-works/${id}/view`),
 };
 
+// Combined Publications API - Get all types of publications
+export const publicationsAPI = {
+  getAll: async (params?: any) => {
+    try {
+      const [articles, books, papers, mediaPublications, creativeWorks] = await Promise.all([
+        articlesAPI.getAll({ status: 'published', ...params }),
+        booksAPI.getAll(params),
+        papersAPI.getAll(params),
+        mediaPublicationsAPI.getAll(params),
+        creativeWorksAPI.getAll(params)
+      ]);
+
+      // Extract arrays safely
+      const extractedArticles = extractArticlesArray(articles).map((item: any) => ({ 
+        ...item, 
+        type: 'article',
+        categoryType: 'printed'
+      }));
+      
+      const extractedBooks = (books.data?.data || []).map((item: any) => ({ 
+        ...item, 
+        type: 'book',
+        categoryType: 'printed'
+      }));
+      
+      const extractedPapers = (papers.data?.data || []).map((item: any) => ({ 
+        ...item, 
+        type: 'paper',
+        categoryType: 'printed'
+      }));
+      
+      const extractedMediaPublications = (mediaPublications.data?.data || []).map((item: any) => ({ 
+        ...item, 
+        type: 'media',
+        categoryType: 'audiovisual'
+      }));
+      
+      const extractedCreativeWorks = (creativeWorks.data?.data || []).map((item: any) => ({ 
+        ...item, 
+        type: 'creative',
+        categoryType: 'social'
+      }));
+
+      // Combine all publications
+      const allPublications = [
+        ...extractedArticles,
+        ...extractedBooks,
+        ...extractedPapers,
+        ...extractedMediaPublications,
+        ...extractedCreativeWorks
+      ];
+
+      return {
+        data: {
+          data: allPublications,
+          total: allPublications.length
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching all publications:', error);
+      return {
+        data: {
+          data: [],
+          total: 0
+        }
+      };
+    }
+  },
+
+  getFeatured: async () => {
+    try {
+      const [articles, books, papers, mediaPublications, creativeWorks] = await Promise.all([
+        articlesAPI.getFeatured(),
+        booksAPI.getFeatured(),
+        papersAPI.getFeatured(),
+        mediaPublicationsAPI.getFeatured(),
+        creativeWorksAPI.getFeatured()
+      ]);
+
+      const allFeatured = [
+        ...(articles.data || []).map((item: any) => ({ ...item, type: 'article', categoryType: 'printed' })),
+        ...(books.data || []).map((item: any) => ({ ...item, type: 'book', categoryType: 'printed' })),
+        ...(papers.data || []).map((item: any) => ({ ...item, type: 'paper', categoryType: 'printed' })),
+        ...(mediaPublications.data || []).map((item: any) => ({ ...item, type: 'media', categoryType: 'audiovisual' })),
+        ...(creativeWorks.data || []).map((item: any) => ({ ...item, type: 'creative', categoryType: 'social' }))
+      ];
+
+      return { data: allFeatured };
+    } catch (error) {
+      console.error('Error fetching featured publications:', error);
+      return { data: [] };
+    }
+  }
+};
+
 export default api;

@@ -257,7 +257,7 @@ const ArticlesPage = () => {
         <div className="mt-16 text-center">
           <button
             onClick={handleViewAll}
-            className="inline-flex items-center px-8 py-4 bg-gradient-teal text-white font-bookmania font-medium rounded-xl shadow-lg border-2 border-teal-light/30 backdrop-blur-sm"
+            className="inline-flex cursor-pointer items-center px-8 py-4 bg-gradient-teal text-white font-bookmania font-medium rounded-xl shadow-lg border-2 border-teal-light/30 backdrop-blur-sm"
           >
             <DocumentTextIcon className="w-5 h-5 mr-3" />
             Tüm Eserleri Görüntüle

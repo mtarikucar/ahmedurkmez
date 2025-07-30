@@ -74,18 +74,18 @@ export default function TagSelector({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="min-h-[48px] px-4 py-3 border-2 border-teal-light rounded-lg bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] focus-within:ring-2 focus-within:ring-teal-medium focus-within:border-teal-medium transition-all duration-300 shadow-sm">
+      <div className="min-h-[48px] px-3 py-2 border border-gray-300 rounded-md bg-white focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all duration-300 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           {tags.map((tag, index) => (
             <span
               key={index}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-teal-light to-teal-medium text-dark rounded-full text-sm font-bookmania-medium animate-fadeIn"
+              className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-800 rounded-md text-sm font-medium animate-fadeIn"
             >
               <Hash className="w-3 h-3" />
               {tag}
               <button
                 onClick={() => handleRemoveTag(index)}
-                className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                className="ml-1 hover:bg-indigo-200 rounded-full p-0.5 transition-colors"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -105,7 +105,7 @@ export default function TagSelector({
                 }
               }}
               placeholder={tags.length === 0 ? placeholder : ''}
-              className="flex-1 min-w-[120px]  outline-none font-bookmania text-brown-dark placeholder-brown-light/70"
+              className="flex-1 min-w-[120px] bg-transparent outline-none text-gray-900 placeholder-gray-500"
             />
           )}
         </div>
@@ -113,15 +113,15 @@ export default function TagSelector({
 
       {/* Suggestions Dropdown */}
       {showSuggestions && (
-        <div className="absolute z-20 w-full mt-2 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-lg shadow-xl border border-teal-light max-h-48 overflow-y-auto">
+        <div className="absolute z-20 w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-48 overflow-y-auto">
           {filteredSuggestions.map((suggestion, index) => (
             <button
               key={index}
               onClick={() => handleAddTag(suggestion)}
-              className="w-full px-4 py-2 text-left text-brown-dark hover:bg-gradient-to-r hover:from-[var(--bg-primary)] hover:to-[var(--bg-secondary)] font-bookmania transition-colors first:rounded-t-lg last:rounded-b-lg"
+              className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
             >
               <span className="flex items-center gap-2">
-                <Hash className="w-4 h-4 text-teal-medium" />
+                <Hash className="w-4 h-4 text-gray-500" />
                 {suggestion}
               </span>
             </button>
@@ -130,7 +130,7 @@ export default function TagSelector({
       )}
 
       {/* Helper Text */}
-      <div className="mt-2 text-xs font-bookmania text-brown-light">
+      <div className="mt-2 text-xs text-gray-500">
         {tags.length}/{maxTags} etiket • Enter veya virgül ile ekleyin
       </div>
 

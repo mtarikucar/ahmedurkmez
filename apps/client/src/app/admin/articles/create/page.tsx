@@ -252,312 +252,268 @@ export default function CreateArticle() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]">
+      <div className="px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-teal-light/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center">
-                <button
-                  onClick={() => router.back()}
-                  className="mr-4 p-2 text-brown-light hover:text-burgundy-medium transition-colors duration-300"
-                >
-                  <ArrowLeftIcon className="h-6 w-6" />
-                </button>
-                <div>
-                  <h1 className="text-xl font-bookmania-bold text-brown-dark">
-                    Yeni Makale Oluştur
-                  </h1>
-                  <p className="text-sm text-brown-light font-bookmania">
-                    Medium tarzı zengin içerik editörü
-                  </p>
-                  <div className="flex items-center gap-4 text-sm text-brown-light">
-                    <span>{wordCount} kelime</span>
-                    <span>~{readTime} dk okuma</span>
-                    {isSaving && (
-                      <span className="text-orange-500 flex items-center gap-1">
-                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        {articleId ? 'Güncelleniyor...' : 'İlk kayıt yapılıyor...'}
-                      </span>
-                    )}
-                    {!isSaving && articleId && (
-                      <span className="text-green-500 flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Otomatik kaydedildi
-                      </span>
-                    )}
-                  </div>
+        <div className="sm:flex sm:items-center sm:justify-between">
+          <div className="sm:flex-auto">
+            <div className="flex items-center">
+              <button
+                onClick={() => router.back()}
+                className="mr-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">Yeni Makale Oluştur</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Yeni bir makale oluşturun ve yayınlayın
+                </p>
+                <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                  <span>{wordCount} kelime</span>
+                  <span>~{readTime} dk okuma</span>
+                  {isSaving && (
+                    <span className="text-orange-600 flex items-center gap-1">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {articleId ? 'Güncelleniyor...' : 'Kaydediliyor...'}
+                    </span>
+                  )}
+                  {!isSaving && articleId && (
+                    <span className="text-green-600 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Kaydedildi
+                    </span>
+                  )}
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="px-4 py-2 bg-gradient-to-r from-teal-light to-teal-medium text-white rounded-lg hover:from-teal-medium hover:to-teal-dark transition-all duration-300 font-bookmania-medium"
-                >
-                  <EyeIcon className="w-4 h-4 inline mr-2" />
-                  {showPreview ? 'Düzenle' : 'Önizle'}
-                </button>
-                
-                <button
-                  onClick={() => handleSubmit('draft')}
-                  disabled={loading}
-                  className="px-4 py-2 bg-gradient-to-r from-brown-light to-brown-medium text-white rounded-lg hover:from-brown-medium hover:to-brown-dark disabled:opacity-50 transition-all duration-300 font-bookmania-medium"
-                >
-                  <DocumentTextIcon className="w-4 h-4 inline mr-2" />
-                  Taslak Kaydet
-                </button>
-                
-                <button
-                  onClick={() => handleSubmit('published')}
-                  disabled={loading || !formData.title || !formData.content || !formData.categoryId}
-                  className="px-4 py-2 bg-gradient-to-r from-burgundy-medium to-burgundy-dark text-white rounded-lg hover:from-burgundy-dark hover:to-burgundy-dark disabled:opacity-50 transition-all duration-300 font-bookmania-medium"
-                >
-                  <GlobeAltIcon className="w-4 h-4 inline mr-2" />
-                  Yayınla
-                </button>
-              </div>
+            </div>
+          </div>
+          <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowPreview(!showPreview)}
+                className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              >
+                <EyeIcon className="w-4 h-4 mr-2" />
+                {showPreview ? 'Düzenle' : 'Önizle'}
+              </button>
+              
+              <button
+                onClick={() => handleSubmit('draft')}
+                disabled={loading}
+                className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <DocumentTextIcon className="w-4 h-4 mr-2" />
+                Taslak Kaydet
+              </button>
+              
+              <button
+                onClick={() => handleSubmit('published')}
+                disabled={loading || !formData.title || !formData.content || !formData.categoryId}
+                className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
+              >
+                <GlobeAltIcon className="w-4 h-4 mr-2" />
+                Yayınla
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Title */}
-              <div className="card-seljuk p-6">
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  placeholder="Makale başlığınızı buraya yazın..."
-                  className="w-full text-4xl font-bookmania-bold text-brown-dark bg-transparent border-none outline-none placeholder-brown-light/60 resize-none"
-                />
+        {/* Main Content */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Title */}
+            <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Başlık *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    placeholder="Makale başlığını girin..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                  />
+                </div>
                 
-                <input
-                  type="text"
-                  value={formData.subtitle}
-                  onChange={(e) => handleInputChange('subtitle', e.target.value)}
-                  placeholder="Alt başlık (opsiyonel)"
-                  className="w-full mt-4 text-xl font-bookmania text-brown-medium bg-transparent border-none outline-none placeholder-brown-light/60"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Alt Başlık
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.subtitle}
+                    onChange={(e) => handleInputChange('subtitle', e.target.value)}
+                    placeholder="Alt başlık (opsiyonel)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
               </div>
+            </div>
 
-              {/* Editor */}
+            {/* Editor */}
+            <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                İçerik *
+              </label>
               <MediumArticleEditor
                 initialContent={formData.content}
                 articleId={articleId || undefined}
                 onChange={handleContentChange}
-                placeholder="Hikayenizi anlatmaya başlayın..."
+                placeholder="Makale içeriğini yazın..."
+              />
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Category */}
+            <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Kategori
+              </h3>
+              <CategorySelector
+                categories={categories}
+                selectedCategoryId={formData.categoryId}
+                onCategorySelect={(id) => handleInputChange('categoryId', id)}
+                onCategoryCreate={handleCategoryCreate}
               />
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Category */}
-              <div className="card-seljuk p-6">
-                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
-                  Kategori
-                </h3>
-                <CategorySelector
-                  categories={categories}
-                  selectedCategoryId={formData.categoryId}
-                  onCategorySelect={(id) => handleInputChange('categoryId', id)}
-                  onCategoryCreate={handleCategoryCreate}
-                />
-              </div>
+            {/* Tags */}
+            <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Etiketler
+              </h3>
+              <TagSelector
+                tags={formData.tags}
+                onTagsChange={(tags) => handleInputChange('tags', tags)}
+                suggestions={commonTags}
+                maxTags={10}
+              />
+            </div>
 
-              {/* Tags */}
-              <div className="card-seljuk p-6">
-                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
-                  Etiketler
-                </h3>
-                <TagSelector
-                  tags={formData.tags}
-                  onTagsChange={(tags) => handleInputChange('tags', tags)}
-                  suggestions={commonTags}
-                  maxTags={10}
-                />
-              </div>
-
-              {/* Status */}
-              <div className="card-seljuk p-6 border-l-4 border-l-orange-400">
-                <h3 className="text-xl font-bookmania-bold text-brown-dark mb-2 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
-                  Makale Durumu
-                </h3>
-                <p className="text-sm text-brown-medium mb-6 font-bookmania">
-                  Makalenizin yayınlanma durumunu seçin
-                </p>
-                <div className="space-y-3">
-                  {statusOptions.map((status) => (
-                    <button
-                      key={status.value}
-                      onClick={() => handleInputChange('status', status.value)}
-                      className={`w-full p-4 rounded-xl border-2 transition-all duration-300 text-left transform hover:scale-[1.02] ${
-                        formData.status === status.value
-                          ? status.value === 'published' 
-                            ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100 shadow-lg shadow-green-200/50'
-                            : status.value === 'draft'
-                            ? 'border-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100 shadow-lg shadow-yellow-200/50'
-                            : 'border-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 shadow-lg shadow-gray-200/50'
-                          : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-md'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-2 rounded-lg ${
-                            formData.status === status.value
-                              ? status.value === 'published' 
-                                ? 'bg-green-500'
-                                : status.value === 'draft'
-                                ? 'bg-yellow-500'
-                                : 'bg-gray-500'
-                              : 'bg-gray-200'
-                          }`}>
-                            <status.icon className={`w-5 h-5 ${
-                              formData.status === status.value ? 'text-white' : 'text-gray-500'
-                            }`} />
-                          </div>
-                          <div>
-                            <span className={`font-bookmania-bold text-lg ${
-                              formData.status === status.value ? 'text-gray-800' : 'text-gray-600'
-                            }`}>
-                              {status.label}
-                            </span>
-                            <p className={`text-sm font-bookmania ${
-                              formData.status === status.value ? 'text-gray-600' : 'text-gray-400'
-                            }`}>
-                              {status.value === 'published' && 'Herkes tarafından görülebilir'}
-                              {status.value === 'draft' && 'Sadece siz görebilirsiniz'}
-                              {status.value === 'archived' && 'Arşivde saklanır'}
-                            </p>
-                          </div>
+            {/* Status */}
+            <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Durum
+              </h3>
+              <fieldset className="space-y-3">
+                {statusOptions.map((status) => (
+                  <div key={status.value} className="flex items-center">
+                    <input
+                      id={status.value}
+                      name="status"
+                      type="radio"
+                      checked={formData.status === status.value}
+                      onChange={() => handleInputChange('status', status.value)}
+                      className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                    />
+                    <label htmlFor={status.value} className="ml-3 flex items-center">
+                      <status.icon className="h-5 w-5 text-gray-400 mr-2" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{status.label}</div>
+                        <div className="text-xs text-gray-500">
+                          {status.value === 'published' && 'Herkes tarafından görülebilir'}
+                          {status.value === 'draft' && 'Sadece siz görebilirsiniz'}
+                          {status.value === 'archived' && 'Arşivde saklanır'}
                         </div>
-                        {formData.status === status.value && (
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                            status.value === 'published' ? 'bg-green-500' :
-                            status.value === 'draft' ? 'bg-yellow-500' : 'bg-gray-500'
-                          }`}>
-                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
                       </div>
-                    </button>
-                  ))}
+                    </label>
+                  </div>
+                ))}
+              </fieldset>
+            </div>
+
+            {/* SEO & Content */}
+            <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                SEO ve İçerik
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Özet
+                  </label>
+                  <textarea
+                    value={formData.excerpt}
+                    onChange={(e) => handleInputChange('excerpt', e.target.value)}
+                    rows={3}
+                    placeholder="Makale özeti..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  />
                 </div>
                 
-                {/* Current Status Info */}
-                <div className={`mt-4 p-3 rounded-lg ${
-                  formData.status === 'published' 
-                    ? 'bg-green-50 border border-green-200'
-                    : formData.status === 'draft'
-                    ? 'bg-yellow-50 border border-yellow-200'
-                    : 'bg-gray-50 border border-gray-200'
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${
-                      formData.status === 'published' ? 'bg-green-500' :
-                      formData.status === 'draft' ? 'bg-yellow-500' : 'bg-gray-500'
-                    }`}></span>
-                    <span className="text-sm font-bookmania-medium text-gray-700">
-                      Şu anki durum: <strong>{statusOptions.find(s => s.value === formData.status)?.label}</strong>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-
-              {/* SEO */}
-              <div className="card-seljuk p-6">
-                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
-                  SEO Ayarları
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
-                      Meta Başlık
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.metaTitle}
-                      onChange={(e) => handleInputChange('metaTitle', e.target.value)}
-                      placeholder="SEO başlığı..."
-                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-white font-bookmania text-brown-dark placeholder-brown-light/70 focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none shadow-sm"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
-                      Meta Açıklama
-                    </label>
-                    <textarea
-                      value={formData.metaDescription}
-                      onChange={(e) => handleInputChange('metaDescription', e.target.value)}
-                      rows={3}
-                      placeholder="SEO açıklaması..."
-                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-white font-bookmania text-brown-dark placeholder-brown-light/70 focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none shadow-sm"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-bookmania-medium text-brown-dark mb-2">
-                      Özet
-                    </label>
-                    <textarea
-                      value={formData.excerpt}
-                      onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                      rows={3}
-                      placeholder="Makale özeti..."
-                      className="w-full px-4 py-3 border-2 border-teal-light rounded-lg bg-white font-bookmania text-brown-dark placeholder-brown-light/70 focus:ring-2 focus:ring-teal-medium focus:border-teal-medium outline-none resize-none shadow-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Options */}
-              <div className="card-seljuk p-6">
-                <h3 className="text-lg font-bookmania-bold text-brown-dark mb-4">
-                  Seçenekler
-                </h3>
-                <div className="space-y-3">
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.allowComments}
-                      onChange={(e) => handleInputChange('allowComments', e.target.checked)}
-                      className="w-4 h-4 text-teal-medium border-teal-light rounded focus:ring-teal-medium"
-                    />
-                    <span className="font-bookmania text-brown-dark">
-                      Yorumlara izin ver
-                    </span>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Meta Başlık
                   </label>
-                  
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.isFeatured}
-                      onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                      className="w-4 h-4 text-teal-medium border-teal-light rounded focus:ring-teal-medium"
-                    />
-                    <span className="font-bookmania text-brown-dark">
-                      Öne çıkarılsın
-                    </span>
+                  <input
+                    type="text"
+                    value={formData.metaTitle}
+                    onChange={(e) => handleInputChange('metaTitle', e.target.value)}
+                    placeholder="SEO başlığı..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Meta Açıklama
+                  </label>
+                  <textarea
+                    value={formData.metaDescription}
+                    onChange={(e) => handleInputChange('metaDescription', e.target.value)}
+                    rows={3}
+                    placeholder="SEO açıklaması..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Options */}
+            <div className="bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Seçenekler
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <input
+                    id="allowComments"
+                    type="checkbox"
+                    checked={formData.allowComments}
+                    onChange={(e) => handleInputChange('allowComments', e.target.checked)}
+                    className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <label htmlFor="allowComments" className="ml-3 text-sm text-gray-700">
+                    Yorumlara izin ver
+                  </label>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    id="isFeatured"
+                    type="checkbox"
+                    checked={formData.isFeatured}
+                    onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
+                    className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <label htmlFor="isFeatured" className="ml-3 text-sm text-gray-700">
+                    Öne çıkarılsın
                   </label>
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
-      </div>
       <NotificationComponent />
     </ProtectedRoute>
   );

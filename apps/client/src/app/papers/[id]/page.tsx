@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { papersAPI } from '@/lib/api';
-import PDFViewer from '@/components/ui/PDFViewer';
+import EBookViewer from '@/components/ui/EBookViewer';
 import {
   ArrowLeftIcon,
   AcademicCapIcon,
   CalendarIcon,
   TagIcon,
   EyeIcon,
-  DocumentArrowDownIcon
+  DocumentArrowDownIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
 
 interface Paper {
@@ -35,7 +36,8 @@ export default function PaperDetailPage() {
   const router = useRouter();
   const [paper, setPaper] = useState<Paper | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showEBookViewer, setShowEBookViewer] = useState(false);
+  const [currentEBook, setCurrentEBook] = useState<{url: string, title: string} | null>(null);
 
   useEffect(() => {
     if (params.id) {
@@ -48,11 +50,6 @@ export default function PaperDetailPage() {
       setLoading(true);
       const response = await papersAPI.getById(parseInt(id));
       setPaper(response.data);
-      
-      // If PDF exists, set it for viewing
-      if (response.data.pdfFile) {
-        setPdfUrl(response.data.pdfFile);
-      }
     } catch (error) {
       console.error('Error fetching paper:', error);
     } finally {
@@ -80,6 +77,30 @@ export default function PaperDetailPage() {
         return type;
     }
   };
+
+  const handleOpenEBook = (pdfUrl: string, title: string) => {
+    setCurrentEBook({ url: pdfUrl, title });
+    setShowEBookViewer(true);
+  };
+
+  // Add event listener for embedded e-book buttons
+  useEffect(() => {
+    const handleEBookClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('ebook-open-btn')) {
+        e.preventDefault();
+        const src = target.getAttribute('data-src');
+        const title = target.getAttribute('data-title');
+        if (src && title) {
+          setCurrentEBook({ url: src, title });
+          setShowEBookViewer(true);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleEBookClick);
+    return () => document.removeEventListener('click', handleEBookClick);
+  }, [paper]);
 
   if (loading) {
     return (
@@ -229,14 +250,39 @@ export default function PaperDetailPage() {
               </div>
             </div>
 
-            {/* PDF Viewer */}
-            {pdfUrl && (
+            {/* E-Book Viewer Preview */}
+            {paper.pdfFile && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
-                  PDF Görüntüleyici
+                  <BookOpenIcon className="h-5 w-5 mr-2" />
+                  E-Bildiri
                 </h3>
-                <PDFViewer file={pdfUrl} title={paper?.title} />
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 text-center shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300 cursor-pointer" 
+                     onClick={() => handleOpenEBook(paper.pdfFile!, paper.title)}>
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4 shadow-lg">
+                    <BookOpenIcon className="w-8 h-8 text-white" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-800 mb-2">
+                    {paper.title}
+                  </h4>
+                  <p className="text-gray-600 mb-4">
+                    İnteraktif sayfa çevirme ile okuyun
+                  </p>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg hover:transform hover:translateY(-1px)">
+                    E-Bildiriyi Aç
+                  </button>
+                </div>
+                
+                <div className="mt-4">
+                  <a
+                    href={paper.pdfFile}
+                    download={paper.title}
+                    className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    <DocumentArrowDownIcon className="h-4 w-4 mr-1" />
+                    PDF İndir
+                  </a>
+                </div>
               </div>
             )}
 
@@ -259,6 +305,25 @@ export default function PaperDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* E-Book Viewer Modal */}
+      {showEBookViewer && currentEBook && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+          <button
+            onClick={() => setShowEBookViewer(false)}
+            className="absolute top-4 right-4 z-60 p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <EBookViewer
+            pdfUrl={currentEBook.url}
+            title={currentEBook.title}
+            onClose={() => setShowEBookViewer(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

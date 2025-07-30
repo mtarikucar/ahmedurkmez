@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import PDFViewer from '@/components/ui/PDFViewer';
+import EBookViewer from '@/components/ui/EBookViewer';
 import {
   DocumentIcon,
   AcademicCapIcon,
@@ -16,6 +16,7 @@ interface ArticlePDFSectionProps {
     id: number;
     title: string;
     subtitle?: string;
+    content: string;
     pdfFile?: string;
     doi?: string;
     journal?: string;
@@ -29,7 +30,37 @@ interface ArticlePDFSectionProps {
 export default function ArticlePDFSection({ article }: ArticlePDFSectionProps) {
   const [showPDFViewer, setShowPDFViewer] = useState(false);
 
-  if (!article.pdfFile) {
+  // Extract PDF URL from article content or pdfFile field
+  const getPdfUrl = () => {
+    // First try the pdfFile field
+    if (article.pdfFile) {
+      return article.pdfFile;
+    }
+
+    // Parse content for embedded PDFs
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = article.content;
+    
+    // Look for data-src attributes in PDF embeds
+    const pdfEmbeds = tempDiv.querySelectorAll('[data-src*=".pdf"]');
+    if (pdfEmbeds.length > 0) {
+      const firstEmbed = pdfEmbeds[0] as HTMLElement;
+      return firstEmbed.getAttribute('data-src');
+    }
+
+    // Look for iframe src attributes pointing to PDFs
+    const iframes = tempDiv.querySelectorAll('iframe[src*=".pdf"]');
+    if (iframes.length > 0) {
+      const firstIframe = iframes[0] as HTMLIFrameElement;
+      return firstIframe.src;
+    }
+
+    return null;
+  };
+
+  const pdfUrl = getPdfUrl();
+  
+  if (!pdfUrl) {
     return null;
   }
 
@@ -140,28 +171,48 @@ export default function ArticlePDFSection({ article }: ArticlePDFSectionProps) {
             onClick={() => setShowPDFViewer(!showPDFViewer)}
             className="btn-primary text-sm"
           >
-            {showPDFViewer ? 'Gizle' : 'PDF\'i Görüntüle'}
+            {showPDFViewer ? 'E-Kitabı Kapat' : 'E-Kitabı Aç'}
           </button>
         </div>
 
-        {showPDFViewer ? (
-          <div className="animate-scale-in">
-            <PDFViewer
-              pdfUrl={article.pdfFile}
-              title={article.title}
-              description={article.subtitle}
-              className="max-w-2xl mx-auto"
+        {showPDFViewer && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+            <button
+              onClick={() => setShowPDFViewer(false)}
+              className="absolute top-4 right-4 z-60 p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <EBookViewer
+              pdfUrl={pdfUrl}
+              title={article.title || 'PDF Belgesi'}
+              onClose={() => setShowPDFViewer(false)}
             />
           </div>
-        ) : (
+        )}
+
+        {/* PDF Preview Card */}
+        {!showPDFViewer && (
           <div className="animate-fade-in">
-            <PDFViewer
-              pdfUrl={article.pdfFile}
-              title={article.title}
-              description={article.subtitle}
-              showPreview={false}
-              className="max-w-lg"
-            />
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-8 text-center shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300 cursor-pointer" 
+                 onClick={() => setShowPDFViewer(true)}>
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-500 rounded-full mb-4 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {article.title || 'PDF E-Kitap'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                İnteraktif sayfa çevirme ile okuyun
+              </p>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg hover:transform hover:translateY(-1px)">
+                E-Kitabı Aç
+              </button>
+            </div>
           </div>
         )}
       </div>
