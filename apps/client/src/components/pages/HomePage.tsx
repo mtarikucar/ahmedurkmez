@@ -45,12 +45,21 @@ export default function HomePage() {
         setLoading(true);
         
         // Load featured articles (for hero section)
-        const featuredResponse = await articlesAPI.getAll({ featured: true, limit: 5 });
+        const featuredResponse = await articlesAPI.getAll({ 
+          featured: true, 
+          limit: 5, 
+          status: 'published',
+          simple: true 
+        });
         const featuredData = extractArticlesArray(featuredResponse);
         setFeaturedArticles(featuredData);
         
         // Load recent articles
-        const recentResponse = await articlesAPI.getAll({ limit: 6, sort: 'createdAt', order: 'desc' });
+        const recentResponse = await articlesAPI.getAll({ 
+          limit: 6, 
+          status: 'published',
+          simple: true 
+        });
         const recentData = extractArticlesArray(recentResponse);
         setRecentArticles(recentData);
         
@@ -65,7 +74,9 @@ export default function HomePage() {
           try {
             const categoryArticlesResponse = await articlesAPI.getAll({ 
               categoryId: category.id, 
-              limit: 10 
+              limit: 10,
+              status: 'published',
+              simple: true 
             });
             const articlesList = extractArticlesArray(categoryArticlesResponse);
             categoryArticlesMap[category.id] = articlesList;
@@ -79,15 +90,31 @@ export default function HomePage() {
         // Load dashboard stats
         try {
           const statsResponse = await adminAPI.getDashboardStats();
-          setDashboardStats(statsResponse);
+          // Safely extract stats data
+          const statsData = statsResponse?.data || statsResponse || {};
+          setDashboardStats({
+            totalArticles: statsData.articles?.total || recentData.length || 0,
+            totalCategories: statsData.categories?.total || categoriesData.length || 0,
+            totalViews: statsData.totalViews || recentData.reduce((sum: number, article: any) => sum + (parseInt(article.viewCount || article.views || '0') || 0), 0),
+            totalLikes: statsData.totalLikes || recentData.reduce((sum: number, article: any) => sum + (parseInt(article.likeCount || article.likes || '0') || 0), 0)
+          });
         } catch (error) {
           console.warn('Dashboard stats not available:', error);
           // Fallback to calculated stats from articles
+          const totalViews = recentData.reduce((sum: number, article: any) => {
+            const views = parseInt(article.viewCount || article.views || '0') || 0;
+            return sum + views;
+          }, 0);
+          const totalLikes = recentData.reduce((sum: number, article: any) => {
+            const likes = parseInt(article.likeCount || article.likes || '0') || 0;
+            return sum + likes;
+          }, 0);
+          
           setDashboardStats({
-            totalArticles: recentData.length,
-            totalCategories: categoriesData.length,
-            totalViews: recentData.reduce((sum: number, article: any) => sum + (article.views || 0), 0),
-            totalLikes: recentData.reduce((sum: number, article: any) => sum + (article.likes || 0), 0)
+            totalArticles: recentData.length || 0,
+            totalCategories: categoriesData.length || 0,
+            totalViews: totalViews,
+            totalLikes: totalLikes
           });
         }
         
@@ -126,32 +153,32 @@ export default function HomePage() {
     {
       id: 1,
       name: 'Eğitim Hayatı',
-      description: 'Akademik eğitim sürecim ve aldığım derecelerin detayları',
-      shortDescription: 'Lisans, yüksek lisans ve doktora eğitim sürecim hakkında detaylı bilgiler.',
+      description: 'Hafızlık, lisans, yüksek lisans ve doktora eğitim sürecim',
+      shortDescription: '1998 Selçuk Üniversitesi İlahiyat Fakültesi mezunu. 2000 yüksek lisans, 2007 doktora (Hadis Anabilim Dalı). 1991 hafızlık diploması.',
       color: '#3B82F6',
       icon: AcademicCapIcon,
       route: '/resume/education',
-      stats: '4 Derece'
+      stats: 'Hafız - Dr.'
     },
     {
       id: 2,
       name: 'Akademik Kariyer',
-      description: 'Öğretim üyeliği ve araştırma deneyimlerim',
-      shortDescription: 'Araştırma görevliliğinden profesörlüğe kadar olan akademik kariyerim.',
+      description: 'Öğretmenlikten profesörlüğe uzanan akademik yolculuğum',
+      shortDescription: '2001-2011 MEB öğretmeni, 2011-2017 İnönü/Kırıkkale Üni., 2017-2022 Pamukkale Üni. Doçent, 2022-günümüz ASBÜ Profesörü.',
       color: '#10B981',
       icon: BookOpenIcon,
       route: '/resume/career',
-      stats: '15+ Yıl Deneyim'
+      stats: '23+ Yıl Deneyim'
     },
     {
       id: 3,
-      name: 'Ödüller ve Başarılar',
-      description: 'Aldığım ödüller ve akademik başarılarım',
-      shortDescription: 'Ulusal ve uluslararası düzeyde aldığım ödüller ve akademik başarılarım.',
+      name: 'Yayınlar ve Projeler',
+      description: 'Kitaplarım, makalelerim ve akademik projelerim',
+      shortDescription: '7 kitap, çok sayıda makale, Hadislerle İslam projesi yazarlığı, Hafızlık Destekli Sınıf Projesi ve sempozyum katılımları.',
       color: '#F59E0B',
       icon: SparklesIcon,
       route: '/resume/awards',
-      stats: '12 Ödül'
+      stats: '7 Kitap'
     }
   ]);
 
@@ -160,7 +187,7 @@ export default function HomePage() {
     { 
       id: 1, 
       icon: DocumentTextIcon, 
-      count: `${dashboardStats.totalArticles}+`, 
+      count: `${parseInt(dashboardStats.totalArticles) || 0}+`, 
       label: 'Akademik Yayın', 
       color: 'text-teal-dark', 
       bg: 'bg-teal-light/10',
@@ -169,7 +196,7 @@ export default function HomePage() {
     { 
       id: 2, 
       icon: EyeIcon, 
-      count: `${Math.floor(dashboardStats.totalViews / 1000)}K+`, 
+      count: `${Math.floor((parseInt(dashboardStats.totalViews) || 0) / 1000) || 0}K+`, 
       label: 'Toplam Görüntüleme', 
       color: 'text-burgundy-medium', 
       bg: 'bg-burgundy-light/10',
@@ -178,7 +205,7 @@ export default function HomePage() {
     { 
       id: 3, 
       icon: HeartIcon, 
-      count: `${dashboardStats.totalLikes}+`, 
+      count: `${parseInt(dashboardStats.totalLikes) || 0}+`, 
       label: 'Beğeni', 
       color: 'text-brown-dark', 
       bg: 'bg-brown-light/10',
@@ -188,29 +215,29 @@ export default function HomePage() {
     { 
       id: 1, 
       icon: DocumentTextIcon, 
-      count: '25+', 
-      label: 'Akademik Yayın', 
+      count: '7+', 
+      label: 'Yayınlanmış Kitap', 
       color: 'text-teal-dark', 
       bg: 'bg-teal-light/10',
-      description: 'Makale, kitap ve bildiri'
+      description: 'Hadis ve İslami İlimler'
     },
     { 
       id: 2, 
       icon: UserIcon, 
-      count: '500+', 
-      label: 'Öğrenci', 
+      count: '23+', 
+      label: 'Yıl Deneyim', 
       color: 'text-burgundy-medium', 
       bg: 'bg-burgundy-light/10',
-      description: 'Mezun olan öğrenci sayısı'
+      description: 'Eğitim ve akademik alanda'
     },
     { 
       id: 3, 
-      icon: PlayIcon, 
-      count: '50+', 
-      label: 'Video İçerik', 
+      icon: AcademicCapIcon, 
+      count: '4+', 
+      label: 'Üniversite', 
       color: 'text-brown-dark', 
       bg: 'bg-brown-light/10',
-      description: 'Eğitim ve söyleşi videoları'
+      description: 'Görev yaptığı kurumlar'
     }
   ];
 
@@ -520,15 +547,15 @@ export default function HomePage() {
               <div className="space-y-4">
                 <div className="inline-flex items-center space-x-2 bg-teal-light/20 backdrop-blur-sm rounded-full px-4 py-2 text-sm text-teal-dark border border-teal-light/30">
                   <SparklesIcon className="h-4 w-4" />
-                  <span className="font-medium">Edebiyat ve Kültür Uzmanı</span>
+                  <span className="font-medium">Hadis İlmi Uzmanı</span>
                 </div>
                 <h1 className="text-4xl lg:text-6xl font-bookmania-bold text-brown-dark leading-tight">
                   Prof. Dr. Ahmed 
                   <span className="block text-burgundy-medium">Ürkmez</span>
                 </h1>
                 <p className="text-lg text-brown-light leading-relaxed max-w-lg">
-                  Modern Selçuklu sanatından ilham alan akademik yaklaşımla, 
-                  edebiyat ve kültür araştırmalarında 15+ yıllık deneyim.
+                  Hadis İlmi alanında uzman, İslami İlimler Fakültesi Profesörü. 
+                  Akademik araştırma, eğitim ve yayıncılık alanlarında 20+ yıllık deneyim.
                 </p>
               </div>
 
@@ -763,11 +790,11 @@ export default function HomePage() {
                           </div>
                           <div className="flex items-center space-x-1">
                             <EyeIcon className="h-4 w-4" />
-                            <span>{article.views || article.viewCount || 0}</span>
+                            <span>{parseInt(article.views || article.viewCount || '0') || 0}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <HeartIcon className="h-4 w-4" />
-                            <span>{article.likes || article.likeCount || 0}</span>
+                            <span>{parseInt(article.likes || article.likeCount || '0') || 0}</span>
                           </div>
                         </div>
                       </div>
@@ -889,7 +916,10 @@ export default function HomePage() {
                           </div>
                           <div className="bg-gray-700/90 backdrop-blur-sm border border-gray-500/50 rounded-lg p-3 text-center">
                             <div className="text-white font-bookmania-bold text-lg">
-                              {(category.articles || []).reduce((total: number, article: any) => total + (article.viewCount || article.views || 0), 0).toLocaleString()}
+                              {(category.articles || []).reduce((total: number, article: any) => {
+                                const views = parseInt(article.viewCount || article.views || '0') || 0;
+                                return total + views;
+                              }, 0).toLocaleString()}
                             </div>
                             <div className="text-gray-200 text-xs">Görüntülenme</div>
                           </div>
@@ -930,7 +960,7 @@ export default function HomePage() {
             Akademik İşbirliği ve İletişim
           </h2>
           <p className="font-bookmania-bold text-brown-dark/90 text-lg mb-8 max-w-2xl mx-auto">
-            Edebiyat ve kültür araştırmaları konularında işbirliği yapmak, 
+            Hadis İlmi, İslami araştırmalar ve din eğitimi konularında işbirliği yapmak, 
             projelerimden haberdar olmak veya sorularınızı sormak için benimle iletişime geçin.
           </p>
           <div className="flex flex-wrap justify-center gap-4">

@@ -25,7 +25,7 @@ const AllArticlesPage = () => {
         
         // Fetch articles and categories in parallel
         const [articlesResponse, categoriesResponse] = await Promise.all([
-          articlesAPI.getAll({ status: 'published', simple: 'true' }),
+          articlesAPI.getAll({ status: 'published', limit: 100 }),
           categoriesAPI.getAll()
         ]);
 
@@ -279,14 +279,28 @@ const AllArticlesPage = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6">
+              <div key={idx} className="card-seljuk">
                 <div className="animate-pulse">
-                  <div className="h-6 bg-gray-700 rounded mb-4"></div>
-                  <div className="h-8 bg-gray-700 rounded mb-3"></div>
-                  <div className="h-20 bg-gray-700 rounded mb-4"></div>
+                  <div className="flex justify-between mb-4">
+                    <div className="h-6 bg-brown-light/20 rounded-full w-24"></div>
+                    <div className="h-4 bg-brown-light/20 rounded w-12"></div>
+                  </div>
+                  <div className="h-6 bg-brown-light/20 rounded mb-2"></div>
+                  <div className="h-6 bg-brown-light/20 rounded w-3/4 mb-4"></div>
+                  <div className="h-16 bg-brown-light/20 rounded mb-4"></div>
+                  <div className="border-t border-brown-light/20 pt-4 mb-4">
+                    <div className="flex space-x-4">
+                      <div className="h-4 bg-brown-light/20 rounded w-12"></div>
+                      <div className="h-4 bg-brown-light/20 rounded w-12"></div>
+                      <div className="h-4 bg-brown-light/20 rounded w-16"></div>
+                    </div>
+                  </div>
                   <div className="flex justify-between">
-                    <div className="h-4 bg-gray-700 rounded w-1/3"></div>
-                    <div className="h-8 bg-gray-700 rounded w-16"></div>
+                    <div className="flex space-x-2">
+                      <div className="h-8 w-8 bg-brown-light/20 rounded-lg"></div>
+                      <div className="h-8 w-8 bg-brown-light/20 rounded-lg"></div>
+                    </div>
+                    <div className="h-8 bg-brown-light/20 rounded-lg w-16"></div>
                   </div>
                 </div>
               </div>
@@ -294,15 +308,27 @@ const AllArticlesPage = () => {
           </div>
         ) : filteredArticles.length === 0 ? (
           <div className="text-center py-20">
-            <div className="bg-gray-800/50 rounded-2xl p-12 max-w-md mx-auto">
-              <FunnelIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">Sonuç Bulunamadı</h3>
-              <p className="text-gray-400">
+            <div className="card-seljuk max-w-md mx-auto">
+              <FunnelIcon className="w-16 h-16 text-brown-light mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-brown-dark mb-2 font-bookmania-bold">Sonuç Bulunamadı</h3>
+              <p className="text-brown-light font-bookmania">
                 {articles.length === 0 
                   ? "Henüz yayınlanmış makale bulunmuyor."
                   : "Arama kriterlerinize uygun eser bulunamadı. Lütfen farklı filtreler deneyin."
                 }
               </p>
+              {articles.length > 0 && (
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('all');
+                    setSelectedYear('all');
+                  }}
+                  className="mt-4 px-4 py-2 bg-gradient-to-r from-teal-medium to-teal-dark text-white rounded-lg hover:from-teal-dark hover:to-teal-medium transition-all duration-300"
+                >
+                  Filtreleri Temizle
+                </button>
+              )}
             </div>
           </div>
         ) : (
@@ -310,63 +336,96 @@ const AllArticlesPage = () => {
             {filteredArticles.map((article) => (
               <div
                 key={article.id}
-                className={`bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 cursor-pointer border border-gray-600/50 ${
-                  article.featured ? 'ring-2 ring-blue-500/30' : ''
+                className={`card-seljuk hover:shadow-2xl transition-all duration-300 cursor-pointer group relative overflow-hidden ${
+                  article.featured ? 'ring-2 ring-teal-medium/50 shadow-teal-medium/20' : ''
                 }`}
-                onClick={() => router.push(`/articles/${article.slug}`)}
+                onClick={() => router.push(`/articles/${article.slug || article.id}`)}
               >
-                <div className="flex items-center justify-between mb-4">
-                  {article.featured && (
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full">
+                {/* Featured Badge */}
+                {article.featured && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="px-3 py-1 bg-gradient-to-r from-teal-medium to-teal-dark text-white text-xs font-medium rounded-full shadow-sm">
                       Öne Çıkan
                     </span>
-                  )}
-                  <div className="flex items-center space-x-2 ml-auto">
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full">
-                      {article.type || 'Article'}
-                    </span>
-                    <span className="text-gray-400 text-xs">{article.year}</span>
                   </div>
+                )}
+
+                {/* Category and Year */}
+                <div className="flex items-center justify-between mb-4">
+                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                    article.categoryType === 'printed' ? 'bg-amber-100 text-amber-800' :
+                    article.categoryType === 'audiovisual' ? 'bg-purple-100 text-purple-800' :
+                    'bg-teal-100 text-teal-800'
+                  }`}>
+                    {article.categoryName}
+                  </span>
+                  <span className="text-brown-light text-sm font-bookmania">{article.year}</span>
                 </div>
 
-                <h3 className="text-xl font-bookmania font-bold text-white mb-3 line-clamp-2 bg-gray-700/50 p-3 rounded-lg">
+                {/* Title */}
+                <h3 className="text-xl font-bookmania-bold text-brown-dark mb-3 line-clamp-2 group-hover:text-teal-dark transition-colors duration-300">
                   {article.title}
                 </h3>
 
-                <p className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3">
-                  {article.description}
+                {/* Description */}
+                <p className="text-brown-light text-sm leading-relaxed mb-6 line-clamp-3 font-bookmania">
+                  {article.excerpt || article.description || `${article.title} hakkında detaylı bilgi için makaleyi okuyun.`}
                 </p>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 text-xs text-gray-400">
-                    <span>{article.categoryName}</span>
-                    <span>👁 {(article.viewCount || 0).toLocaleString()}</span>
+                {/* Stats Row */}
+                <div className="flex items-center justify-between mb-4 pt-4 border-t border-brown-light/20">
+                  <div className="flex items-center space-x-4 text-xs text-brown-light">
+                    <div className="flex items-center space-x-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span>{(article.viewCount || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
+                      </svg>
+                      <span>{article.likeCount || 0}</span>
+                    </div>
+                    <span className="text-xs">
+                      {new Date(article.createdAt).toLocaleDateString('tr-TR')}
+                    </span>
                   </div>
-                  
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <button 
                       onClick={(e) => handleLike(article, e)}
-                      className="flex items-center space-x-1 text-gray-400 hover:text-red-500 transition-colors"
+                      className={`p-2 rounded-lg transition-all duration-300 ${
+                        likedArticles.includes(article.id) 
+                          ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                          : 'bg-gray-100 text-brown-light hover:bg-red-100 hover:text-red-600'
+                      }`}
                     >
                       {likedArticles.includes(article.id) ? (
-                        <HeartIconSolid className="h-4 w-4 text-red-500" />
+                        <HeartIconSolid className="h-4 w-4" />
                       ) : (
                         <HeartIcon className="h-4 w-4" />
                       )}
-                      <span className="text-xs">{article.likeCount || 0}</span>
                     </button>
                     
                     <button 
                       onClick={(e) => handleShare(article, e)}
-                      className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                      className="p-2 rounded-lg bg-gray-100 text-brown-light hover:bg-blue-100 hover:text-blue-600 transition-all duration-300"
                     >
                       <ShareIcon className="h-4 w-4" />
                     </button>
-                    
-                    <button className="text-teal-400 text-sm font-medium bg-gray-700 px-3 py-1 rounded hover:bg-gray-600 transition-colors">
-                      Detaylar →
-                    </button>
                   </div>
+                  
+                  <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-teal-medium to-teal-dark text-white text-sm font-medium rounded-lg hover:from-teal-dark hover:to-teal-medium transition-all duration-300 shadow-sm hover:shadow-md">
+                    Oku
+                    <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}

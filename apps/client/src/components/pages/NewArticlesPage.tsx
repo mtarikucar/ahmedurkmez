@@ -42,10 +42,10 @@ const ArticlesPage = () => {
         const uniqueTypes = new Set(safeMap(validArticles, (article: any) => article.type || 'unknown'));
         
         setStats({
-          totalArticles: viewStats.count,
+          totalArticles: 7, // Gerçek kitap sayısı
           totalViews: viewStats.sum,
-          totalPlatforms: uniqueTypes.size,
-          experience: 15
+          totalPlatforms: 4, // Üniversite sayısı
+          experience: 23 // Gerçek deneyim yılı
         });
         
       } catch (error) {
@@ -263,61 +263,6 @@ const ArticlesPage = () => {
             Tüm Eserleri Görüntüle
             <ChevronRightIcon className="w-5 h-5 ml-3" />
           </button>
-        </div>
-
-        {/* Son Eklenenler Önizlemesi */}
-        <div className="mt-20">
-          <div className="text-center mb-12">
-            <h2 className="heading-seljuk text-3xl font-bold text-brown-dark mb-4 drop-shadow-lg">
-              Son Eklenen Eserler
-            </h2>
-            <p className="text-brown-light font-bookmania">En güncel çalışmalar ve yayınlar</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading ? (
-              // Loading skeleton
-              Array.from({ length: 3 }).map((_, idx) => (
-                <div key={idx} className="card-seljuk">
-                  <div className="animate-pulse">
-                    <div className="flex items-center justify-between mb-4 bg-gray-100 p-3 rounded-lg">
-                      <div className="h-6 bg-gray-300 rounded-full w-16"></div>
-                      <div className="h-6 bg-gray-300 rounded w-12"></div>
-                    </div>
-                    <div className="h-8 bg-gray-300 rounded-lg mb-3"></div>
-                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                  </div>
-                </div>
-              ))
-            ) : latestArticles.length > 0 ? (
-              latestArticles.map((article) => (
-                <div 
-                  key={article.id} 
-                  className="card-seljuk cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => router.push(`/articles/${article.slug}`)}
-                >
-                  <div className="flex items-center justify-between mb-4 bg-gray-100 p-3 rounded-lg">
-                    <span className="px-3 py-1 bg-teal-light/30 text-teal-dark text-sm font-bookmania font-medium rounded-full">
-                      {article.type || 'Article'}
-                    </span>
-                    <span className="text-brown-dark text-sm font-bookmania font-medium bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] px-2 py-1 rounded">
-                      {new Date(article.createdAt).getFullYear()}
-                    </span>
-                  </div>
-                  <h3 className="text-brown-dark font-bookmania font-medium mb-3 text-lg bg-gray-50 p-3 rounded-lg">
-                    {article.title}
-                  </h3>
-                  <p className="text-brown-light text-sm font-bookmania bg-gray-100/50 p-2 rounded">
-                    {safeFind(categories, (cat: any) => cat.id === article.categoryId)?.name || 'Genel'}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-brown-light font-bookmania">Henüz yayınlanmış makale bulunmuyor.</p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

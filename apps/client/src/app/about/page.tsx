@@ -4,68 +4,83 @@ import { motion } from 'framer-motion';
 
 export default function AboutPage() {
   const academicSkills = [
-    { name: 'Türk Dili ve Edebiyatı', level: 95, color: 'from-[#a68e81] to-[#8b7965]' },
-    { name: 'Karşılaştırmalı Edebiyat', level: 90, color: 'from-[#b4987a] to-[#933853]' },
-    { name: 'Kültür Araştırmaları', level: 85, color: 'from-[#7339b3] to-[#2d8b8b]' },
-    { name: 'Eleştiri Teorisi', level: 88, color: 'from-[#933853] to-[#7a2f44]' },
-    { name: 'Akademik Yazım', level: 92, color: 'from-[#8b7965] to-[#6f6048]' },
-    { name: 'Çeviri Çalışmaları', level: 80, color: 'from-[#2d8b8b] to-[#1f5f5f]' },
-    { name: 'Araştırma Metodolojisi', level: 85, color: 'from-[#7a2f44] to-[#933853]' },
-    { name: 'Eğitim ve Öğretim', level: 90, color: 'from-[#6f6048] to-[#a68e81]' },
+    { name: 'Hadis İlmi', level: 98, color: 'from-[#a68e81] to-[#8b7965]' },
+    { name: 'İslami İlimler', level: 95, color: 'from-[#b4987a] to-[#933853]' },
+    { name: 'Din Eğitimi', level: 92, color: 'from-[#7339b3] to-[#2d8b8b]' },
+    { name: 'Hadis Metodolojisi', level: 96, color: 'from-[#933853] to-[#7a2f44]' },
+    { name: 'Akademik Yazım', level: 94, color: 'from-[#8b7965] to-[#6f6048]' },
+    { name: 'Arapça', level: 90, color: 'from-[#2d8b8b] to-[#1f5f5f]' },
+    { name: 'Araştırma Metodolojisi', level: 88, color: 'from-[#7a2f44] to-[#933853]' },
+    { name: 'Eğitim Yönetimi', level: 85, color: 'from-[#6f6048] to-[#a68e81]' },
   ];
 
   const academicExperience = [
     {
-      title: 'Doktor Öğretim Üyesi',
-      institution: 'Üniversite Adı',
-      period: '2020 - Günümüz',
-      description: 'Türk Dili ve Edebiyatı bölümünde lisans ve lisansüstü dersler vermekte, tez danışmanlıkları yapmaktayım.',
-      areas: ['Modern Türk Edebiyatı', 'Karşılaştırmalı Edebiyat', 'Kültürel Çalışmalar']
+      title: 'Profesör',
+      institution: 'Ankara Sosyal Bilimler Üniversitesi',
+      period: '2022 - Günümüz',
+      description: 'İslami İlimler Fakültesi Hadis Anabilim Dalı Profesörü olarak lisans ve lisansüstü eğitim faaliyetlerini sürdürmekteyim.',
+      areas: ['Hadis İlmi', 'Hadis Metodolojisi', 'Sünnet Araştırmaları']
     },
     {
-      title: 'Araştırma Görevlisi',
-      institution: 'Üniversite Adı',
-      period: '2015 - 2020',
-      description: 'Doktora eğitimi süresince araştırma projelerinde yer aldım ve çeşitli derslerde asistanlık yaptım.',
-      areas: ['Edebiyat Teorisi', 'Türk Romanı', 'Metin Çözümleme']
+      title: 'Doçent',
+      institution: 'Pamukkale Üniversitesi',
+      period: '2017 - 2022',
+      description: 'İlâhiyat Fakültesi Hadis Anabilim Dalında Doçent unvanıyla öğretim üyeliğimi sürdürdüm.',
+      areas: ['Hadis Usulü', 'Ahlak Hadisleri', 'Din Eğitimi']
     },
     {
-      title: 'Türkçe Öğretmeni',
-      institution: 'Özel Okul',
-      period: '2013 - 2015',
-      description: 'Lise düzeyinde Türk Dili ve Edebiyatı dersleri verdim, öğrencilerin dil becerilerini geliştirdim.',
-      areas: ['Dil Becerileri', 'Edebiyat Öğretimi', 'Yaratıcı Yazma']
+      title: 'Öğretim Üyesi',
+      institution: 'İnönü Üniversitesi / Kırıkkale Üniversitesi',
+      period: '2011 - 2017',
+      description: 'İlahiyat Fakültesi ve İslâmî İlimler Fakültesi Hadis Anabilim Dalında öğretim üyesi; Kırıkkale’de Dekan Yardımcılığı görevi.',
+      areas: ['Hadis İlmi', 'Fakülte Yönetimi', 'Akademik Projeler']
+    },
+    {
+      title: 'Din Kültürü ve Ahlak Bilgisi Öğretmeni',
+      institution: 'Millî Eğitim Bakanlığı',
+      period: '2001 - 2011',
+      description: 'Mersin ve Konya’da MEB’e bağlı okullarda Din Kültürü ve Ahlak Bilgisi öğretmeni ve idareci olarak görev yaptım.',
+      areas: ['Din Eğitimi', 'Okul Yönetimi', 'Eğitim Planlama']
     }
   ];
 
   const education = [
     {
-      degree: 'Doktora - Türk Dili ve Edebiyatı',
-      school: 'Üniversite Adı',
-      period: '2015 - 2019',
-      thesis: 'Modern Türk Edebiyatında Kimlik Arayışı'
+      degree: 'Doktora - Hadis Anabilim Dalı',
+      school: 'Selçuk Üniversitesi SBE',
+      period: '2007',
+      thesis: 'Düşünce ve Davranış Eğitiminde Ahlâk Hadislerinin Yeri ve Rivayet Değeri'
     },
     {
-      degree: 'Yüksek Lisans - Türk Dili ve Edebiyatı',
-      school: 'Üniversite Adı',
-      period: '2013 - 2015',
-      thesis: 'Çağdaş Türk Şiirinde Toplumsal Değişim'
+      degree: 'Yüksek Lisans - Hadis Anabilim Dalı',
+      school: 'Selçuk Üniversitesi SBE',
+      period: '2000',
+      thesis: 'Kadızâdeliler-Sivâsîler Tartışmalarının Hadis İlmine Etkisi ve İdrâkü’l-Hakîka Örneği'
     },
     {
-      degree: 'Lisans - Türk Dili ve Edebiyatı',
-      school: 'Üniversite Adı',
-      period: '2009 - 2013',
-      gpa: '3.8/4.0'
+      degree: 'Lisans - İlahiyat',
+      school: 'Selçuk Üniversitesi İlahiyat Fakültesi',
+      period: '1998',
+      gpa: 'Yüksek Onur'
+    },
+    {
+      degree: 'Hafızlık Eğitimi',
+      school: 'Konya Meram Havzan Kur’an Kursu',
+      period: '1991',
+      thesis: 'Kur’an-ı Kerim Hifız Programı Tamamlandı'
     }
   ];
 
   const achievements = [
-    'Ulusal ve uluslararası dergilerde 25+ akademik makale yayınladım',
-    'TÜBİTAK destekli 2 araştırma projesinde yürütücü olarak görev aldım',
-    '5 uluslararası konferansta bildiri sundum',
-    'Türk Edebiyatı alanında 2 kitap yayınladım',
-    'Çeşitli üniversitelerde misafir öğretim üyesi olarak ders verdim',
-    'Edebiyat eleştirisi alanında ödül aldım'
+    'Hadis İlmi alanında 7 kitap yayınladım (Türkiye Diyanet Vakfı, İz Yayıncılık, Rağbet Yayınları, TDV Yayınları)',
+    'Diyanet İşleri Başkanlığı Hadislerle İslam projesine yazar olarak katkıda bulundum',
+    'Hafızlık Destekli Sınıf Projesi ile din eğitiminde yenilikçi yaklaşım geliştirdim',
+    '4 farklı üniversitede akademik görev yaptım (23 yıllık deneyim)',
+    'Ulusal ve uluslararası sempozyumlarda çok sayıda bildiri sundum',
+    'Kırıkkale Üniversitesi’nde Dekan Yardımcılığı görevi üstlendim',
+    'Arapça ve İngilizce dillerine ileri düzeyde hâkimim',
+    'Ürdün Amman’da 10 aylık araştırma deneyimi'
   ];
 
   const containerVariants = {
@@ -108,12 +123,12 @@ export default function AboutPage() {
           </motion.div>
           
           <motion.h1 variants={itemVariants} className="text-5xl font-bold text-gray-900 mb-4">
-            Dr. Ahmed Ürkmez
+            Prof. Dr. Ahmed Ürkmez
           </motion.h1>
           
           <motion.p variants={itemVariants} className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Türk Dili ve Edebiyatı alanında uzmanlaşmış bir akademisyen olarak, modern Türk edebiyatı, 
-            karşılaştırmalı edebiyat ve kültürel çalışmalar konularında araştırmalar yürütmekteyim.
+            Hadis İlmi alanında uzmanlaşmış bir akademisyen olarak, hadis metodolojisi, sünnet anlayışı 
+            ve din eğitimi konularında araştırmalar yürütmekteyim. 23 yıllık eğitim ve akademik deneyimim bulunmaktadır.
           </motion.p>
           
           <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-4">
@@ -148,17 +163,17 @@ export default function AboutPage() {
               
               <motion.div variants={itemVariants} className="prose prose-lg text-gray-600">
                 <p className="mb-4">
-                  Türk Dili ve Edebiyatı alanında 10+ yıllık akademik deneyime sahip bir öğretim üyesi olarak, 
-                  hem araştırmacı hem de eğitimci kimliğimle edebiyat dünyasına katkıda bulunmaya devam ediyorum.
+                  1977 yılında Ankara’da doğdum. 1991’de Konya Meram Havzan Kur’an Kursu’nda hafızlık eğitimimi tamamlayarak 
+                  Kur’an-ı Kerim’i ezberledim. Selçuk Üniversitesi İlahiyat Fakültesi’nden 1998’de mezun oldum.
                 </p>
                 <p className="mb-4">
-                  Araştırma alanlarım arasında modern Türk edebiyatı, karşılaştırmalı edebiyat, kültürel çalışmalar 
-                  ve eleştiri teorisi yer almaktadır. Özellikle kimlik, toplumsal değişim ve edebiyatın toplumsal 
-                  işlevi konularında derinlemesine çalışmalar yürütmekteyim.
+                  2000 yılında yüksek lisans, 2007’de doktora derecemi aldım. Hadis İlmi, hadis metodolojisi, sünnet anlayışı 
+                  ve din eğitimi ana araştırma alanlarımdır. Özellikle ahlak hadisleri ve din eğitimindeki yeri konusunda 
+                  uzmanlaştım.
                 </p>
                 <p>
-                  Akademik çalışmalarımın yanında, edebiyat sevgisini genç nesillere aktarma konusunda da büyük 
-                  bir tutku duyuyorum. Öğrencilerimle birlikte edebiyatın hayatımızdaki yerini keşfetmeye devam ediyoruz.
+                  23 yıllık eğitim ve akademik deneyimim boyunca hem öğretmenlik hem de üniversite öğretim üyeliği yaptım. 
+                  Evli ve üç çocuk babasıyım. Mesleki birikimimi genç ilahiyatçılar ve toplumla paylaşmaya devam ediyorum.
                 </p>
               </motion.div>
             </motion.section>
